@@ -8,4 +8,5 @@
  */
 
 rootProject.name = "calamansi"
-include("lib")
+
+include("calamansi-api")
