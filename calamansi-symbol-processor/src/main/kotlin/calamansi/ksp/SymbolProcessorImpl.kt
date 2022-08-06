@@ -51,6 +51,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         val scripts = definitions.filterIsInstance<ScriptDefinition>()
 
         components.forEach { component -> generateComponentDefinition(resolver, component) }
+        scripts.forEach { script -> generateScriptDefinition(resolver, script) }
 
         // entry file
         codeGenerator.createNewFile(
@@ -63,11 +64,14 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 
                 class EntryImpl : Entry {
                     override fun bootstrap(registry: Registry) {
-                
             """.trimIndent())
 
             components.forEach { component ->
                 writer.appendLine("        registry.registerComponent(${component.name})")
+            }
+
+            scripts.forEach { script ->
+                writer.appendLine("        registry.registerScript(${script.name})")
             }
 
             writer.appendLine("""
@@ -105,8 +109,32 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 
                 object ${definition.name} : ComponentDefinition<$componentQualifiedName> {
                     override val type: KClass<$componentQualifiedName> = $componentQualifiedName::class
-                    override val placeholderInstance: $componentQualifiedName = $componentQualifiedName()
+                    override fun create(): $componentQualifiedName = $componentQualifiedName()
                     override val dependencies: List<ComponentDefinition<*>> = listOf()
+                }
+            """.trimIndent()
+            )
+        }
+    }
+
+    private fun generateScriptDefinition(resolver: Resolver, definition: ScriptDefinition) {
+        val deps = mutableSetOf<KSFile>()
+        deps.add(checkNotNull(definition.original.containingFile))
+        codeGenerator.createNewFile(
+            Dependencies(false, *deps.toTypedArray()), GEN_PACKAGE_NAME, definition.name
+        ).writer().use { writer ->
+            val componentQualifiedName = checkNotNull(definition.original.qualifiedName).asString()
+            writer.appendLine(
+                """
+                // GENERATED from ${definition.name}
+                package $GEN_PACKAGE_NAME
+                import kotlin.collections.listOf
+                import kotlin.reflect.KClass
+                import calamansi.runtime.registry.ScriptDefinition
+                
+                object ${definition.name} : ScriptDefinition<$componentQualifiedName> {
+                    override val type: KClass<$componentQualifiedName> = $componentQualifiedName::class
+                    override fun create(): $componentQualifiedName = $componentQualifiedName()
                 }
             """.trimIndent()
             )
