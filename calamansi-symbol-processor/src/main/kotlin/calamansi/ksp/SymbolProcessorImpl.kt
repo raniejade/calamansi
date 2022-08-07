@@ -4,6 +4,7 @@ import calamansi.component.Component
 import calamansi.component.Property
 import calamansi.ksp.model.ComponentDefinition
 import calamansi.ksp.model.Definition
+import calamansi.ksp.model.PropertyDefinition
 import calamansi.ksp.model.ScriptDefinition
 import calamansi.script.Script
 import com.google.devtools.ksp.*
@@ -11,10 +12,7 @@ import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
-import com.google.devtools.ksp.symbol.KSAnnotated
-import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSFile
-import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.*
 import kotlin.reflect.KClass
 
 @OptIn(KspExperimental::class)
@@ -57,14 +55,16 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         codeGenerator.createNewFile(
             Dependencies(true, *entryDependencies.toTypedArray()), GEN_PACKAGE_NAME, "entry"
         ).writer().use { writer ->
-            writer.appendLine("""
+            writer.appendLine(
+                """
                 package $GEN_PACKAGE_NAME
                 import calamansi.runtime.Entry
                 import calamansi.runtime.registry.Registry
                 
                 class EntryImpl : Entry {
                     override fun bootstrap(registry: Registry) {
-            """.trimIndent())
+            """.trimIndent()
+            )
 
             components.forEach { component ->
                 writer.appendLine("        registry.registerComponent(${component.name})")
@@ -74,10 +74,12 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 writer.appendLine("        registry.registerScript(${script.name})")
             }
 
-            writer.appendLine("""
+            writer.appendLine(
+                """
                     }
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
 
         // service loader for entry
@@ -99,6 +101,18 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             Dependencies(false, *deps.toTypedArray()), GEN_PACKAGE_NAME, definition.name
         ).writer().use { writer ->
             val componentQualifiedName = checkNotNull(definition.original.qualifiedName).asString()
+
+            val properties = definition.properties.joinToString(separator = ",\n${indent(4, 2)}") { prop ->
+                val typeRef = "${checkNotNull(prop.type.qualifiedName).asString()}"
+                val propertyName = "\"${prop.name}\""
+                val propertyRef = "$componentQualifiedName::${prop.name}"
+                if (!prop.isEnum) {
+                    "SimpleProperty($typeRef::class, $propertyName, $propertyRef)"
+                } else {
+                    "EnumProperty($typeRef::class, $propertyName, $propertyRef, enumValues<$typeRef>())"
+                }
+            }
+
             writer.appendLine(
                 """
                 // GENERATED from ${definition.name}
@@ -106,11 +120,17 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 import kotlin.collections.listOf
                 import kotlin.reflect.KClass
                 import calamansi.runtime.registry.ComponentDefinition
+                import calamansi.runtime.registry.Property
+                import calamansi.runtime.registry.SimpleProperty
+                import calamansi.runtime.registry.EnumProperty
                 
                 object ${definition.name} : ComponentDefinition<$componentQualifiedName> {
                     override val type: KClass<$componentQualifiedName> = $componentQualifiedName::class
                     override fun create(): $componentQualifiedName = $componentQualifiedName()
                     override val dependencies: List<ComponentDefinition<*>> = listOf()
+                    override val properties: List<Property<$componentQualifiedName, *>> = listOf(
+                        $properties
+                    )
                 }
             """.trimIndent()
             )
@@ -167,11 +187,16 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             })
         }
 
-        // create component definition
-        val properties = classDecl.getDeclaredProperties().filter { isSupportedProperty(resolver, it) }.toList()
+        val properties = classDecl.getDeclaredProperties().filter { isSupportedProperty(resolver, it) }.map {
+            val propTypeDecl = it.type.resolve().declaration as KSClassDeclaration
+            PropertyDefinition(
+                checkNotNull(it.qualifiedName).getShortName(),
+                propTypeDecl,
+            )
+        }
 
         return ComponentDefinition(
-            generateDefinitionName(classDecl), classDecl, dependencies.toList()
+            generateDefinitionName(classDecl), classDecl, properties.toList(), dependencies.toList()
         )
     }
 
@@ -190,13 +215,16 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
 
     private fun isSupportedProperty(resolver: Resolver, property: KSPropertyDeclaration): Boolean {
         val builtIns = resolver.builtIns
-        val typeSupported = when (property.type.resolve()) {
+        val type = property.type.resolve()
+        val isBuiltInType = when (type) {
             builtIns.intType, builtIns.floatType, builtIns.doubleType, builtIns.stringType, builtIns.shortType, builtIns.longType -> true
             else -> false
         }
+        val isEnum = (type.declaration as KSClassDeclaration).classKind == ClassKind.ENUM_CLASS
+        val isSupportedType = isBuiltInType || isEnum
         return property.isMutable && property.hasBackingField && property.isPublic() && property.isAnnotationPresent(
             Property::class
-        ) && typeSupported
+        ) && isSupportedType
     }
 
     private fun isDirectSubTypeOf(classDecl: KSClassDeclaration, type: KClass<*>): Boolean {
@@ -205,5 +233,8 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
 
     companion object {
         private const val GEN_PACKAGE_NAME = "calamansi._gen"
+
+        // extra baseIndent indents is for trimIndent when using string blocks
+        private fun indent(baseIndent: Int, times: Int) = "    ".repeat(baseIndent + times)
     }
 }

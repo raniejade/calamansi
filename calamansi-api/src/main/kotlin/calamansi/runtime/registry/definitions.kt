@@ -11,8 +11,7 @@ interface Definition<T: Any> {
 
 interface ComponentDefinition<T : Component> : Definition<T> {
     val dependencies: List<ComponentDefinition<*>>
+    val properties: List<Property<T, *>>
 }
 
-interface ScriptDefinition<T : Script> : Definition<T> {
-
-}
+interface ScriptDefinition<T : Script> : Definition<T>
