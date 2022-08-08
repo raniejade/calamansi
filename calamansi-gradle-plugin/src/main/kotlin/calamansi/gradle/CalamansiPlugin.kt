@@ -21,6 +21,9 @@ class CalamansiPlugin : Plugin<Project> {
         }
 
         kotlinJvmExtension.target.compilations.getByName("main").apply {
+            kotlinOptions.freeCompilerArgs += listOf(
+                "-Xcontext-receivers" // context receivers
+            )
             dependencies {
                 compileOnly(calamansiDep("api"))
             }

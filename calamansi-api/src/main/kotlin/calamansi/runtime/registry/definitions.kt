@@ -1,7 +1,7 @@
 package calamansi.runtime.registry
 
+import calamansi.Script
 import calamansi.component.Component
-import calamansi.script.Script
 import kotlin.reflect.KClass
 
 interface Definition<T: Any> {

@@ -1,6 +1,4 @@
-package calamansi.script
-
-import calamansi.ExecutionContext
+package calamansi
 
 abstract class Script {
     context(ExecutionContext) open fun setup() = Unit

@@ -1,4 +1,4 @@
-package calamansi.scene
+package calamansi
 
 import calamansi.component.Component
 import kotlin.reflect.KClass
@@ -9,6 +9,7 @@ abstract class Node {
     context(ExecutionContext) abstract fun <T : Component> hasComponent(component: KClass<T>): Boolean
     context(ExecutionContext) abstract fun <T : Component> removeComponent(component: KClass<T>): Boolean
 
+    // Do not use! inline method with context receiver is bugged as of 1.6.20 (https://youtrack.jetbrains.com/issue/KT-52027)
     context(ExecutionContext) inline fun <reified T : Component> addComponent(): T = addComponent(T::class)
     context(ExecutionContext) inline fun <reified T : Component> getComponent(): T = getComponent(T::class)
     context(ExecutionContext) inline fun <reified T : Component> hasComponent(): Boolean = hasComponent(T::class)

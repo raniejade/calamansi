@@ -6,7 +6,7 @@ import calamansi.ksp.model.ComponentDefinition
 import calamansi.ksp.model.Definition
 import calamansi.ksp.model.PropertyDefinition
 import calamansi.ksp.model.ScriptDefinition
-import calamansi.script.Script
+import calamansi.Script
 import com.google.devtools.ksp.*
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
