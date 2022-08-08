@@ -1,10 +1,13 @@
 package calamansi.runtime
 
+import calamansi.runtime.logging.ConsoleLogger
+import calamansi.runtime.logging.LogLevel
 import calamansi.runtime.registry.RuntimeRegistry
-import java.util.ServiceLoader
+import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 class Runtime {
+    private val logger = ConsoleLogger(LogLevel.DEBUG)
     private val entryLoader = ServiceLoader.load(Entry::class.java)
     private val registry = RuntimeRegistry()
 
@@ -19,8 +22,27 @@ class Runtime {
     }
 
     private fun execute(entry: Entry) {
-        println("Starting bootstrap: $entry")
+        logger.info { "Starting bootstrap: $entry" }
         entry.bootstrap(registry)
+        bootstrapInitialScene()
+        loop()
+    }
+
+    private fun bootstrapInitialScene() {
+    }
+
+    private fun loop() {
+        while (!shouldExit()) {
+            // invoke queued attached callbacks
+
+            // traverse scene graph and invoke scripts (DFS)
+
+            // invoke queued detached callbacks
+        }
+    }
+
+    private fun shouldExit(): Boolean {
+        return false
     }
 }
 
