@@ -11,7 +11,7 @@ dependencies {
     implementation(project(":calamansi-api"))
     implementation(project(":calamansi-runtime"))
 
-    // normally applied via the calamans-gradle plugin
+    // normally applied via the calamansi-gradle plugin
     ksp(project(":calamansi-symbol-processor"))
 }
 
