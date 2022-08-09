@@ -9,7 +9,7 @@ import kotlin.jvm.optionals.getOrNull
 class Runtime {
     private val logger = ConsoleLogger(LogLevel.DEBUG)
     private val entryLoader = ServiceLoader.load(Entry::class.java)
-    private val registry = RuntimeRegistry()
+    private val registry = RuntimeRegistry(logger)
 
     @OptIn(ExperimentalStdlibApi::class)
     fun execute() {
@@ -22,10 +22,11 @@ class Runtime {
     }
 
     private fun execute(entry: Entry) {
-        logger.info { "Starting bootstrap: $entry" }
+        logger.info { "Bootstrapping engine using ${entry::class.qualifiedName}." }
         entry.bootstrap(registry)
         bootstrapInitialScene()
         loop()
+        cleanup()
     }
 
     private fun bootstrapInitialScene() {
@@ -41,8 +42,12 @@ class Runtime {
         }
     }
 
+    private fun cleanup() {
+        logger.info { "Shutting down, initiating cleanup procedures." }
+    }
+
     private fun shouldExit(): Boolean {
-        return false
+        return true
     }
 }
 

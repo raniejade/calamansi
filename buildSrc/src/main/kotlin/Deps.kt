@@ -1,7 +1,7 @@
 object Deps {
-    private const val jomlVersion = "1.10.4"
-    private const val kspVersion = "1.7.10-1.0.6"
-    private const val kotlinSerializationVersion = "1.4.0-RC"
+    const val jomlVersion = "1.10.4"
+    const val kspVersion = "1.7.10-1.0.6"
+    const val kotlinSerializationVersion = "1.4.0-RC"
 
     const val joml = "org.joml:joml:$jomlVersion"
     const val ksp = "com.google.devtools.ksp:symbol-processing-api:$kspVersion"

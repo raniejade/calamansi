@@ -7,28 +7,28 @@ abstract class AbstractLogger(private val logLevel: LogLevel) : Logger {
         if (!canLog(LogLevel.DEBUG)) {
             return
         }
-        debug(msg())
+        debug(format(msg(), LogLevel.DEBUG))
     }
 
     override fun info(msg: () -> String) {
         if (!canLog(LogLevel.INFO)) {
             return
         }
-        info(msg())
+        info(format(msg(), LogLevel.INFO))
     }
 
     override fun warn(msg: () -> String) {
         if (!canLog(LogLevel.WARN)) {
             return
         }
-        warn(msg())
+        warn(format(msg(), LogLevel.WARN))
     }
 
     override fun error(msg: () -> String) {
         if (!canLog(LogLevel.ERROR)) {
             return
         }
-        error(msg())
+        error(format(msg(), LogLevel.ERROR))
     }
 
     protected abstract fun debug(msg: String)
@@ -38,5 +38,10 @@ abstract class AbstractLogger(private val logLevel: LogLevel) : Logger {
 
     private fun canLog(logLevel: LogLevel): Boolean {
         return this.logLevel.level >= logLevel.level
+    }
+
+    private fun format(msg: String, level: LogLevel): String {
+        val prefix = "[$level]".padEnd(5 /* length of DEBUG and ERROR */ + 2 /* [ ] characters */)
+        return "$prefix $msg"
     }
 }

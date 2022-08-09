@@ -84,7 +84,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
 
         // service loader for entry
         codeGenerator.createNewFile(
-            Dependencies(true, *entryDependencies.toTypedArray()), "META-INF.service", "calamansi.runtime.Entry", ""
+            Dependencies(true, *entryDependencies.toTypedArray()), "META-INF.services", "calamansi.runtime.Entry", ""
         ).writer().use { writer ->
             writer.appendLine("calamansi._gen.EntryImpl")
         }
@@ -135,6 +135,9 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 import kotlin.collections.listOf
                 import kotlin.reflect.KClass
                 import kotlinx.serialization.Serializable
+                import kotlinx.serialization.modules.SerializersModule
+                import kotlinx.serialization.modules.polymorphic
+                import kotlinx.serialization.modules.subclass
                 import calamansi.runtime.registry.ComponentData
                 import calamansi.runtime.registry.ComponentDefinition
                 import calamansi.runtime.registry.Property
@@ -142,7 +145,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 import calamansi.runtime.registry.EnumProperty
                 
                 @Serializable
-                data class $dataClassName(
+                class $dataClassName(
                     $dataProperties
                 ) : ComponentData<$componentQualifiedName>
                 
@@ -159,8 +162,13 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                     )
                     override fun fromData(data: ComponentData<$componentQualifiedName>, component: $componentQualifiedName) {
                         require(data is $dataClassName)
-                        $fromDataAssignments
-                       
+                        $fromDataAssignments  
+                    }
+                    
+                    override fun serializersModule(): SerializersModule = SerializersModule {
+                        polymorphic(ComponentData::class) {
+                            subclass($dataClassName::class)
+                        }
                     }
                 }
             """.trimIndent()

@@ -19,3 +19,5 @@ class MyComponent : Component {
     @Property
     var enum: MyEnum = MyEnum.A
 }
+
+class AnotherComponent : Component
