@@ -1,5 +1,6 @@
 plugins {
     jvm
+    kotlin("plugin.serialization")
 }
 
 dependencies {

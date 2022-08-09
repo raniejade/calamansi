@@ -11,7 +11,9 @@ interface Definition<T: Any> {
     fun create(): T
 }
 
-interface ComponentData<T : Component>
+interface ComponentData<T : Component> {
+    val type: KClass<T>
+}
 
 interface ComponentDefinition<T : Component> : Definition<T> {
     val dependencies: List<ComponentDefinition<*>>

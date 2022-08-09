@@ -115,7 +115,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
 
             val dataProperties = definition.properties.joinToString(separator = ",\n${indent(4, 1)}") { prop ->
                 val typeRef = "${checkNotNull(prop.type.qualifiedName).asString()}"
-                "var ${prop.name}: $typeRef"
+                "val ${prop.name}: $typeRef"
             }
 
             val toDataAssignments = definition.properties.joinToString(separator = ",\n${indent(4, 2)}") { prop ->
@@ -147,7 +147,10 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 @Serializable
                 class $dataClassName(
                     $dataProperties
-                ) : ComponentData<$componentQualifiedName>
+                ) : ComponentData<$componentQualifiedName> {
+                    override val type: KClass<$componentQualifiedName>
+                        get() = $componentQualifiedName::class
+                }
                 
                 object ${definition.name} : ComponentDefinition<$componentQualifiedName> {
                     override val type: KClass<$componentQualifiedName> = $componentQualifiedName::class
