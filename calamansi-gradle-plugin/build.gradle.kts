@@ -23,5 +23,6 @@ tasks {
 dependencies {
     implementation(kotlin("gradle-plugin"))
     implementation(kotlin("gradle-plugin-api"))
+    implementation(kotlin("serialization"))
     implementation(Deps.kspGradlePlugin)
 }

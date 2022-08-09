@@ -5,11 +5,13 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
+import org.jetbrains.kotlinx.serialization.gradle.SerializationGradleSubplugin
 
 class CalamansiPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.pluginManager.apply(KotlinPlatformJvmPlugin::class.java)
         project.pluginManager.apply(KspGradleSubplugin::class.java)
+        project.pluginManager.apply(SerializationGradleSubplugin::class.java)
         project.extensions.create("calamansi", CalamansiExtension::class.java)
         project.configureDefaults()
     }

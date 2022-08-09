@@ -1,8 +1,12 @@
 package calamansi.math
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+
 @JvmInline
-value class Vector2f(private val vec: org.joml.Vector2f) {
-    constructor(x: Float = 0f, y: Float = 0f): this(org.joml.Vector2f(x, y))
+@Serializable
+value class Vector2f(@Contextual private val vec: org.joml.Vector2f) {
+    constructor(x: Float = 0f, y: Float = 0f) : this(org.joml.Vector2f(x, y))
 
     var x: Float
         get() = vec.x

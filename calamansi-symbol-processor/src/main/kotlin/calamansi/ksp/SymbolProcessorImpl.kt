@@ -113,16 +113,38 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 }
             }
 
+            val dataProperties = definition.properties.joinToString(separator = ",\n${indent(4, 1)}") { prop ->
+                val typeRef = "${checkNotNull(prop.type.qualifiedName).asString()}"
+                "var ${prop.name}: $typeRef"
+            }
+
+            val toDataAssignments = definition.properties.joinToString(separator = ",\n${indent(4, 2)}") { prop ->
+                "${prop.name} = component.${prop.name}"
+            }
+
+            val fromDataAssignments = definition.properties.joinToString(separator = "\n${indent(4, 2)}") { prop ->
+                "component.${prop.name} = data.${prop.name}"
+            }
+
+            val dataClassName = "${definition.name}Data"
+
             writer.appendLine(
                 """
                 // GENERATED from ${definition.name}
                 package $GEN_PACKAGE_NAME
                 import kotlin.collections.listOf
                 import kotlin.reflect.KClass
+                import kotlinx.serialization.Serializable
+                import calamansi.runtime.registry.ComponentData
                 import calamansi.runtime.registry.ComponentDefinition
                 import calamansi.runtime.registry.Property
                 import calamansi.runtime.registry.SimpleProperty
                 import calamansi.runtime.registry.EnumProperty
+                
+                @Serializable
+                data class $dataClassName(
+                    $dataProperties
+                ) : ComponentData<$componentQualifiedName>
                 
                 object ${definition.name} : ComponentDefinition<$componentQualifiedName> {
                     override val type: KClass<$componentQualifiedName> = $componentQualifiedName::class
@@ -131,6 +153,15 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                     override val properties: List<Property<$componentQualifiedName, *>> = listOf(
                         $properties
                     )
+                    
+                    override fun toData(component: $componentQualifiedName): ComponentData<$componentQualifiedName> = $dataClassName(
+                        $toDataAssignments
+                    )
+                    override fun fromData(data: ComponentData<$componentQualifiedName>, component: $componentQualifiedName) {
+                        require(data is $dataClassName)
+                        $fromDataAssignments
+                       
+                    }
                 }
             """.trimIndent()
             )
