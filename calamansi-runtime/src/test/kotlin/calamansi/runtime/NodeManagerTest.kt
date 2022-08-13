@@ -1,17 +1,13 @@
 package calamansi.runtime
 
-import calamansi.Script
-import calamansi.component.Component
 import calamansi.runtime.data.SerializedNode
 import calamansi.runtime.data.SerializedScene
+import calamansi.runtime.helpers.TestComponent
+import calamansi.runtime.helpers.TestScript
+import calamansi.runtime.helpers.autoRegisterTestDefinitions
 import calamansi.runtime.logging.ConsoleLogger
 import calamansi.runtime.logging.LogLevel
-import calamansi.runtime.registry.*
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
-import kotlin.reflect.KClass
+import calamansi.runtime.registry.RuntimeRegistry
 import kotlin.test.*
 
 class NodeManagerTest {
@@ -22,66 +18,9 @@ class NodeManagerTest {
     private var nodeManager = NodeManager(componentManager, scriptManager)
     private var executionContext = ExecutionContextImpl(logger, componentManager, scriptManager)
 
-    private class TestComponent : Component {
-        var int: Int = 0
-
-        @Serializable
-        class Data(var int: Int) : ComponentData<TestComponent> {
-            override val type: KClass<TestComponent>
-                get() = TestComponent::class
-        }
-
-        companion object : ComponentDefinition<TestComponent> {
-            override val dependencies: List<ComponentDefinition<*>>
-                get() = emptyList()
-            override val properties: List<Property<TestComponent, *>>
-                get() = listOf(SimpleProperty(Int::class, "int", TestComponent::int))
-
-            override fun toData(component: Component): ComponentData<*> {
-                require(component is TestComponent)
-                return Data(component.int)
-            }
-
-            override fun fromData(data: ComponentData<*>, component: Component) {
-                require(data is Data)
-                require(component is TestComponent)
-                component.int = data.int
-            }
-
-            override fun serializersModule(): SerializersModule {
-                return SerializersModule {
-                    polymorphic(ComponentData::class) {
-                        subclass(Data::class)
-                    }
-                }
-            }
-
-            override val type: KClass<TestComponent>
-                get() = TestComponent::class
-
-            override fun create(): TestComponent {
-                return TestComponent()
-            }
-
-        }
-    }
-
-    private class TestScript : Script() {
-        companion object : ScriptDefinition<TestScript> {
-            override val type: KClass<TestScript>
-                get() = TestScript::class
-
-            override fun create(): TestScript {
-                return TestScript()
-            }
-
-        }
-    }
-
     @BeforeTest
     fun setup() {
-        registry.registerComponent(TestComponent)
-        registry.registerScript(TestScript)
+        registry.autoRegisterTestDefinitions()
     }
 
     @Test
