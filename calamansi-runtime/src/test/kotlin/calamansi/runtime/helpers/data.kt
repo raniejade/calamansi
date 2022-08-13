@@ -13,7 +13,7 @@ class TestComponent : Component {
     var int: Int = 0
 
     @Serializable
-    class Data(var int: Int) : ComponentData<TestComponent> {
+    data class Data(var int: Int) : ComponentData<TestComponent> {
         override val type: KClass<TestComponent>
             get() = TestComponent::class
     }

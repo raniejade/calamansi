@@ -116,7 +116,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             val dataProperties = definition.properties.joinToString(separator = ",\n${indent(4, 1)}") { prop ->
                 val typeRef = "${checkNotNull(prop.type.qualifiedName).asString()}"
                 "val ${prop.name}: $typeRef"
-            }
+            }.ifEmpty { "var __unused: Int? = null" }
 
             val toDataAssignments = definition.properties.joinToString(separator = ",\n${indent(4, 2)}") { prop ->
                 "${prop.name} = component.${prop.name}"
@@ -146,7 +146,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 import calamansi.runtime.registry.EnumProperty
                 
                 @Serializable
-                class $dataClassName(
+                data class $dataClassName(
                     $dataProperties
                 ) : ComponentData<$componentQualifiedName> {
                     override val type: KClass<$componentQualifiedName>

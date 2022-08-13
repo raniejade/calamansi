@@ -14,3 +14,5 @@ include("calamansi-symbol-processor")
 include("calamansi-gradle-plugin")
 include("calamansi-runtime")
 include("calamansi-editor")
+
+include("symbol-processor-harness")
