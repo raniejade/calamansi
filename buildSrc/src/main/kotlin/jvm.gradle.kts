@@ -10,10 +10,18 @@ repositories {
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+
+    testImplementation(kotlin("test"))
 }
 
-tasks.withType<KotlinCompile>().all {
-    kotlinOptions.freeCompilerArgs += listOf(
-        "-Xcontext-receivers" // context receivers
-    )
+tasks {
+    withType<KotlinCompile>().all {
+        kotlinOptions.freeCompilerArgs += listOf(
+            "-Xcontext-receivers" // context receivers
+        )
+    }
+
+    test {
+        useJUnitPlatform()
+    }
 }

@@ -138,6 +138,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 import kotlinx.serialization.modules.SerializersModule
                 import kotlinx.serialization.modules.polymorphic
                 import kotlinx.serialization.modules.subclass
+                import calamansi.component.Component
                 import calamansi.runtime.registry.ComponentData
                 import calamansi.runtime.registry.ComponentDefinition
                 import calamansi.runtime.registry.Property
@@ -160,11 +161,15 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                         $properties
                     )
                     
-                    override fun toData(component: $componentQualifiedName): ComponentData<$componentQualifiedName> = $dataClassName(
-                        $toDataAssignments
-                    )
-                    override fun fromData(data: ComponentData<$componentQualifiedName>, component: $componentQualifiedName) {
+                    override fun toData(component: Component): ComponentData<*> {
+                        require(component is $componentQualifiedName)
+                        return $dataClassName(
+                            $toDataAssignments
+                        )
+                    }
+                    override fun fromData(data: ComponentData<*>, component: Component) {
                         require(data is $dataClassName)
+                        require(component is $componentQualifiedName)
                         $fromDataAssignments  
                     }
                     

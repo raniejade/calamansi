@@ -6,6 +6,6 @@ import kotlin.reflect.KClass
 
 interface ExecutionContext : LoggingContext {
     val Script.owner: Node
-    fun Node(script: KClass<out Script>? = null): Node
+    fun Node(name: String, script: KClass<out Script>? = null): Node
     fun setCurrentScene(scene: ResourceRef<Scene>)
 }

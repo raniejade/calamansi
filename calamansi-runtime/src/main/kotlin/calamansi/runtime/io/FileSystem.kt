@@ -28,7 +28,12 @@ class FileSystem(private val dataFileSource: FileSource, private val userFileSou
                 val source = Source.fromPrefix(checkNotNull(match.groups["source"]).value)
                     ?: throw IOException("Unable to determine source from path: $path")
                 val path = checkNotNull(match.groups["path"]).value
-                return PathRef(source, path)
+                val actualPath = if (source == Source.Data) {
+                    "data/$path"
+                } else {
+                    path
+                }
+                return PathRef(source, actualPath)
             }
         }
     }

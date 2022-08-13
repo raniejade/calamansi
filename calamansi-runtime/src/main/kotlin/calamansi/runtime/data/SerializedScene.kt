@@ -7,11 +7,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SerializedNode(
     val name: String,
-    val parent: String?,
-    val components: List<ComponentData<*>>
+    val parent: Int?,
+    val script: String?,
+    val components: List<ComponentData<*>> = emptyList()
 )
 
 @Serializable
 data class SerializedScene(
-    val nodes: List<SerializedNode>
+    val nodes: List<SerializedNode> = emptyList()
 )

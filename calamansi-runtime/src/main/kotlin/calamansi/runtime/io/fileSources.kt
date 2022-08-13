@@ -40,3 +40,13 @@ class DiskRootFileSource(private val root: Path) : FileSource {
         return root.resolve(path)
     }
 }
+
+object NotImplementedFileSource : FileSource {
+    override fun getReader(path: String): InputStream {
+        TODO("Not yet implemented")
+    }
+
+    override fun getWriter(path: String, append: Boolean): OutputStream {
+        TODO("Not yet implemented")
+    }
+}

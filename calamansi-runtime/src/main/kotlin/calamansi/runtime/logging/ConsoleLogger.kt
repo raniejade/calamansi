@@ -1,6 +1,6 @@
 package calamansi.runtime.logging
 
-class ConsoleLogger(logLevel: LogLevel): AbstractLogger(logLevel) {
+class ConsoleLogger(logLevel: LogLevel) : AbstractLogger(logLevel) {
     override fun debug(msg: String) {
         println(msg)
     }
@@ -9,11 +9,13 @@ class ConsoleLogger(logLevel: LogLevel): AbstractLogger(logLevel) {
         println(msg)
     }
 
-    override fun warn(msg: String) {
+    override fun warn(throwable: Throwable?, msg: String) {
         println(msg)
+        throwable?.printStackTrace()
     }
 
-    override fun error(msg: String) {
+    override fun error(throwable: Throwable?, msg: String) {
         println(msg)
+        throwable?.printStackTrace()
     }
 }

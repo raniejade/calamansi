@@ -1,13 +1,14 @@
 package calamansi.runtime.registry
 
+import calamansi.Script
 import calamansi.component.Component
 import calamansi.logging.Logger
 import kotlinx.serialization.modules.SerializersModule
 import kotlin.reflect.KClass
 
-class RuntimeRegistry(private val logger: Logger): Registry {
-    private val components = mutableMapOf<KClass<*>, ComponentDefinition<*>>()
-    private val scripts = mutableMapOf<KClass<*>, ScriptDefinition<*>>()
+class RuntimeRegistry(private val logger: Logger) : Registry {
+    private val components = mutableMapOf<String, ComponentDefinition<*>>()
+    private val scripts = mutableMapOf<String, ScriptDefinition<*>>()
     val serializersModule by lazy {
         SerializersModule {
             for (definition in components.values) {
@@ -18,25 +19,33 @@ class RuntimeRegistry(private val logger: Logger): Registry {
 
     override fun registerComponent(definition: ComponentDefinition<*>) {
         logger.debug { "Registering component: ${definition.type.qualifiedName}." }
-        require(!components.containsKey(definition.type)) { "Component definition for ${definition.type} already exist" }
-        components[definition.type] = definition
+        require(!components.containsKey(definition.qualifiedName)) { "Component definition for ${definition.type} already exist" }
+        components[definition.qualifiedName] = definition
     }
 
     override fun registerScript(definition: ScriptDefinition<*>) {
-        logger.debug { "Registering script: ${definition.type.qualifiedName}." }
-        require(!scripts.containsKey(definition.type)) { "Script definition for ${definition.type} already exist" }
-        scripts[definition.type] = definition
+        logger.debug { "Registering script: ${definition.qualifiedName}." }
+        require(!scripts.containsKey(definition.qualifiedName)) { "Script definition for ${definition.type} already exist" }
+        scripts[definition.qualifiedName] = definition
     }
 
-    fun <T : Component> getComponentDefinition(type: KClass<T>): ComponentDefinition<T> {
-        return checkNotNull(components[type]) {
-            "Component definition for $type does not exist"
-        } as ComponentDefinition<T>
+    fun getComponentDefinition(type: KClass<out Component>): ComponentDefinition<*> {
+        return getComponentDefinitionByQualifiedName(checkNotNull(type.qualifiedName))
     }
 
-    fun <T : Component> getScriptDefinition(type: KClass<T>): ComponentDefinition<T> {
-        return checkNotNull(scripts[type]) {
-            "Script definition for $type does not exist"
-        } as ComponentDefinition<T>
+    fun getComponentDefinitionByQualifiedName(qualifiedName: String): ComponentDefinition<*> {
+        return checkNotNull(components[qualifiedName]) {
+            "Component definition for $qualifiedName does not exist"
+        }
+    }
+
+    fun getScriptDefinition(type: KClass<out Script>): ScriptDefinition<out Script> {
+        return getScriptDefinitionByQualifiedName(checkNotNull(type.qualifiedName))
+    }
+
+    fun getScriptDefinitionByQualifiedName(qualifiedName: String): ScriptDefinition<out Script> {
+        return checkNotNull(scripts[qualifiedName]) {
+            "Script definition for $qualifiedName does not exist"
+        }
     }
 }

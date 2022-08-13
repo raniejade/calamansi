@@ -17,24 +17,24 @@ abstract class AbstractLogger(private val logLevel: LogLevel) : Logger {
         info(format(msg(), LogLevel.INFO))
     }
 
-    override fun warn(msg: () -> String) {
+    override fun warn(throwable: Throwable?, msg: () -> String) {
         if (!canLog(LogLevel.WARN)) {
             return
         }
-        warn(format(msg(), LogLevel.WARN))
+        warn(throwable, format(msg(), LogLevel.WARN))
     }
 
-    override fun error(msg: () -> String) {
+    override fun error(throwable: Throwable?, msg: () -> String) {
         if (!canLog(LogLevel.ERROR)) {
             return
         }
-        error(format(msg(), LogLevel.ERROR))
+        error(throwable, format(msg(), LogLevel.ERROR))
     }
 
     protected abstract fun debug(msg: String)
     protected abstract fun info(msg: String)
-    protected abstract fun warn(msg: String)
-    protected abstract fun error(msg: String)
+    protected abstract fun warn(throwable: Throwable?, msg: String)
+    protected abstract fun error(throwable: Throwable?, msg: String)
 
     private fun canLog(logLevel: LogLevel): Boolean {
         return this.logLevel.level >= logLevel.level

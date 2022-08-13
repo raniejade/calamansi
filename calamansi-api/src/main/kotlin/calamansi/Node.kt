@@ -10,13 +10,15 @@ abstract class Node {
     context(ExecutionContext) abstract fun <T : Component> removeComponent(component: KClass<T>): Boolean
 
     // Do not use! inline method with context receiver is bugged as of 1.6.20 (https://youtrack.jetbrains.com/issue/KT-52027)
-    context(ExecutionContext) inline fun <reified T : Component> addComponent(): T = addComponent(T::class)
-    context(ExecutionContext) inline fun <reified T : Component> getComponent(): T = getComponent(T::class)
-    context(ExecutionContext) inline fun <reified T : Component> hasComponent(): Boolean = hasComponent(T::class)
-    context(ExecutionContext) inline fun <reified T : Component> removeComponent(): Boolean = removeComponent(T::class)
+    context(ExecutionContext) @Deprecated("inline context receiver broken", level = DeprecationLevel.HIDDEN) inline fun <reified T : Component> addComponent(): T = addComponent(T::class)
+    context(ExecutionContext) @Deprecated("inline context receiver broken", level = DeprecationLevel.HIDDEN) inline fun <reified T : Component> getComponent(): T = getComponent(T::class)
+    context(ExecutionContext) @Deprecated("inline context receiver broken", level = DeprecationLevel.HIDDEN) inline fun <reified T : Component> hasComponent(): Boolean = hasComponent(T::class)
+    context(ExecutionContext) @Deprecated("inline context receiver broken", level = DeprecationLevel.HIDDEN) inline fun <reified T : Component> removeComponent(): Boolean = removeComponent(T::class)
 
     context(ExecutionContext) abstract var name: String
-    context(ExecutionContext) abstract var parent: Node?
+    context(ExecutionContext) abstract val parent: Node?
+    context(ExecutionContext) abstract val script: Script?
+    context(ExecutionContext) abstract fun hasScript(): Boolean
 
     context(ExecutionContext) abstract fun addChild(node: Node): Boolean
     context(ExecutionContext) abstract fun removeChild(node: Node): Boolean
