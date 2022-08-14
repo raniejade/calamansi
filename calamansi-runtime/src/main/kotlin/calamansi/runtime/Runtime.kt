@@ -21,8 +21,8 @@ class Runtime {
     private val scriptManager = ScriptManager(registry)
     private val executionContext = ExecutionContextImpl(logger, componentManager, scriptManager)
     private val nodeManager = NodeManager(componentManager, scriptManager)
+    private val sceneManager = SceneManager()
     private lateinit var serializer: Serializer
-    private var root: NodeImpl? = null
 
     @OptIn(ExperimentalStdlibApi::class)
     fun execute() {
@@ -49,12 +49,11 @@ class Runtime {
         try {
             val scene = serializer.decodeScene(filesystem.getReader("res://$defaultScene"))
             with(executionContext) {
-                root = nodeManager.buildSceneGraph(scene)
+                val root = nodeManager.buildSceneGraph(scene)
                 if (root == null) {
                     logger.warn { "Failed to build scene graph!" }
                 }
-                root?.isSceneRoot =  true
-                root?.executeAttachCallback()
+                sceneManager.setCurrentScene(root)
             }
         } catch (e: IOException) {
             logger.error(e) { "Failed to load default scene." }
@@ -65,19 +64,28 @@ class Runtime {
 
     private fun loop() {
         var lastTick = millis()
-        var delta: Long
+        var deltaMillis: Long
 
         do {
-            delta = (millis() - lastTick)
+            deltaMillis = (millis() - lastTick)
             lastTick = millis()
-            with(executionContext) {
-                root?.executeUpdateCallback(delta / 1000f)
-            }
+            frame(deltaMillis / 1000f)
         } while (!shouldExit())
+    }
+
+    private fun frame(delta: Float) {
+        with(executionContext) {
+            sceneManager.frame(delta)
+        }
+
+        Thread.sleep(10)
     }
 
     private fun cleanup() {
         logger.info { "Shutting down, initiating cleanup procedures." }
+        with(executionContext) {
+            sceneManager.setCurrentScene(null)
+        }
     }
 
     private fun shouldExit(): Boolean {

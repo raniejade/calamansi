@@ -13,7 +13,8 @@ import kotlin.reflect.KClass
 class ExecutionContextImpl(
     override val logger: Logger,
     private val componentManager: ComponentManager,
-    private val scriptManager: ScriptManager
+    private val scriptManager: ScriptManager,
+    private val sceneManager: SceneManager,
 ) : ExecutionContext {
     // use weak map here so key can be gc-ed
     // value is a weak ref as well since node keeps a strong reference to the script (key)
