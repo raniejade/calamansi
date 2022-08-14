@@ -5,7 +5,9 @@ import calamansi.Node
 import calamansi.Scene
 import calamansi.Script
 import calamansi.logging.Logger
+import calamansi.resource.Resource
 import calamansi.resource.ResourceRef
+import calamansi.runtime.resource.ResourceManager
 import java.lang.ref.WeakReference
 import java.util.*
 import kotlin.reflect.KClass
@@ -15,6 +17,7 @@ class ExecutionContextImpl(
     private val componentManager: ComponentManager,
     private val scriptManager: ScriptManager,
     private val sceneManager: SceneManager,
+    private val resourceManager: ResourceManager,
 ) : ExecutionContext {
     // use weak map here so key can be gc-ed
     // value is a weak ref as well since node keeps a strong reference to the script (key)
@@ -37,5 +40,9 @@ class ExecutionContextImpl(
 
     override fun setCurrentScene(scene: ResourceRef<Scene>) {
         TODO("Not yet implemented")
+    }
+
+    override fun <T : Resource> loadResource(resource: String): ResourceRef<T> {
+        return resourceManager.loadResource(resource) as ResourceRef<T>
     }
 }

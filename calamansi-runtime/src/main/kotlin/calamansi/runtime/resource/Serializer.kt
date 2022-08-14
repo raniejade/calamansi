@@ -1,4 +1,4 @@
-package calamansi.runtime.serializer
+package calamansi.runtime.resource
 
 import calamansi.runtime.data.SerializedScene
 import kotlinx.serialization.json.Json
@@ -9,8 +9,10 @@ import java.io.InputStream
 import java.io.OutputStream
 
 class Serializer(module: SerializersModule) {
-    private val json = Json {
-        serializersModule = module
+    val json = Json {
+        serializersModule = SerializersModule {
+            include(module)
+        }
 
         // don't encode nulls
         explicitNulls = false
@@ -21,8 +23,8 @@ class Serializer(module: SerializersModule) {
         prettyPrintIndent = "  "
     }
 
-    fun decodeScene(stream: InputStream): SerializedScene {
-        return json.decodeFromStream(stream)
+    fun decodeScene(inputStream: InputStream): SerializedScene {
+        return json.decodeFromStream(inputStream)
     }
 
     fun encodeScene(scene: SerializedScene, outputStream: OutputStream) {

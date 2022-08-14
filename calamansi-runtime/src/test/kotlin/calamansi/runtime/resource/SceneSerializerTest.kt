@@ -1,4 +1,4 @@
-package calamansi.runtime.serializer
+package calamansi.runtime.resource
 
 import calamansi.runtime.data.SerializedNode
 import calamansi.runtime.data.SerializedScene

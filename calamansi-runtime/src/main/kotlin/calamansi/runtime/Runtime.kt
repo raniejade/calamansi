@@ -6,7 +6,12 @@ import calamansi.runtime.io.NotImplementedFileSource
 import calamansi.runtime.logging.ConsoleLogger
 import calamansi.runtime.logging.LogLevel
 import calamansi.runtime.registry.RuntimeRegistry
-import calamansi.runtime.serializer.Serializer
+import calamansi.runtime.resource.ResourceLoader
+import calamansi.runtime.resource.ResourceManager
+import calamansi.runtime.resource.ResourceRefSerializer
+import calamansi.runtime.resource.SceneLoader
+import calamansi.runtime.resource.Serializer
+import kotlinx.serialization.KSerializer
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -19,9 +24,10 @@ class Runtime {
     private val filesystem = FileSystem(JarFileSource(this::class.java.classLoader), NotImplementedFileSource)
     private val componentManager = ComponentManager(registry)
     private val scriptManager = ScriptManager(registry)
-    private val executionContext = ExecutionContextImpl(logger, componentManager, scriptManager)
-    private val nodeManager = NodeManager(componentManager, scriptManager)
+    private lateinit var resourceManager: ResourceManager
     private val sceneManager = SceneManager()
+    private val nodeManager = NodeManager(componentManager, scriptManager)
+    private lateinit var executionContext: ExecutionContextImpl
     private lateinit var serializer: Serializer
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -37,6 +43,8 @@ class Runtime {
     private fun execute(entry: Entry) {
         logger.info { "Bootstrapping engine using ${entry::class.qualifiedName}." }
         entry.bootstrap(registry)
+        resourceManager = ResourceManager(registry.serializersModule, filesystem, logger)
+        executionContext = ExecutionContextImpl(logger, componentManager, scriptManager, sceneManager, resourceManager)
         serializer = Serializer(registry.serializersModule)
         bootstrapInitialScene()
         loop()
@@ -74,10 +82,13 @@ class Runtime {
     }
 
     private fun frame(delta: Float) {
-        with(executionContext) {
-            sceneManager.frame(delta)
+        try {
+            with(executionContext) {
+                sceneManager.frame(delta)
+            }
+        } catch (e: Throwable) {
+            logger.error(e) { "An error has occurred during frame update." }
         }
-
         Thread.sleep(10)
     }
 
