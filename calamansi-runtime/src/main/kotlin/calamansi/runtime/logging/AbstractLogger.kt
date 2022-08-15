@@ -2,7 +2,7 @@ package calamansi.runtime.logging
 
 import calamansi.logging.Logger
 
-abstract class AbstractLogger(private val logLevel: LogLevel) : Logger {
+abstract class AbstractLogger(private val source: String, var logLevel: LogLevel) : Logger {
     override fun debug(msg: () -> String) {
         if (!canLog(LogLevel.DEBUG)) {
             return
@@ -42,6 +42,6 @@ abstract class AbstractLogger(private val logLevel: LogLevel) : Logger {
 
     private fun format(msg: String, level: LogLevel): String {
         val prefix = "[$level]".padEnd(5 /* length of DEBUG and ERROR */ + 2 /* [ ] characters */)
-        return "$prefix $msg"
+        return "$prefix ($source): $msg"
     }
 }

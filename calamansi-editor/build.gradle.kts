@@ -17,5 +17,5 @@ dependencies {
 }
 
 application {
-    mainClass.set("calamansi.runtime.RuntimeKt")
+    mainClass.set("calamansi.runtime.EngineKt")
 }

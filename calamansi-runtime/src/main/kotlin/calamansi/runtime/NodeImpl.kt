@@ -1,65 +1,73 @@
 package calamansi.runtime
 
-import calamansi.ExecutionContext
 import calamansi.Node
 import calamansi.Script
 import calamansi.component.Component
+import calamansi.runtime.module.Module
+import calamansi.runtime.registry.RegistryModule
+import calamansi.runtime.scripting.ScriptLifeCycle
+import calamansi.runtime.scripting.ScriptModule
 import kotlin.reflect.KClass
 
-class NodeImpl(private var _name: String, private val componentManager: ComponentManager, override val script: Script?) : Node() {
+class NodeImpl(private var _name: String, script: String?) : Node() {
     init {
         require(_name.isNotBlank())
     }
+
+    private val scriptHandle = script?.let { Module.getModule<ScriptModule>().createScript(it, this) }
     private var _parent: NodeImpl? = null
     private val children = mutableSetOf<NodeImpl>()
     private val components = mutableMapOf<KClass<*>, Component>()
 
+    override val script: Script?
+        get() = scriptHandle?.let { Module.getModule<ScriptModule>().getScriptInstance(it) }
+
     var isSceneRoot: Boolean = false
-        get() = field
         set(value) {
             require(_parent == null) { "isSceneRoot can only be set when _parent is null" }
             field = value
         }
 
-    context(ExecutionContext) override fun <T : Component> addComponent(component: KClass<T>): T {
+    override fun <T : Component> addComponent(component: KClass<T>): T {
         check(components[component] == null) { "Node $this already contains component ${component.qualifiedName}" }
-        val instance = componentManager.createComponent(component) as T
+        val instance =
+            Module.getModule<RegistryModule>().createComponentInstance(checkNotNull(component.qualifiedName)) as T
         components[component] = instance
         return instance
     }
 
-    context(ExecutionContext) override fun <T : Component> getComponent(component: KClass<T>): T {
+    override fun <T : Component> getComponent(component: KClass<T>): T {
         return checkNotNull(components[component]) {
             "Node $this does contain component ${component.qualifiedName}"
         } as T
     }
 
-    context(ExecutionContext) override fun <T : Component> hasComponent(component: KClass<T>): Boolean {
+    override fun <T : Component> hasComponent(component: KClass<T>): Boolean {
         return components.containsKey(component)
     }
 
-    context(ExecutionContext) override fun <T : Component> removeComponent(component: KClass<T>): Boolean {
+    override fun <T : Component> removeComponent(component: KClass<T>): Boolean {
         return components.remove(component) != null
     }
 
-    context(ExecutionContext) override var name: String
+    override var name: String
         get() = _name
         set(value) {
             require(value.isNotBlank())
             // TODO: validation
             _name = value
         }
-    context(ExecutionContext) override val parent: Node?
+    override val parent: Node?
         get() = _parent
 
-    context(ExecutionContext) override fun hasScript(): Boolean {
+    override fun hasScript(): Boolean {
         return script != null
     }
 
-    context(ExecutionContext) override fun addChild(node: Node): Boolean {
+    override fun addChild(node: Node): Boolean {
         require(node is NodeImpl)
         if (isSelfOrAncestor(this, node)) {
-            logger.warn { "Not adding $node to $this, cycles detected." }
+            // logger.warn { "Not adding $node to $this, cycles detected." }
             return false
         }
         // detach from current parent (if possible)
@@ -76,7 +84,7 @@ class NodeImpl(private var _name: String, private val componentManager: Componen
         return added
     }
 
-    context(ExecutionContext) override fun removeChild(node: Node): Boolean {
+    override fun removeChild(node: Node): Boolean {
         require(node is NodeImpl)
         val removed = children.remove(node)
 
@@ -90,19 +98,19 @@ class NodeImpl(private var _name: String, private val componentManager: Componen
         return removed
     }
 
-    context(ExecutionContext) override fun getChildren(): List<Node> {
+    override fun getChildren(): List<Node> {
         return children.toList()
     }
 
-    context(ExecutionContext) fun executeUpdateCallback(delta: Float) {
+    fun update(delta: Float) {
         doExecuteUpdateCallback(this, delta)
     }
 
-    context(ExecutionContext) fun executeAttachCallback() {
+    fun attached() {
         doExecuteAttachCallback(this)
     }
 
-    context(ExecutionContext) fun executeDetachCallback() {
+    fun detached() {
         doExecuteDetachCallback(this)
     }
 
@@ -119,40 +127,46 @@ class NodeImpl(private var _name: String, private val componentManager: Componen
     }
 
     companion object {
-        context(ExecutionContext) private fun detachFromParent(child: NodeImpl) {
+        private fun detachFromParent(child: NodeImpl) {
             if (child._parent == null) {
                 return
             }
             child._parent!!.removeChild(child)
         }
 
-        context(ExecutionContext) private fun doExecuteDetachCallback(node: NodeImpl) {
+        private fun doExecuteDetachCallback(node: NodeImpl) {
             if (!node.isPartOfCurrentScene()) {
                 return
             }
             for (child in node.children) {
                 doExecuteDetachCallback(child)
             }
-            node.script?.detached()
+            node.scriptHandle?.let {
+                Module.getModule<ScriptModule>().invokeLifeCycle(it, ScriptLifeCycle.Detached)
+            }
         }
 
-        context(ExecutionContext) private fun doExecuteAttachCallback(node: NodeImpl) {
+        private fun doExecuteAttachCallback(node: NodeImpl) {
             if (!node.isPartOfCurrentScene()) {
                 return
             }
-            node.script?.attached()
+            node.scriptHandle?.let {
+                Module.getModule<ScriptModule>().invokeLifeCycle(it, ScriptLifeCycle.Attached)
+            }
             for (child in node.children) {
                 doExecuteAttachCallback(child)
             }
         }
 
-        context(ExecutionContext) private fun doExecuteUpdateCallback(node: NodeImpl, delta: Float) {
+        private fun doExecuteUpdateCallback(node: NodeImpl, delta: Float) {
             if (!node.isPartOfCurrentScene()) {
                 return
             }
-            node.script?.update(delta)
+            node.scriptHandle?.let {
+                Module.getModule<ScriptModule>().invokeLifeCycle(it, ScriptLifeCycle.Update(delta))
+            }
             for (child in node.children) {
-                child.executeUpdateCallback(delta)
+                child.update(delta)
             }
         }
 
