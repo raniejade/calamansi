@@ -7,12 +7,11 @@ import calamansi.Script
 import calamansi.logging.Logger
 import calamansi.resource.Resource
 import calamansi.resource.ResourceRef
-import calamansi.runtime.module.Handle
-import calamansi.runtime.module.Module
 import calamansi.runtime.NodeImpl
 import calamansi.runtime.RuntimeModule
 import calamansi.runtime.SceneModule
-import calamansi.runtime.logging.LoggerModule
+import calamansi.runtime.module.Handle
+import calamansi.runtime.module.Module
 import calamansi.runtime.registry.RegistryModule
 import calamansi.runtime.resource.ResourceModule
 import java.lang.ref.Cleaner
@@ -69,7 +68,9 @@ class ScriptModule : Module() {
                 getModule<RuntimeModule>().requestExit(exitCode)
             }
 
-            override val logger: Logger = getModule<LoggerModule>().getLogger(scriptInstance::class)
+            override val logger: Logger by lazy {
+                getLogger(scriptInstance::class)
+            }
         }
 
         with(executionContext) {

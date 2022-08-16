@@ -24,4 +24,6 @@ abstract class Node {
     abstract fun addChild(node: Node): Boolean
     abstract fun removeChild(node: Node): Boolean
     abstract fun getChildren(): List<Node>
+
+    abstract fun hasChildren(): Boolean
 }

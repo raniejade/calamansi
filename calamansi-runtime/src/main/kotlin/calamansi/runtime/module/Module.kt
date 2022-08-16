@@ -1,7 +1,9 @@
 package calamansi.runtime.module
 
 import calamansi.logging.Logger
-import calamansi.runtime.logging.LoggerModule
+import calamansi.runtime.logging.ConsoleLogger
+import calamansi.runtime.logging.LogLevel
+import java.util.*
 import kotlin.reflect.KClass
 
 @JvmInline
@@ -9,7 +11,7 @@ value class Handle(val internal: Any)
 
 abstract class Module {
     protected val logger: Logger by lazy {
-        getModule<LoggerModule>().getLogger(this::class)
+        getLogger(this::class)
     }
 
     init {
@@ -23,6 +25,8 @@ abstract class Module {
     companion object {
         @PublishedApi
         internal val modules = mutableMapOf<KClass<*>, Module>()
+        private var logLevel = LogLevel.INFO
+        private val loggers = WeakHashMap<KClass<*>, Logger>()
 
         private fun registerModule(type: KClass<*>, module: Module) {
             modules[type] = module
@@ -30,6 +34,16 @@ abstract class Module {
 
         inline fun <reified T : Module> getModule(): T {
             return modules[T::class] as T
+        }
+
+        fun configureLogging(logLevel: LogLevel) {
+            this.logLevel = logLevel
+        }
+
+        fun getLogger(source: KClass<*>): Logger {
+            return loggers.computeIfAbsent(source) {
+                ConsoleLogger(checkNotNull(it.qualifiedName), logLevel)
+            }
         }
     }
 }

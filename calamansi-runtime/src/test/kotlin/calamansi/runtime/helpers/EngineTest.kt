@@ -3,16 +3,16 @@ package calamansi.runtime.helpers
 import calamansi.runtime.RuntimeModule
 import calamansi.runtime.SceneModule
 import calamansi.runtime.logging.LogLevel
-import calamansi.runtime.logging.LoggerModule
 import calamansi.runtime.module.Module
 import calamansi.runtime.registry.RegistryModule
 import calamansi.runtime.resource.ResourceModule
+import calamansi.runtime.resource.source.JarFileSource
+import calamansi.runtime.resource.source.RootedFileSource
 import calamansi.runtime.scripting.ScriptModule
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 
 abstract class EngineTest {
-    protected val loggerModule = LoggerModule()
     protected val registryModule = RegistryModule()
     protected val resourceModule = ResourceModule()
     protected val sceneModule = SceneModule()
@@ -20,7 +20,6 @@ abstract class EngineTest {
     protected val runtimeModule = RuntimeModule()
 
     private val modules = listOf(
-        loggerModule,
         registryModule,
         resourceModule,
         sceneModule,
@@ -30,9 +29,10 @@ abstract class EngineTest {
 
     @BeforeTest
     fun start() {
-        loggerModule.configure(LogLevel.WARN)
+        Module.configureLogging(LogLevel.WARN)
         modules.forEach(Module::start)
         registryModule.pushContext(this::class.java.classLoader)
+        resourceModule.registerSource("test", RootedFileSource("assets", JarFileSource(this::class.java.classLoader)))
     }
 
     @AfterTest

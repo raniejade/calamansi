@@ -1,0 +1,14 @@
+{
+    "nodes": [
+        {
+            "name": "root",
+            "script": "calamansi.runtime.helpers.TestScript",
+            "components": [
+                {
+                    "type": "calamansi.runtime.helpers.TestComponent.Data",
+                    "int": 25
+                }
+            ]
+        }
+    ]
+}

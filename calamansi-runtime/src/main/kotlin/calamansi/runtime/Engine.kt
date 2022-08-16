@@ -14,7 +14,6 @@ import calamansi.runtime.scripting.ScriptModule
 import java.util.concurrent.TimeUnit
 
 class Engine {
-    private val loggerModule = LoggerModule()
     private val registryModule = RegistryModule()
     private val resourceModule = ResourceModule()
     private val sceneModule = SceneModule()
@@ -22,7 +21,6 @@ class Engine {
     private val runtimeModule = RuntimeModule()
 
     private val modules = listOf(
-        loggerModule,
         registryModule,
         resourceModule,
         sceneModule,
@@ -31,7 +29,7 @@ class Engine {
     )
 
     private val logger by lazy {
-        loggerModule.getLogger(this::class)
+        Module.getLogger(this::class)
     }
 
     fun run() {
@@ -41,7 +39,7 @@ class Engine {
     }
 
     private fun start() {
-        loggerModule.configure(LogLevel.INFO)
+        Module.configureLogging(LogLevel.INFO)
         modules.forEach(Module::start)
         registryModule.pushContext(this::class.java.classLoader)
 

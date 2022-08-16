@@ -13,7 +13,7 @@ import java.io.InputStream
 
 class SceneLoader : ResourceLoader<Scene> {
     private val logger by lazy {
-        Module.getModule<LoggerModule>().getLogger(this::class)
+        Module.getLogger(this::class)
     }
 
     private inner class SceneImpl(val serializedScene: SerializedScene) : Scene {

@@ -67,7 +67,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
     override fun addChild(node: Node): Boolean {
         require(node is NodeImpl)
         if (isSelfOrAncestor(this, node)) {
-            // logger.warn { "Not adding $node to $this, cycles detected." }
+            logger.warn { "Not adding $node to $this, cycles detected." }
             return false
         }
         // detach from current parent (if possible)
@@ -102,6 +102,10 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         return children.toList()
     }
 
+    override fun hasChildren(): Boolean {
+        return children.isNotEmpty()
+    }
+
     fun update(delta: Float) {
         doExecuteUpdateCallback(this, delta)
     }
@@ -127,6 +131,10 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
     }
 
     companion object {
+        private val logger by lazy {
+            Module.getLogger(NodeImpl::class)
+        }
+
         private fun detachFromParent(child: NodeImpl) {
             if (child._parent == null) {
                 return
