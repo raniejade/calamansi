@@ -3,7 +3,7 @@ package calamansi.runtime.resource.source
 import java.io.InputStream
 import java.io.OutputStream
 
-class RootedFileSource(private val root: String, private val fileSource: FileSource) : FileSource {
+class RelativeFileSource(private val root: String, private val fileSource: FileSource) : FileSource {
     override fun getReader(path: String): InputStream {
         return fileSource.getReader(computeActualPath(path))
     }

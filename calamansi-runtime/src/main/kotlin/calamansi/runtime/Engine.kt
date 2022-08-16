@@ -3,13 +3,12 @@ package calamansi.runtime
 import calamansi.Scene
 import calamansi.resource.ResourceRef
 import calamansi.runtime.logging.LogLevel
-import calamansi.runtime.logging.LoggerModule
 import calamansi.runtime.module.Module
 import calamansi.runtime.registry.RegistryModule
 import calamansi.runtime.resource.ResourceModule
 import calamansi.runtime.resource.SceneLoader
 import calamansi.runtime.resource.source.JarFileSource
-import calamansi.runtime.resource.source.RootedFileSource
+import calamansi.runtime.resource.source.RelativeFileSource
 import calamansi.runtime.scripting.ScriptModule
 import java.util.concurrent.TimeUnit
 
@@ -47,7 +46,7 @@ class Engine {
         logger.info { "Registering file sources." }
         resourceModule.registerSource(
             "assets",
-            RootedFileSource("assets", JarFileSource(this::class.java.classLoader))
+            RelativeFileSource("assets", JarFileSource(this::class.java.classLoader))
         );
 
         // resource loaders
