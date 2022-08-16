@@ -6,6 +6,7 @@ import calamansi.runtime.logging.LogLevel
 import calamansi.runtime.module.Module
 import calamansi.runtime.registry.RegistryModule
 import calamansi.runtime.resource.ResourceModule
+import calamansi.runtime.resource.SceneLoader
 import calamansi.runtime.resource.source.JarFileSource
 import calamansi.runtime.resource.source.RelativeFileSource
 import calamansi.runtime.scripting.ScriptModule
@@ -33,6 +34,7 @@ abstract class EngineTest {
         modules.forEach(Module::start)
         registryModule.pushContext(this::class.java.classLoader)
         resourceModule.registerSource("test", RelativeFileSource("assets", JarFileSource(this::class.java.classLoader)))
+        resourceModule.registerLoader(SceneLoader())
     }
 
     @AfterTest

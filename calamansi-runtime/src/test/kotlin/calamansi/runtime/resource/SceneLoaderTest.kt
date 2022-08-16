@@ -36,12 +36,11 @@ class SceneLoaderTest : EngineTest() {
 
 
         val scene = raw.byteInputStream().use(sceneLoader::load)
-        val instance = scene.resource.create()
-        assertNotNull(instance)
-        assertTrue(instance.getChildren().isEmpty())
-        assertEquals("root", instance.name)
-        assertTrue(instance.hasComponent<TestComponent>())
-        val component = instance.getComponent<TestComponent>()
+        val root = assertNotNull(scene.resource.create())
+        assertTrue(root.getChildren().isEmpty())
+        assertEquals("root", root.name)
+        assertTrue(root.hasComponent<TestComponent>())
+        val component = root.getComponent<TestComponent>()
         assertEquals(25, component.int)
     }
 
@@ -109,8 +108,7 @@ class SceneLoaderTest : EngineTest() {
 
 
         val scene = raw.byteInputStream().use(sceneLoader::load)
-        val root = scene.resource.create()
-        assertNotNull(root)
+        val root = assertNotNull(scene.resource.create())
         assertEquals("root", root.name)
         assertNull(root.script)
         assertEquals(2, root.getChildren().size)

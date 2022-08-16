@@ -5,8 +5,8 @@
             "script": "calamansi.runtime.helpers.TestScript",
             "components": [
                 {
-                    "type": "calamansi.runtime.helpers.TestComponent.Data",
-                    "int": 25
+                    "type": "calamansi._gen.calamansi_runtime_helpers_TestComponentData",
+                    "int": 1024
                 }
             ]
         }
