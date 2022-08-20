@@ -6,6 +6,7 @@ import calamansi.runtime.Entry
 import calamansi.runtime.module.Module
 import kotlinx.serialization.modules.SerializersModule
 import java.util.*
+import kotlin.reflect.KClass
 
 class RegistryModule : Module() {
     private data class RegistryMetadata(
@@ -13,6 +14,16 @@ class RegistryModule : Module() {
         val scripts: Map<String, ScriptDefinition<*>>,
         val parent: RegistryMetadata?
     ) {
+        val componentDependencies: Map<String, Set<KClass<out Component>>> by lazy {
+            val builder = mutableMapOf<String, Set<KClass<out Component>>>()
+            for ((component, definition) in components) {
+                val deps = mutableSetOf<KClass<out Component>>()
+                computeDependencies(definition, deps, true)
+                builder[component] = deps.toSet()
+            }
+            builder.toMap()
+        }
+
         val serializersModule by lazy {
             SerializersModule {
                 for (definition in components.values) {
@@ -55,6 +66,19 @@ class RegistryModule : Module() {
             }
 
             return definition
+        }
+
+        private fun computeDependencies(
+            definition: ComponentDefinition<*>, builder: MutableSet<KClass<out Component>>,
+            first: Boolean
+        ) {
+            if (!first) {
+                check(!builder.contains(definition.type)) { "Failed to compute dependencies for ${definition.type}, cycles detected." }
+                builder.add(definition.type)
+            }
+            for (dep in definition.dependencies) {
+                computeDependencies(getComponentDefinition(checkNotNull(dep.qualifiedName)), builder, false)
+            }
         }
     }
 
@@ -112,6 +136,10 @@ class RegistryModule : Module() {
     fun toComponentData(component: Component): ComponentData<*> {
         return checkNotNull(registryMetadata).getComponentDefinition(checkNotNull(component::class.qualifiedName))
             .toData(component)
+    }
+
+    fun getRequiredComponents(component: String): Set<KClass<out Component>> {
+        return checkNotNull(registryMetadata).componentDependencies.getValue(component)
     }
 
     fun fromComponentData(data: ComponentData<*>, component: Component) {

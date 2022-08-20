@@ -5,7 +5,8 @@ import kotlin.reflect.KClass
 /**
  * Establish a dependency between the marked component and other components.
  *
- * When a component is added to a [calamansi.scene.Node], all of its dependencies will be automatically added.
+ * A component can only be added to a node if and only if the target node contains
+ * all the required components.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)

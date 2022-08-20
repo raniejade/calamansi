@@ -128,6 +128,16 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
 
             val dataClassName = "${definition.name}Data"
 
+            val dependencies = definition.dependencies.joinToString(
+                separator = ",\n${
+                    indent(
+                        4,
+                        2
+                    )
+                }"
+            ) { "${checkNotNull(it.qualifiedName).asString()}::class" }
+
+
             writer.appendLine(
                 """
                 // GENERATED from ${definition.name}
@@ -156,7 +166,9 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 object ${definition.name} : ComponentDefinition<$componentQualifiedName> {
                     override val type: KClass<$componentQualifiedName> = $componentQualifiedName::class
                     override fun create(): $componentQualifiedName = $componentQualifiedName()
-                    override val dependencies: List<ComponentDefinition<*>> = listOf()
+                    override val dependencies: List<KClass<out Component>> = listOf(
+                        $dependencies
+                    )
                     override val properties: List<Property<$componentQualifiedName, *>> = listOf(
                         $properties
                     )
@@ -225,13 +237,9 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         // check for dependencies
         val depAnnotation = classDecl.getAnnotation(QualifiedNames.Dependencies)
         if (depAnnotation != null) {
-            val components = depAnnotation.arguments[0].value as List<KClass<*>>
+            val components = depAnnotation.arguments[0].value as List<KSType>
             dependencies.addAll(components.map {
-                checkNotNull(
-                    resolver.getClassDeclarationByName(
-                        checkNotNull(it.qualifiedName)
-                    )
-                )
+                it.declaration as KSClassDeclaration
             })
         }
 
@@ -301,6 +309,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
 
     companion object {
         private const val GEN_PACKAGE_NAME = "calamansi._gen"
+
         private object QualifiedNames {
             const val Component = "calamansi.component.Component"
             const val Property = "calamansi.component.Property"

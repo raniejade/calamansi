@@ -18,6 +18,8 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
     private var _parent: NodeImpl? = null
     private val children = mutableSetOf<NodeImpl>()
     private val components = mutableMapOf<KClass<*>, Component>()
+    // key: component, value: components (required by)
+    private val requirements = mutableMapOf<KClass<*>, MutableSet<KClass<*>>>()
 
     override val script: Script?
         get() = scriptHandle?.let { Module.getModule<ScriptModule>().getScriptInstance(it) }
@@ -30,8 +32,18 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
 
     override fun <T : Component> addComponent(component: KClass<T>): T {
         check(components[component] == null) { "Node $this already contains component ${component.qualifiedName}" }
-        val instance =
-            Module.getModule<RegistryModule>().createComponentInstance(checkNotNull(component.qualifiedName)) as T
+        val registryModule = Module.getModule<RegistryModule>()
+        val qualifiedName = checkNotNull(component.qualifiedName)
+        val requiredComponents = registryModule.getRequiredComponents(qualifiedName)
+        val instance = registryModule.createComponentInstance(qualifiedName) as T
+        if (requiredComponents.isNotEmpty()) {
+            check(components.keys.containsAll(requiredComponents)) { "Missing required components for component '$qualifiedName'." }
+            // establish relationship
+            for (requiredComponent in requiredComponents) {
+                val requirement = requirements.getOrPut(requiredComponent) { mutableSetOf() }
+                requirement.add(component)
+            }
+        }
         components[component] = instance
         return instance
     }
@@ -47,6 +59,22 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
     }
 
     override fun <T : Component> removeComponent(component: KClass<T>): Boolean {
+        // check if we can remove component
+        val requirement = requirements.getOrElse(component) { mutableSetOf() }
+        if (requirement.isNotEmpty()) {
+            logger.info { "Can't remove component '${component.qualifiedName} as it is required by ${requirement}'" }
+            return false
+        }
+
+        // break relationship
+        val registryModule = Module.getModule<RegistryModule>()
+        val qualifiedName = checkNotNull(component.qualifiedName)
+        val requiredComponents = registryModule.getRequiredComponents(qualifiedName)
+        for (requiredComponent in requiredComponents) {
+            val requirement = requirements.getOrElse(requiredComponent) { mutableSetOf() }
+            requirement.remove(component)
+        }
+
         return components.remove(component) != null
     }
 

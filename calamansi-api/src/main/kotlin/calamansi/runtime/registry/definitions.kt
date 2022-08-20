@@ -18,7 +18,7 @@ interface ComponentData<T : Component> {
 }
 
 interface ComponentDefinition<T : Component> : Definition<T> {
-    val dependencies: List<ComponentDefinition<*>>
+    val dependencies: List<KClass<out Component>>
     val properties: List<Property<T, *>>
 
     fun toData(component: Component): ComponentData<*>
