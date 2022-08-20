@@ -11,6 +11,7 @@ import calamansi.runtime.resource.source.JarFileSource
 import calamansi.runtime.resource.source.RelativeFileSource
 import calamansi.runtime.scripting.ScriptModule
 import java.util.concurrent.TimeUnit
+import kotlin.system.exitProcess
 
 class Engine {
     private val registryModule = RegistryModule()
@@ -62,7 +63,9 @@ class Engine {
     private fun shutdown() {
         sceneModule.unloadCurrentScene()
         registryModule.popContext()
-        modules.forEach(Module::shutdown)
+        val exitCode = runtimeModule.getExitCode()
+        modules.reversed().forEach(Module::shutdown)
+        exitProcess(exitCode)
     }
 
     private fun getDefaultScene() = "assets://default.scn"

@@ -10,6 +10,8 @@ class RuntimeModule : Module() {
         logger.info { "Runtime module started." }
     }
 
+    fun getExitCode(): Int = exitCode
+
     fun shouldExit(): Boolean {
         return shouldExit
     }
