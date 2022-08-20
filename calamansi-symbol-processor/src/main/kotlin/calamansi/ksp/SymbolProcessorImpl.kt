@@ -1,13 +1,13 @@
 package calamansi.ksp
 
-import calamansi.component.Component
-import calamansi.component.Property
 import calamansi.ksp.model.ComponentDefinition
 import calamansi.ksp.model.Definition
 import calamansi.ksp.model.PropertyDefinition
 import calamansi.ksp.model.ScriptDefinition
-import calamansi.Script
-import com.google.devtools.ksp.*
+import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.getClassDeclarationByName
+import com.google.devtools.ksp.getDeclaredProperties
+import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -210,22 +210,23 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
 
     private fun maybeCreateDefinition(resolver: Resolver, classDecl: KSClassDeclaration): Definition? {
         return when {
-            isDirectSubTypeOf(classDecl, Component::class) -> createComponentDefinition(
+            isDirectSubTypeOf(classDecl, QualifiedNames.Component) -> createComponentDefinition(
                 resolver, classDecl
             )
 
-            isDirectSubTypeOf(classDecl, Script::class) -> createScriptDefinition(resolver, classDecl)
+            isDirectSubTypeOf(classDecl, QualifiedNames.Script) -> createScriptDefinition(resolver, classDecl)
             else -> null
         }
     }
 
     private fun createComponentDefinition(resolver: Resolver, classDecl: KSClassDeclaration): ComponentDefinition {
-        require(isDirectSubTypeOf(classDecl, Component::class))
+        require(isDirectSubTypeOf(classDecl, QualifiedNames.Component))
         val dependencies = mutableListOf<KSClassDeclaration>()
         // check for dependencies
-        val depAnnotation = classDecl.getAnnotationsByType(calamansi.component.Dependencies::class).firstOrNull()
+        val depAnnotation = classDecl.getAnnotation(QualifiedNames.Dependencies)
         if (depAnnotation != null) {
-            dependencies.addAll(depAnnotation.components.map {
+            val components = depAnnotation.arguments[0].value as List<KClass<*>>
+            dependencies.addAll(components.map {
                 checkNotNull(
                     resolver.getClassDeclarationByName(
                         checkNotNull(it.qualifiedName)
@@ -248,7 +249,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
     }
 
     private fun createScriptDefinition(resolver: Resolver, classDecl: KSClassDeclaration): ScriptDefinition {
-        require(isDirectSubTypeOf(classDecl, Script::class))
+        require(isDirectSubTypeOf(classDecl, QualifiedNames.Script))
         return ScriptDefinition(
             generateDefinitionName(classDecl), classDecl
         )
@@ -269,17 +270,43 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         }
         val isEnum = (type.declaration as KSClassDeclaration).classKind == ClassKind.ENUM_CLASS
         val isSupportedType = isBuiltInType || isEnum
-        return property.isMutable && property.hasBackingField && property.isPublic() && property.isAnnotationPresent(
-            Property::class
-        ) && isSupportedType
+        val hasPropertyAnnotation = property.hasAnnotation(QualifiedNames.Property)
+        return property.isMutable && property.hasBackingField && property.isPublic() && hasPropertyAnnotation && isSupportedType
     }
 
-    private fun isDirectSubTypeOf(classDecl: KSClassDeclaration, type: KClass<*>): Boolean {
-        return classDecl.superTypes.any { checkNotNull(it.resolve().declaration.qualifiedName).asString() == type.qualifiedName }
+    fun KSAnnotated.hasAnnotation(qualifiedName: String): Boolean {
+        return getAnnotation(qualifiedName) != null
+    }
+
+    fun KSAnnotated.getAnnotation(qualifiedName: String): KSAnnotation? {
+        for (annotation in annotations) {
+            val type = annotation.annotationType.resolve().declaration
+            type.qualifiedName
+            if (type !is KSClassDeclaration) {
+                return null
+            }
+
+            val annotationQualifiedName = type.qualifiedName ?: return null
+            if (annotationQualifiedName.asString() == qualifiedName) {
+                return annotation
+            }
+        }
+
+        return null
+    }
+
+    private fun isDirectSubTypeOf(classDecl: KSClassDeclaration, type: String): Boolean {
+        return classDecl.superTypes.any { checkNotNull(it.resolve().declaration.qualifiedName).asString() == type }
     }
 
     companion object {
         private const val GEN_PACKAGE_NAME = "calamansi._gen"
+        private object QualifiedNames {
+            const val Component = "calamansi.component.Component"
+            const val Property = "calamansi.component.Property"
+            const val Dependencies = "calamansi.component.Dependencies"
+            const val Script = "calamansi.Script"
+        }
 
         // extra baseIndent indents is for trimIndent when using string blocks
         private fun indent(baseIndent: Int, times: Int) = "    ".repeat(baseIndent + times)

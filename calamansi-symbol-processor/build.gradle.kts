@@ -4,5 +4,4 @@ plugins {
 
 dependencies {
     implementation(Deps.ksp)
-    implementation(project(":calamansi-api"))
 }
