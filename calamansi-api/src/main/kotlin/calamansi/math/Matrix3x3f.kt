@@ -47,21 +47,31 @@ value class Matrix3x3f private constructor(private val buffer: FloatArray) {
 
         val ix = buffer[0]
         val iy = buffer[1]
-        // val iz = buffer[2]
+        //val iz = buffer[2]
         val jx = buffer[3]
         val jy = buffer[4]
-        // val jz = buffer[5]
+        //val jz = buffer[5]
         val kx = buffer[6]
         val ky = buffer[7]
-        // val kz = buffer[8]
+        //val kz = buffer[8]
 
         // (x * [ix, iy, iz]) + (y * [jx, jy, jz]) + (z * [kx, ky, kz])
         val tx = (x * ix) + (y * jx) + (z * kx)
         val ty = (x * iy) + (y * jy) + (z * ky)
-        // val tz = (x * iz) + (y * jz) + (z * kz)
+        //val tz = (x * iz) + (y * jz) + (z * kz)
 
 
         return Vector2f(tx, ty)
+    }
+
+    operator fun get(idx: Int): Float = buffer[idx]
+
+    override fun toString(): String {
+        return """
+            [${get(0)}, ${get(3)}, ${get(6)}]
+            [${get(1)}, ${get(4)}, ${get(7)}]
+            [${get(2)}, ${get(5)}, ${get(8)}]
+        """.trimIndent()
     }
 
     companion object {
@@ -113,23 +123,4 @@ value class Matrix3x3f private constructor(private val buffer: FloatArray) {
             dest[8] = tzz
         }
     }
-
-    operator fun get(idx: Int): Float = buffer[idx]
-
-    override fun toString(): String {
-        return """
-            [${get(0)}, ${get(3)}, ${get(6)}]
-            [${get(1)}, ${get(4)}, ${get(7)}]
-            [${get(2)}, ${get(5)}, ${get(8)}]
-        """.trimIndent()
-    }
-}
-
-
-fun main() {
-    val translation = Matrix3x3f().translate(x = 2f)
-    val scale = Matrix3x3f().scale(y = 3f)
-    val composed = translation * scale
-    println(composed.transform(Vector2f(0f, 3f)))
-    println(composed * Vector2f(0f, 3f))
 }
