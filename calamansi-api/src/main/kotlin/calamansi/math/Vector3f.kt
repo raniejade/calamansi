@@ -1,68 +1,90 @@
 package calamansi.math
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
+import kotlin.math.sqrt
 
 @JvmInline
-@Serializable
-value class Vector3f(@Contextual private val vec: org.joml.Vector3f) {
-    constructor(x: Float = 0f, y: Float = 0f, z: Float = 0f) : this(org.joml.Vector3f(x, y, z))
+value class Vector3f internal constructor(@PublishedApi internal val buffer: FloatArray) {
+    constructor(x: Float = 0f, y: Float = 0f, z: Float = 0f) : this(floatArrayOf(x, y, z))
 
-    var x: Float
-        get() = vec.x
+    inline var x: Float
+        get() = buffer[0]
         set(value) {
-            vec.x = value
+            buffer[0] = value
         }
 
-    var y: Float
-        get() = vec.y
+    inline var y: Float
+        get() = buffer[1]
         set(value) {
-            vec.y = value
+            buffer[1] = value
         }
 
-    var z: Float
-        get() = vec.z
+    inline var z: Float
+        get() = buffer[2]
         set(value) {
-            vec.z = value
+            buffer[2] = value
         }
-
-
-    fun length() = vec.length()
-    fun lengthSquared() = vec.lengthSquared()
 
     operator fun plus(other: Vector3f): Vector3f {
-        return Vector3f(org.joml.Vector3f(vec).add(other.vec))
+        return Vector3f(x + other.x, y + other.y, z + other.z)
     }
 
     operator fun plusAssign(other: Vector3f) {
-        vec.add(other.vec)
+        x += other.x
+        y += other.y
+        z += other.z
     }
 
     operator fun minus(other: Vector3f): Vector3f {
-        return Vector3f(org.joml.Vector3f(vec).sub(other.vec))
+        return Vector3f(x - other.x, y - other.y, z - other.z)
     }
 
     operator fun minusAssign(other: Vector3f) {
-        vec.sub(other.vec)
+        x -= other.x
+        y -= other.y
+        z -= other.z
     }
 
     operator fun times(scalar: Float): Vector3f {
-        return Vector3f(org.joml.Vector3f(vec).mul(scalar))
-    }
-
-    operator fun timesAssign(scalar: Float) {
-        vec.mul(scalar)
+        return Vector3f(x * scalar, y * scalar, z * scalar)
     }
 
     operator fun div(scalar: Float): Vector3f {
-        return Vector3f(org.joml.Vector3f(vec).div(scalar))
+        require(scalar != 0f) { "scalar must not be 0" }
+        return Vector3f(x / scalar, y / scalar, z / scalar)
     }
 
-    operator fun divAssign(scalar: Float) {
-        vec.div(scalar)
+    operator fun unaryMinus(): Vector3f {
+        return Vector3f(-x, -y, -z)
+    }
+
+    operator fun unaryPlus(): Vector3f {
+        return Vector3f(+x, +y, +z)
+    }
+
+    fun unit(): Vector3f {
+        val length = length()
+        check(length != 0f) { "length must not be 0" }
+        return Vector3f(x / length, y / length, z / length)
+    }
+
+    infix fun dot(other: Vector3f): Float {
+        return (x * other.x) + (y * other.y) + (z * other.z)
+    }
+
+    infix fun cross(other: Vector3f): Vector3f {
+        TODO()
+    }
+
+    fun length(): Float {
+        return sqrt((x * x) + (y * y) + (z * z))
+    }
+
+    fun lengthSquared(): Float {
+        val length = length()
+        return length * length
     }
 
     override fun toString(): String {
-        return vec.toString()
+        return "Vector2f(x=$x, y=$y, z=$z)"
     }
 }

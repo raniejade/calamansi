@@ -1,62 +1,78 @@
 package calamansi.math
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
+import kotlin.math.sqrt
 
 @JvmInline
-@Serializable
-value class Vector2f(@Contextual private val vec: org.joml.Vector2f) {
-    constructor(x: Float = 0f, y: Float = 0f) : this(org.joml.Vector2f(x, y))
+value class Vector2f internal constructor(@PublishedApi internal val buffer: FloatArray) {
+    constructor(x: Float = 0f, y: Float = 0f) : this(floatArrayOf(x, y))
 
-    var x: Float
-        get() = vec.x
+    inline var x: Float
+        get() = buffer[0]
         set(value) {
-            vec.x = value
+            buffer[0] = value
         }
 
-    var y: Float
-        get() = vec.y
+    inline var y: Float
+        get() = buffer[1]
         set(value) {
-            vec.y = value
+            buffer[1] = value
         }
-
-
-    fun length() = vec.length()
-    fun lengthSquared() = vec.lengthSquared()
 
     operator fun plus(other: Vector2f): Vector2f {
-        return Vector2f(org.joml.Vector2f(vec).add(other.vec))
+        return Vector2f(x + other.x, y + other.y)
     }
 
     operator fun plusAssign(other: Vector2f) {
-        vec.add(other.vec)
+        x += other.x
+        y += other.y
     }
 
     operator fun minus(other: Vector2f): Vector2f {
-        return Vector2f(org.joml.Vector2f(vec).sub(other.vec))
+        return Vector2f(x - other.x, y - other.y)
     }
 
     operator fun minusAssign(other: Vector2f) {
-        vec.sub(other.vec)
+        x -= other.x
+        y -= other.y
     }
 
     operator fun times(scalar: Float): Vector2f {
-        return Vector2f(org.joml.Vector2f(vec).mul(scalar))
-    }
-
-    operator fun timesAssign(scalar: Float) {
-        vec.mul(scalar)
+        return Vector2f(x * scalar, y * scalar)
     }
 
     operator fun div(scalar: Float): Vector2f {
-        return Vector2f(org.joml.Vector2f(vec).div(scalar))
+        require(scalar != 0f) { "scalar must not be 0" }
+        return Vector2f(x / scalar, y / scalar)
     }
 
-    operator fun divAssign(scalar: Float) {
-        vec.div(scalar)
+    operator fun unaryMinus(): Vector2f {
+        return Vector2f(-x, -y)
+    }
+
+    operator fun unaryPlus(): Vector2f {
+        return Vector2f(+x, +y)
+    }
+
+    fun unit(): Vector2f {
+        val length = length()
+        check(length != 0f) { "length must not be 0" }
+        return Vector2f(x / length, y / length)
+    }
+
+    infix fun dot(other: Vector2f): Float {
+        return (x * other.x) + (y * other.y)
+    }
+
+    fun length(): Float {
+        return sqrt((x * x) + (y * y))
+    }
+
+    fun lengthSquared(): Float {
+        val length = length()
+        return length * length
     }
 
     override fun toString(): String {
-        return vec.toString()
+        return "Vector2f(x=$x, y=$y)"
     }
 }
