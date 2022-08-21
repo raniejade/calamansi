@@ -148,7 +148,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 import kotlinx.serialization.modules.SerializersModule
                 import kotlinx.serialization.modules.polymorphic
                 import kotlinx.serialization.modules.subclass
-                import calamansi.component.Component
+                import calamansi.Component
                 import calamansi.runtime.registry.ComponentData
                 import calamansi.runtime.registry.ComponentDefinition
                 import calamansi.runtime.registry.Property
@@ -311,9 +311,9 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         private const val GEN_PACKAGE_NAME = "calamansi._gen"
 
         private object QualifiedNames {
-            const val Component = "calamansi.component.Component"
-            const val Property = "calamansi.component.Property"
-            const val Dependencies = "calamansi.component.Dependencies"
+            const val Component = "calamansi.Component"
+            const val Property = "calamansi.Property"
+            const val Dependencies = "calamansi.Dependencies"
             const val Script = "calamansi.Script"
         }
 

@@ -2,7 +2,7 @@ package calamansi.runtime
 
 import calamansi.Node
 import calamansi.Script
-import calamansi.component.Component
+import calamansi.Component
 import calamansi.runtime.module.Module
 import calamansi.runtime.registry.RegistryModule
 import calamansi.runtime.scripting.ScriptLifeCycle

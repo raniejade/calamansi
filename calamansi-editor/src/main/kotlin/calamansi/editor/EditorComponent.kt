@@ -1,7 +1,7 @@
 package calamansi.editor
 
-import calamansi.component.Component
-import calamansi.component.Property
+import calamansi.Component
+import calamansi.Property
 
 class EditorComponent : Component {
     @Property

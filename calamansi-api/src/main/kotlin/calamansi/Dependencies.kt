@@ -1,4 +1,4 @@
-package calamansi.component
+package calamansi
 
 import kotlin.reflect.KClass
 

@@ -1,4 +1,4 @@
-package calamansi.component
+package calamansi
 
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)

@@ -1,9 +1,9 @@
 package calamansi.runtime.helpers
 
 import calamansi.Script
-import calamansi.component.Component
-import calamansi.component.Dependencies
-import calamansi.component.Property
+import calamansi.Component
+import calamansi.Dependencies
+import calamansi.Property
 
 class TestComponent : Component {
     @Property

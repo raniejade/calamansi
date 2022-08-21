@@ -1,6 +1,6 @@
 package harness
 
-import calamansi.component.Component
+import calamansi.Component
 
 class EmptyComponent : Component {
     // component without properties

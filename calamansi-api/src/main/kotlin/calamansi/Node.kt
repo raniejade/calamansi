@@ -1,6 +1,5 @@
 package calamansi
 
-import calamansi.component.Component
 import kotlin.reflect.KClass
 
 abstract class Node {

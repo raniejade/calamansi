@@ -1,7 +1,7 @@
 package calamansi.runtime.registry
 
 import calamansi.Script
-import calamansi.component.Component
+import calamansi.Component
 import kotlinx.serialization.modules.SerializersModule
 import kotlin.reflect.KClass
 

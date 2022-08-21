@@ -1,6 +1,6 @@
 package calamansi.runtime
 
-import calamansi.component.Component
+import calamansi.Component
 import calamansi.runtime.registry.ComponentData
 import calamansi.runtime.registry.RuntimeRegistry
 import kotlin.reflect.KClass
