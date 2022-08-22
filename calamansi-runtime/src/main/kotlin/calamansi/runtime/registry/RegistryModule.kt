@@ -1,8 +1,7 @@
 package calamansi.runtime.registry
 
-import calamansi.Script
 import calamansi.Component
-import calamansi.runtime.Entry
+import calamansi.Script
 import calamansi.runtime.module.Module
 import kotlinx.serialization.modules.SerializersModule
 import java.util.*
@@ -87,13 +86,13 @@ class RegistryModule : Module() {
         val scripts = mutableMapOf<String, ScriptDefinition<*>>()
 
         override fun registerComponent(definition: ComponentDefinition<*>) {
-            logger.debug { "Registering component: ${definition.type.qualifiedName}." }
+            logger.info { "Registering component: ${definition.type.qualifiedName}." }
             require(!components.containsKey(definition.qualifiedName)) { "Component definition for ${definition.type} already exist" }
             components[definition.qualifiedName] = definition
         }
 
         override fun registerScript(definition: ScriptDefinition<*>) {
-            logger.debug { "Registering script: ${definition.qualifiedName}." }
+            logger.info { "Registering script: ${definition.qualifiedName}." }
             require(!scripts.containsKey(definition.qualifiedName)) { "Script definition for ${definition.type} already exist" }
             scripts[definition.qualifiedName] = definition
         }
@@ -109,10 +108,13 @@ class RegistryModule : Module() {
 
     fun pushContext(classLoader: ClassLoader) {
         logger.info { "Loading context using classloader: $classLoader" }
-        val loader = ServiceLoader.load(Entry::class.java, classLoader)
+        val loader = ServiceLoader.load(Definition::class.java, classLoader)
         val registry = RegistryImpl()
-        for (entry in loader) {
-            entry.bootstrap(registry)
+        for (definition in loader) {
+            when (definition) {
+                is ScriptDefinition<*> -> registry.registerScript(definition)
+                is ComponentDefinition<*> -> registry.registerComponent(definition)
+            }
         }
         val parent = registryMetadata
         registryMetadata = RegistryMetadata(registry.components.toMap(), registry.scripts.toMap(), parent)

@@ -1,11 +1,13 @@
 plugins {
     jvm
     id("me.champeau.jmh") version "0.6.6"
+    id("com.google.devtools.ksp") version Deps.kspVersion
     kotlin("plugin.serialization")
 }
 
 dependencies {
     api(Deps.kotlinSerializationCore)
+    ksp(project(":calamansi-symbol-processor"))
 }
 
 jmh {

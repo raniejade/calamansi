@@ -1,7 +1,5 @@
 plugins {
     jvm
-
-    // plugins normally applied via the calamansi-gradle plugin
     kotlin("plugin.serialization")
     id("com.google.devtools.ksp") version Deps.kspVersion
 }

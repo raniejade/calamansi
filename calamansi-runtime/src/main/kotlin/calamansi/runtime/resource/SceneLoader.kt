@@ -5,7 +5,6 @@ import calamansi.Scene
 import calamansi.runtime.NodeImpl
 import calamansi.runtime.data.SerializedNode
 import calamansi.runtime.data.SerializedScene
-import calamansi.runtime.logging.LoggerModule
 import calamansi.runtime.module.Module
 import calamansi.runtime.registry.RegistryModule
 import kotlinx.serialization.json.decodeFromStream

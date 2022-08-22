@@ -4,8 +4,6 @@ import calamansi.ksp.model.ComponentDefinition
 import calamansi.ksp.model.Definition
 import calamansi.ksp.model.PropertyDefinition
 import calamansi.ksp.model.ScriptDefinition
-import com.google.devtools.ksp.KspExperimental
-import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.processing.Dependencies
@@ -13,9 +11,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.*
-import kotlin.reflect.KClass
 
-@OptIn(KspExperimental::class)
 class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
     private val codeGenerator = environment.codeGenerator
     private var processed = false
@@ -51,36 +47,47 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         components.forEach { component -> generateComponentDefinition(resolver, component) }
         scripts.forEach { script -> generateScriptDefinition(resolver, script) }
 
-        // entry file
+        // service file
         codeGenerator.createNewFile(
-            Dependencies(true, *entryDependencies.toTypedArray()), GEN_PACKAGE_NAME, "entry"
+            Dependencies(true, *entryDependencies.toTypedArray()),
+            "META-INF.services",
+            "calamansi.runtime.registry.Definition",
+            extensionName = ""
         ).writer().use { writer ->
-            writer.appendLine(
-                """
-                package $GEN_PACKAGE_NAME
-                import calamansi.runtime.Entry
-                import calamansi.runtime.registry.Registry
-                
-                class EntryImpl : Entry {
-                    override fun bootstrap(registry: Registry) {
-            """.trimIndent()
-            )
-
-            components.forEach { component ->
-                writer.appendLine("        registry.registerComponent(${component.name})")
-            }
-
-            scripts.forEach { script ->
-                writer.appendLine("        registry.registerScript(${script.name})")
-            }
-
-            writer.appendLine(
-                """
-                    }
-                }
-            """.trimIndent()
-            )
+            components.forEach { component -> writer.appendLine("calamansi._gen.${component.name}") }
+            scripts.forEach { script -> writer.appendLine("calamansi._gen.${script.name}") }
         }
+
+        // entry file
+//        codeGenerator.createNewFile(
+//            Dependencies(true, *entryDependencies.toTypedArray()), GEN_PACKAGE_NAME, "entry"
+//        ).writer().use { writer ->
+//            writer.appendLine(
+//                """
+//                package $GEN_PACKAGE_NAME
+//                import calamansi.runtime.Entry
+//                import calamansi.runtime.registry.Registry
+//
+//                class EntryImpl : Entry {
+//                    override fun bootstrap(registry: Registry) {
+//            """.trimIndent()
+//            )
+//
+//            components.forEach { component ->
+//                writer.appendLine("        registry.registerComponent(${component.name})")
+//            }
+//
+//            scripts.forEach { script ->
+//                writer.appendLine("        registry.registerScript(${script.name})")
+//            }
+//
+//            writer.appendLine(
+//                """
+//                    }
+//                }
+//            """.trimIndent()
+//            )
+//        }
 
         // service loader for entry
         codeGenerator.createNewFile(
@@ -163,7 +170,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                         get() = $componentQualifiedName::class
                 }
                 
-                object ${definition.name} : ComponentDefinition<$componentQualifiedName> {
+                class ${definition.name} : ComponentDefinition<$componentQualifiedName> {
                     override val type: KClass<$componentQualifiedName> = $componentQualifiedName::class
                     override fun create(): $componentQualifiedName = $componentQualifiedName()
                     override val dependencies: List<KClass<out Component>> = listOf(
@@ -211,7 +218,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 import kotlin.reflect.KClass
                 import calamansi.runtime.registry.ScriptDefinition
                 
-                object ${definition.name} : ScriptDefinition<$componentQualifiedName> {
+                class ${definition.name} : ScriptDefinition<$componentQualifiedName> {
                     override val type: KClass<$componentQualifiedName> = $componentQualifiedName::class
                     override fun create(): $componentQualifiedName = $componentQualifiedName()
                 }
