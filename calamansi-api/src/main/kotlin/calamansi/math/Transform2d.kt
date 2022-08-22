@@ -3,7 +3,7 @@ package calamansi.math
 // TODO: convert to value class once https://youtrack.jetbrains.com/issue/KT-24874
 //  is implemented
 //@JvmInline
-/*value*/ class Matrix3x3f private constructor(private val buffer: FloatArray) {
+/*value*/ class Transform2d private constructor(private val buffer: FloatArray) {
     constructor() : this(
         floatArrayOf(
             1f, 0f, 0f, /* basis x */
@@ -12,7 +12,7 @@ package calamansi.math
         )
     )
 
-    fun translate(x: Float = 0f, y: Float = 0f): Matrix3x3f {
+    fun translate(x: Float = 0f, y: Float = 0f): Transform2d {
         val translation = floatArrayOf(
             1f, 0f, 0f,
             0f, 1f, 0f,
@@ -22,7 +22,7 @@ package calamansi.math
         return this
     }
 
-    fun scale(x: Float = 1f, y: Float = 1f): Matrix3x3f {
+    fun scale(x: Float = 1f, y: Float = 1f): Transform2d {
         val scale = floatArrayOf(
             x, 0f, 0f,
             0f, y, 0f,
@@ -36,10 +36,10 @@ package calamansi.math
         return times(vec)
     }
 
-    operator fun times(other: Matrix3x3f): Matrix3x3f {
+    operator fun times(other: Transform2d): Transform2d {
         val result = FloatArray(3 * 3)
         compose(buffer, other.buffer, result)
-        return Matrix3x3f(result)
+        return Transform2d(result)
     }
 
     operator fun times(vec: Vector2f): Vector2f {
@@ -69,7 +69,7 @@ package calamansi.math
     operator fun get(idx: Int): Float = buffer[idx]
 
     override fun equals(other: Any?): Boolean {
-        if (other == null || other !is Matrix3x3f) {
+        if (other == null || other !is Transform2d) {
             return false
         }
         return buffer.contentEquals(other.buffer)
