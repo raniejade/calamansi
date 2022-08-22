@@ -5,5 +5,4 @@ plugins {
 
 dependencies {
     api(Deps.kotlinSerializationCore)
-    implementation(Deps.joml)
 }

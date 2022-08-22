@@ -1,7 +1,9 @@
 package calamansi.math
 
-@JvmInline
-value class Matrix3x3f private constructor(private val buffer: FloatArray) {
+// TODO: convert to value class once https://youtrack.jetbrains.com/issue/KT-24874
+//  is implemented
+//@JvmInline
+/*value*/ class Matrix3x3f private constructor(private val buffer: FloatArray) {
     constructor() : this(
         floatArrayOf(
             1f, 0f, 0f, /* basis x */
@@ -65,6 +67,17 @@ value class Matrix3x3f private constructor(private val buffer: FloatArray) {
     }
 
     operator fun get(idx: Int): Float = buffer[idx]
+
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is Matrix3x3f) {
+            return false
+        }
+        return buffer.contentEquals(other.buffer)
+    }
+
+    override fun hashCode(): Int {
+        return buffer.hashCode()
+    }
 
     override fun toString(): String {
         return """

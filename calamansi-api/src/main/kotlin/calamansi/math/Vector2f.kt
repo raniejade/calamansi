@@ -2,8 +2,10 @@ package calamansi.math
 
 import kotlin.math.sqrt
 
-@JvmInline
-value class Vector2f internal constructor(@PublishedApi internal val buffer: FloatArray) {
+// TODO: convert to value class once https://youtrack.jetbrains.com/issue/KT-24874
+//  is implemented
+//@JvmInline
+/*value*/ class Vector2f internal constructor(@PublishedApi internal val buffer: FloatArray) {
     constructor(x: Float = 0f, y: Float = 0f) : this(floatArrayOf(x, y))
 
     inline var x: Float
@@ -70,6 +72,17 @@ value class Vector2f internal constructor(@PublishedApi internal val buffer: Flo
     fun lengthSquared(): Float {
         val length = length()
         return length * length
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is Vector2f) {
+            return false
+        }
+        return buffer.contentEquals(other.buffer)
+    }
+
+    override fun hashCode(): Int {
+        return buffer.hashCode()
     }
 
     override fun toString(): String {
