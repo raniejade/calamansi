@@ -1,8 +1,11 @@
 package calamansi.math
 
+import kotlinx.serialization.Serializable
+
 // TODO: convert to value class once https://youtrack.jetbrains.com/issue/KT-24874
 //  is implemented
 //@JvmInline
+@Serializable
 /*value*/ class Transform3d private constructor(private val buffer: FloatArray) {
     constructor() : this(
         floatArrayOf(

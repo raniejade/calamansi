@@ -1,10 +1,12 @@
 package calamansi.math
 
+import kotlinx.serialization.Serializable
 import kotlin.math.sqrt
 
 // TODO: convert to value class once https://youtrack.jetbrains.com/issue/KT-24874
 //  is implemented
 //@JvmInline
+@Serializable
 /*value*/ class Vector3f internal constructor(@PublishedApi internal val buffer: FloatArray) {
     constructor(x: Float = 0f, y: Float = 0f, z: Float = 0f) : this(floatArrayOf(x, y, z))
 

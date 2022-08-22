@@ -281,11 +281,14 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         val type = property.type.resolve()
         val isBuiltInType = when (type) {
             builtIns.intType, builtIns.floatType, builtIns.doubleType, builtIns.stringType, builtIns.shortType, builtIns.longType -> true
-            else -> false
+            else -> SUPPORTED_TYPES.contains(type.declaration.qualifiedName?.asString())
         }
         val isEnum = (type.declaration as KSClassDeclaration).classKind == ClassKind.ENUM_CLASS
         val isSupportedType = isBuiltInType || isEnum
         val hasPropertyAnnotation = property.hasAnnotation(QualifiedNames.Property)
+        if (hasPropertyAnnotation && !isSupportedType) {
+            environment.logger.error("Annotated property '${property.qualifiedName?.getShortName()}' is not supported.", property)
+        }
         return property.isMutable && property.hasBackingField && property.isPublic() && hasPropertyAnnotation && isSupportedType
     }
 
@@ -316,6 +319,12 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
 
     companion object {
         private const val GEN_PACKAGE_NAME = "calamansi._gen"
+        private val SUPPORTED_TYPES = setOf(
+            "calamansi.math.Vector2f",
+            "calamansi.math.Vector3f",
+            "calamansi.math.Transform2d",
+            "calamansi.math.Transform3d",
+        )
 
         private object QualifiedNames {
             const val Component = "calamansi.Component"
