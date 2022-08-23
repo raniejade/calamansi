@@ -71,6 +71,7 @@ class ResourceModule : Module() {
             serializersModule = SerializersModule {
                 include(getModule<RegistryModule>().getSerializersModule())
                 contextual(ResourceRef::class, ResourceRefSerializer())
+                registerJomlSerializers()
             }
         }
     }
