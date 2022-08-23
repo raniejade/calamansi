@@ -1,41 +1,69 @@
 package calamansi.math
 
 import kotlinx.serialization.Serializable
+import kotlin.math.cos
+import kotlin.math.sin
 
 // TODO: convert to value class once https://youtrack.jetbrains.com/issue/KT-24874
 //  is implemented
 //@JvmInline
 @Serializable
 /*value*/ class Transform3d private constructor(private val buffer: FloatArray) {
-    constructor() : this(
-        floatArrayOf(
-            1f, 0f, 0f, 0f, /* basis x */
-            0f, 1f, 0f, 0f, /* basis y */
-            0f, 0f, 1f, 0f, /* basis z */
-            0f, 0f, 0f, 1f, /* translation */
-        )
-    )
+    constructor() : this(identity())
 
     fun translate(x: Float = 0f, y: Float = 0f, z: Float = 0f): Transform3d {
-        val translation = floatArrayOf(
-            1f, 0f, 0f, 0f,
-            0f, 1f, 0f, 0f,
-            0f, 0f, 1f, 0f,
-            x, y, z, 1f,
-        )
-        compose(buffer, translation, buffer)
+        compose(buffer, translation(x, y, z), buffer)
         return this
     }
 
+    fun translated(x: Float = 0f, y: Float = 0f, z: Float = 0f): Transform3d {
+        val result = FloatArray(4 * 4)
+        compose(buffer, translation(x, y, z), result)
+        return Transform3d(result)
+    }
+
     fun scale(x: Float = 1f, y: Float = 1f, z: Float = 1f): Transform3d {
-        val scale = floatArrayOf(
-            x, 0f, 0f, 0f,
-            0f, y, 0f, 0f,
-            0f, 0f, z, 0f,
-            0f, 0f, 0f, 1f,
-        )
-        compose(buffer, scale, buffer)
+        compose(buffer, scaling(x, y, z), buffer)
         return this
+    }
+
+    fun scaled(x: Float = 1f, y: Float = 1f, z: Float = 1f): Transform3d {
+        val result = FloatArray(4 * 4)
+        compose(buffer, scaling(x, y, z), result)
+        return Transform3d(result)
+    }
+
+    fun rotateX(angle: Float): Transform3d {
+        compose(buffer, rotationX(angle), buffer)
+        return this
+    }
+
+    fun rotatedX(angle: Float): Transform3d {
+        val result = FloatArray(4 * 4)
+        compose(buffer, rotationX(angle), result)
+        return Transform3d(result)
+    }
+
+    fun rotateY(angle: Float): Transform3d {
+        compose(buffer, rotationX(angle), buffer)
+        return this
+    }
+
+    fun rotatedY(angle: Float): Transform3d {
+        val result = FloatArray(4 * 4)
+        compose(buffer, rotationY(angle), result)
+        return Transform3d(result)
+    }
+
+    fun rotateZ(angle: Float): Transform3d {
+        compose(buffer, rotationZ(angle), buffer)
+        return this
+    }
+
+    fun rotatedZ(angle: Float): Transform3d {
+        val result = FloatArray(4 * 4)
+        compose(buffer, rotationZ(angle), result)
+        return Transform3d(result)
     }
 
     inline fun transform(vec: Vector3f): Vector3f {
@@ -180,6 +208,60 @@ import kotlinx.serialization.Serializable
             dest[13] = twy
             dest[14] = twz
             dest[15] = tww
+        }
+
+        private inline fun identity() = floatArrayOf(
+            1f, 0f, 0f, 0f, /* basis x */
+            0f, 1f, 0f, 0f, /* basis y */
+            0f, 0f, 1f, 0f, /* basis z */
+            0f, 0f, 0f, 1f, /* translation */
+        )
+
+        private inline fun translation(x: Float, y: Float, z: Float) = floatArrayOf(
+            1f, 0f, 0f, 0f,
+            0f, 1f, 0f, 0f,
+            0f, 0f, 1f, 0f,
+            x, y, z, 1f,
+        )
+
+        private inline fun scaling(x: Float, y: Float, z: Float) = floatArrayOf(
+            x, 0f, 0f, 0f,
+            0f, y, 0f, 0f,
+            0f, 0f, z, 0f,
+            0f, 0f, 0f, 1f,
+        )
+
+        private inline fun rotationX(angle: Float): FloatArray {
+            val cos0 = cos(angle)
+            val sin0 = sin(angle)
+            return floatArrayOf(
+                1f, 0f, 0f, 0f,
+                0f, cos0, sin0, 0f,
+                0f, -sin0, cos0, 0f,
+                0f, 0f, 0f, 1f,
+            )
+        }
+
+        private inline fun rotationY(angle: Float): FloatArray {
+            val cos0 = cos(angle)
+            val sin0 = sin(angle)
+            return floatArrayOf(
+                cos0, 0f, -sin0, 0f,
+                0f, 1f, 0f, 0f,
+                sin0, 0f, cos0, 0f,
+                0f, 0f, 0f, 1f,
+            )
+        }
+
+        private inline fun rotationZ(angle: Float): FloatArray {
+            val cos0 = cos(angle)
+            val sin0 = sin(angle)
+            return floatArrayOf(
+                cos0, sin0, 0f, 0f,
+                -sin0, cos0, 0f, 0f,
+                0f, 0f, 1f, 0f,
+                0f, 0f, 0f, 1f,
+            )
         }
     }
 }

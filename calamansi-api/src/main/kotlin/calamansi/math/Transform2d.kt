@@ -1,38 +1,47 @@
 package calamansi.math
 
 import kotlinx.serialization.Serializable
+import kotlin.math.cos
+import kotlin.math.sin
 
 // TODO: convert to value class once https://youtrack.jetbrains.com/issue/KT-24874
 //  is implemented
 //@JvmInline
 @Serializable
 /*value*/ class Transform2d private constructor(private val buffer: FloatArray) {
-    constructor() : this(
-        floatArrayOf(
-            1f, 0f, 0f, /* basis x */
-            0f, 1f, 0f, /* basis y */
-            0f, 0f, 1f, /* translation */
-        )
-    )
+    constructor() : this(identity())
 
     fun translate(x: Float = 0f, y: Float = 0f): Transform2d {
-        val translation = floatArrayOf(
-            1f, 0f, 0f,
-            0f, 1f, 0f,
-            x, y, 1f,
-        )
-        compose(buffer, translation, buffer)
+        compose(buffer, translation(x, y), buffer)
         return this
     }
 
+    fun translated(x: Float = 0f, y: Float = 0f): Transform2d {
+        val result = FloatArray(3 * 3)
+        compose(buffer, translation(x, y), result)
+        return Transform2d(result)
+    }
+
     fun scale(x: Float = 1f, y: Float = 1f): Transform2d {
-        val scale = floatArrayOf(
-            x, 0f, 0f,
-            0f, y, 0f,
-            0f, 0f, 1f,
-        )
-        compose(buffer, scale, buffer)
+        compose(buffer, scaling(x, y), buffer)
         return this
+    }
+
+    fun scaled(x: Float = 1f, y: Float = 1f): Transform2d {
+        val result = FloatArray(3 * 3)
+        compose(buffer, scaling(x, y), buffer)
+        return Transform2d(result)
+    }
+
+    fun rotate(angle: Float): Transform2d {
+        compose(buffer, rotation(angle), buffer)
+        return this
+    }
+
+    fun rotated(angle: Float): Transform2d {
+        val result = FloatArray(3 * 3)
+        compose(buffer, rotation(angle), result)
+        return Transform2d(result)
     }
 
     inline fun transform(vec: Vector2f): Vector2f {
@@ -137,6 +146,34 @@ import kotlinx.serialization.Serializable
             dest[6] = tzx
             dest[7] = tzy
             dest[8] = tzz
+        }
+
+        private inline fun identity() = floatArrayOf(
+            1f, 0f, 0f, /* basis x */
+            0f, 1f, 0f, /* basis y */
+            0f, 0f, 1f, /* translation */
+        )
+
+        private inline fun translation(x: Float, y: Float) = floatArrayOf(
+            1f, 0f, 0f,
+            0f, 1f, 0f,
+            x, y, 1f,
+        )
+
+        private inline fun scaling(x: Float, y: Float) = floatArrayOf(
+            x, 0f, 0f,
+            0f, y, 0f,
+            0f, 0f, 1f,
+        )
+
+        private inline fun rotation(angle: Float): FloatArray {
+            val cos0 = cos(angle)
+            val sin0 = sin(angle)
+            return floatArrayOf(
+                cos0, sin0, 0f,
+                -sin0, cos0, 0f,
+                0f, 0f, 1f
+            )
         }
     }
 }

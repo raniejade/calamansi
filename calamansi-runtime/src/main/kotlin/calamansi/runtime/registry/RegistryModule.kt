@@ -107,7 +107,7 @@ class RegistryModule : Module() {
     }
 
     fun pushContext(classLoader: ClassLoader) {
-        logger.info { "Loading context using classloader: $classLoader" }
+        logger.info { "Loading context using classloader: $classLoader." }
         val loader = ServiceLoader.load(Definition::class.java, classLoader)
         val registry = RegistryImpl()
         for (definition in loader) {

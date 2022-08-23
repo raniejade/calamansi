@@ -1,6 +1,7 @@
 package calamansi.math
 
 import kotlinx.serialization.Serializable
+import kotlin.math.abs
 import kotlin.math.sqrt
 
 // TODO: convert to value class once https://youtrack.jetbrains.com/issue/KT-24874
@@ -65,11 +66,22 @@ import kotlin.math.sqrt
         return Vector3f(+x, +y, +z)
     }
 
-    fun unit(): Vector3f {
+    fun normalize(): Vector3f {
+        val length = length()
+        check(length != 0f) { "length must not be 0" }
+        x /= length
+        y /= length
+        z /= length
+        return this
+    }
+
+    fun normalized(): Vector3f {
         val length = length()
         check(length != 0f) { "length must not be 0" }
         return Vector3f(x / length, y / length, z / length)
     }
+
+    fun isNormalized(): Boolean = abs(1f - length()) < EPSILON
 
     infix fun dot(other: Vector3f): Float {
         return (x * other.x) + (y * other.y) + (z * other.z)
@@ -101,5 +113,19 @@ import kotlin.math.sqrt
 
     override fun toString(): String {
         return "Vector2f(x=$x, y=$y, z=$z)"
+    }
+
+    companion object {
+        val AXIS_X = Vector3f(x = 1f)
+        val AXIS_Y = Vector3f(y = 1f)
+        val AXIS_Z = Vector3f(z = 1f)
+
+        val UP = Vector3f(y = 1f)
+        val RIGHT = Vector3f(x = 1f)
+        val FORWARD = Vector3f(z = -1f)
+
+        val DOWN = Vector3f(y = -1f)
+        val LEFT = Vector3f(x = -1f)
+        val BACK = Vector3f(z = 1f)
     }
 }

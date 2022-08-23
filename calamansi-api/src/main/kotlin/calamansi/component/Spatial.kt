@@ -2,24 +2,25 @@ package calamansi.component
 
 import calamansi.Component
 import calamansi.Property
+import calamansi.math.Transform3d
 import calamansi.math.Vector3f
 
 class Spatial : Component {
     @Property
-    var translation: Vector3f = Vector3f()
+    var translation = Vector3f()
 
     @Property
-    var scale: Vector3f = Vector3f()
+    var rotation = Vector3f()
 
-    fun translate(x: Float = 0f, y: Float = 0f, z: Float = 0f) {
-        translation.x += x
-        translation.y += y
-        translation.z += z
-    }
+    @Property
+    var scale = Vector3f(1f, 1f, 1f)
 
-    fun scale(x: Float = 0f, y: Float = 0f, z: Float = 0f) {
-        translation.x += x
-        translation.y += y
-        translation.z += z
+    fun getTransform(): Transform3d {
+        return Transform3d()
+            .scale(scale.x, scale.y, scale.z)
+            .rotateZ(rotation.z)
+            .rotateY(rotation.y)
+            .rotateX(rotation.x)
+            .translate(translation.x, translation.y, translation.z)
     }
 }

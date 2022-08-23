@@ -3,6 +3,7 @@ package calamansi.math
 import kotlin.math.sqrt
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class Vector2fTest {
     @Test
@@ -71,12 +72,27 @@ class Vector2fTest {
     }
 
     @Test
-    fun unit() {
+    fun normalize() {
+        val a = Vector2f(2f, 3f)
+        val x = a.x
+        val y = a.y
+        val length = a.length()
+        a.normalize()
+        assertEquals(Vector2f(x / length, y / length), a)
+        assertEquals(1f, a.length(), EPSILON)
+        assertTrue(a.isNormalized())
+    }
+
+    @Test
+    fun normalized() {
         val a = Vector2f(2f, 3f)
         val length = a.length()
-        val unit = a.unit()
+        val unit = a.normalized()
+        // a must not be touched
+        assertEquals(Vector2f(2f, 3f), a)
         assertEquals(Vector2f(a.x / length, a.y / length), unit)
-        assertEquals(1f, unit.length(), 0.001f)
+        assertEquals(1f, unit.length(), EPSILON)
+        assertTrue(unit.isNormalized())
     }
 
     @Test
