@@ -29,7 +29,7 @@ import kotlin.math.sin
 
     fun scaled(x: Float = 1f, y: Float = 1f): Transform2d {
         val result = FloatArray(3 * 3)
-        compose(buffer, scaling(x, y), buffer)
+        compose(buffer, scaling(x, y), result)
         return Transform2d(result)
     }
 
@@ -43,6 +43,8 @@ import kotlin.math.sin
         compose(buffer, rotation(angle), result)
         return Transform2d(result)
     }
+
+    fun isIdentity(): Boolean = buffer.contentEquals(identity())
 
     inline fun transform(vec: Vector2f): Vector2f {
         return times(vec)

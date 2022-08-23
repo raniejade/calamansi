@@ -3,17 +3,39 @@ package calamansi.math
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 class Transform2dTest {
     @Test
-    fun translation() {
+    fun identity() {
+        assertTrue(Transform2d().isIdentity())
+    }
+
+    @Test
+    fun translate() {
         val m = Transform2d().translate(10f, -5f)
+        assertEquals(Vector2f(5f, 4f), m.transform(Vector2f(-5f, 9f)))
+    }
+
+    @Test
+    fun translated() {
+        val original = Transform2d()
+        val m = original.translated(10f, -5f)
+        assertTrue(original.isIdentity())
         assertEquals(Vector2f(5f, 4f), m.transform(Vector2f(-5f, 9f)))
     }
 
     @Test
     fun scale() {
         val m = Transform2d().scale(2f, -0.5f)
+        assertEquals(Vector2f(-4f, -25f), m.transform(Vector2f(-2f, 50f)))
+    }
+
+    @Test
+    fun scaled() {
+        val original = Transform2d()
+        val m = original.scaled(2f, -0.5f)
+        assertTrue(original.isIdentity())
         assertEquals(Vector2f(-4f, -25f), m.transform(Vector2f(-2f, 50f)))
     }
 

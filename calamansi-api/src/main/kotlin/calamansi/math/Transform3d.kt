@@ -66,6 +66,8 @@ import kotlin.math.sin
         return Transform3d(result)
     }
 
+    fun isIdentity(): Boolean = buffer.contentEquals(identity())
+
     inline fun transform(vec: Vector3f): Vector3f {
         return times(vec)
     }
