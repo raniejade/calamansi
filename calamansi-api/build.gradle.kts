@@ -6,6 +6,6 @@ plugins {
 
 dependencies {
     api(Deps.kotlinSerializationCore)
-    implementation(Deps.joml)
+    api(Deps.joml)
     ksp(project(":calamansi-symbol-processor"))
 }
