@@ -90,11 +90,11 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
 //        }
 
         // service loader for entry
-        codeGenerator.createNewFile(
-            Dependencies(true, *entryDependencies.toTypedArray()), "META-INF.services", "calamansi.runtime.Entry", ""
-        ).writer().use { writer ->
-            writer.appendLine("calamansi._gen.EntryImpl")
-        }
+//        codeGenerator.createNewFile(
+//            Dependencies(true, *entryDependencies.toTypedArray()), "META-INF.services", "calamansi.runtime.Entry", ""
+//        ).writer().use { writer ->
+//            writer.appendLine("calamansi._gen.EntryImpl")
+//        }
 
         processed = true
         return emptyList()
@@ -122,7 +122,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
 
             val dataProperties = definition.properties.joinToString(separator = ",\n${indent(4, 1)}") { prop ->
                 val typeRef = "${checkNotNull(prop.type.qualifiedName).asString()}"
-                "val ${prop.name}: $typeRef"
+                "@Contextual val ${prop.name}: $typeRef"
             }.ifEmpty { "var __unused: Int? = null" }
 
             val toDataAssignments = definition.properties.joinToString(separator = ",\n${indent(4, 2)}") { prop ->
@@ -151,6 +151,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 package $GEN_PACKAGE_NAME
                 import kotlin.collections.listOf
                 import kotlin.reflect.KClass
+                import kotlinx.serialization.Contextual
                 import kotlinx.serialization.Serializable
                 import kotlinx.serialization.modules.SerializersModule
                 import kotlinx.serialization.modules.polymorphic
@@ -254,7 +255,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             val propTypeDecl = it.type.resolve().declaration as KSClassDeclaration
             PropertyDefinition(
                 checkNotNull(it.qualifiedName).getShortName(),
-                propTypeDecl,
+                propTypeDecl
             )
         }
 
@@ -287,7 +288,10 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         val isSupportedType = isBuiltInType || isEnum
         val hasPropertyAnnotation = property.hasAnnotation(QualifiedNames.Property)
         if (hasPropertyAnnotation && !isSupportedType) {
-            environment.logger.error("Annotated property '${property.qualifiedName?.getShortName()}' is not supported.", property)
+            environment.logger.error(
+                "Annotated property '${property.qualifiedName?.getShortName()}' is not supported.",
+                property
+            )
         }
         return property.isMutable && property.hasBackingField && property.isPublic() && hasPropertyAnnotation && isSupportedType
     }
@@ -320,10 +324,8 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
     companion object {
         private const val GEN_PACKAGE_NAME = "calamansi._gen"
         private val SUPPORTED_TYPES = setOf(
-            "calamansi.math.Vector2f",
-            "calamansi.math.Vector3f",
-            "calamansi.math.Transform2d",
-            "calamansi.math.Transform3d",
+            "org.joml.Vector2f",
+            "org.joml.Vector3f",
         )
 
         private object QualifiedNames {
