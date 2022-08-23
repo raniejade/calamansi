@@ -13,6 +13,7 @@ import calamansi.runtime.scripting.ScriptModule
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
 
+
 class Engine {
     private val registryModule = RegistryModule()
     private val resourceModule = ResourceModule()
@@ -34,7 +35,7 @@ class Engine {
 
     fun run() {
         start()
-        mainLoop()
+        runtimeModule.loop()
         shutdown()
     }
 
@@ -48,14 +49,14 @@ class Engine {
         resourceModule.registerSource(
             "assets",
             RelativeFileSource("assets", JarFileSource(this::class.java.classLoader))
-        );
+        )
 
         // resource loaders
         logger.info { "Registering resource loaders." }
         resourceModule.registerLoader(SceneLoader())
 
         // load default scene
-        val defaultScene = getDefaultScene()
+        val defaultScene = runtimeModule.projectConfig.defaultScene
         logger.info { "Using default scene: $defaultScene" }
         sceneModule.setCurrentScene(resourceModule.loadResource(defaultScene) as ResourceRef<Scene>)
     }
@@ -67,25 +68,6 @@ class Engine {
         modules.reversed().forEach(Module::shutdown)
         exitProcess(exitCode)
     }
-
-    private fun getDefaultScene() = "assets://default.scn"
-
-    private fun mainLoop() {
-        var lastTick = millis()
-        var deltaMillis: Long
-
-        do {
-            deltaMillis = (millis() - lastTick)
-            lastTick = millis()
-            frame(deltaMillis / 1000f)
-        } while (!runtimeModule.shouldExit())
-    }
-
-    private fun frame(delta: Float) {
-        sceneModule.frame(delta)
-    }
-
-    private fun millis() = TimeUnit.NANOSECONDS.toMillis(System.nanoTime())
 }
 
 fun main(vararg args: String) {

@@ -18,14 +18,14 @@ abstract class EngineTest {
     protected val resourceModule = ResourceModule()
     protected val sceneModule = SceneModule()
     protected val scriptModule = ScriptModule()
-    protected val runtimeModule = RuntimeModule()
+    // protected val runtimeModule = RuntimeModule()
 
     private val modules = listOf(
         registryModule,
         resourceModule,
         sceneModule,
         scriptModule,
-        runtimeModule,
+        // runtimeModule,
     )
 
     @BeforeTest
