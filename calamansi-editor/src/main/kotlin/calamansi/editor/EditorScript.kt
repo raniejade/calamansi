@@ -3,6 +3,8 @@ package calamansi.editor
 import calamansi.ExecutionContext
 import calamansi.Script
 import calamansi.event.Event
+import calamansi.input.InputState
+import calamansi.input.Key
 
 class EditorScript : Script() {
     context(ExecutionContext) override fun attached() {
@@ -18,5 +20,8 @@ class EditorScript : Script() {
     }
 
     context(ExecutionContext) override fun update(delta: Float) {
+        if (getKeyState(Key.ESCAPE) == InputState.PRESSED) {
+            exit(0)
+        }
     }
 }

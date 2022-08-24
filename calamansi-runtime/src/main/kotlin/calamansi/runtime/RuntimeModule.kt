@@ -2,6 +2,10 @@ package calamansi.runtime
 
 import calamansi.input.*
 import calamansi.runtime.data.ProjectConfig
+import calamansi.runtime.input.InputModifierMapper
+import calamansi.runtime.input.InputStateMapper
+import calamansi.runtime.input.KeyMapper
+import calamansi.runtime.input.MouseButtonMapper
 import calamansi.runtime.module.Module
 import calamansi.runtime.resource.ResourceModule
 import calamansi.window.WindowCloseEvent
@@ -112,9 +116,13 @@ class RuntimeModule : Module(), InputContext {
     }
 
     private fun keyCallback(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-        if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-            glfwSetWindowShouldClose(window, true)
-        }
+        sceneModule.publishEvent(
+            KeyStateEvent(
+                KeyMapper.fromGlfwKey(key),
+                InputStateMapper.fromGlfwState(action),
+                InputModifierMapper.fromGlfwModifier(mods)
+            )
+        )
     }
 
     private fun charCallback(window: Long, codePoint: Int) {
@@ -123,6 +131,13 @@ class RuntimeModule : Module(), InputContext {
     }
 
     private fun mouseButtonCallback(window: Long, button: Int, action: Int, mods: Int) {
+        sceneModule.publishEvent(
+            MouseButtonStateEvent(
+                MouseButtonMapper.fromGlfwMouseButton(button),
+                InputStateMapper.fromGlfwState(action),
+                InputModifierMapper.fromGlfwModifier(mods)
+            )
+        )
     }
 
     private fun mouseCursorPositionCallback(window: Long, x: Double, y: Double) {
@@ -142,10 +157,10 @@ class RuntimeModule : Module(), InputContext {
     }
 
     override fun getKeyState(key: Key): InputState {
-        TODO("Not yet implemented")
+        return InputStateMapper.fromGlfwState(glfwGetKey(window, KeyMapper.toGlfwKey(key)))
     }
 
     override fun getMouseButtonState(button: MouseButton): InputState {
-        TODO("Not yet implemented")
+        return InputStateMapper.fromGlfwState(glfwGetMouseButton(window, MouseButtonMapper.toGlfwButton(button)))
     }
 }
