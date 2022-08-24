@@ -4,6 +4,10 @@ import calamansi.ExecutionContext
 import calamansi.Node
 import calamansi.Scene
 import calamansi.Script
+import calamansi.input.InputContext
+import calamansi.input.InputState
+import calamansi.input.Key
+import calamansi.input.MouseButton
 import calamansi.logging.Logger
 import calamansi.resource.Resource
 import calamansi.resource.ResourceRef
@@ -47,8 +51,9 @@ class ScriptModule : Module() {
     }
 
     fun invokeLifeCycle(script: Handle, lifeCycle: ScriptLifeCycle) {
+        val runtimeModule = getModule<RuntimeModule>()
         val (scriptInstance, owner) = checkNotNull(scripts[script])
-        val executionContext = object : ExecutionContext {
+        val executionContext = object : ExecutionContext, InputContext by runtimeModule {
             override val Script.owner: Node
                 get() = checkNotNull(owner.get())
 

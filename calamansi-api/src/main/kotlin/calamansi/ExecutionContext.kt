@@ -1,11 +1,12 @@
 package calamansi
 
+import calamansi.input.InputContext
 import calamansi.logging.LoggingContext
 import calamansi.resource.Resource
 import calamansi.resource.ResourceRef
 import kotlin.reflect.KClass
 
-interface ExecutionContext : LoggingContext {
+interface ExecutionContext : LoggingContext, InputContext {
     val Script.owner: Node
     fun Node(name: String, script: KClass<out Script>? = null): Node
     fun setCurrentScene(scene: ResourceRef<Scene>)

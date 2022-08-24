@@ -1,8 +1,11 @@
 package calamansi.runtime
 
+import calamansi.input.*
 import calamansi.runtime.data.ProjectConfig
 import calamansi.runtime.module.Module
 import calamansi.runtime.resource.ResourceModule
+import calamansi.window.WindowCloseEvent
+import calamansi.window.WindowFocusChangedEvent
 import kotlinx.serialization.json.decodeFromStream
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
@@ -10,11 +13,14 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil.NULL
 import java.util.concurrent.TimeUnit
 
-class RuntimeModule : Module() {
+class RuntimeModule : Module(), InputContext {
     private var window = NULL
     private var exitCode = 0
+
     // TODO: move to separate module?
     val projectConfig by lazy(this::loadProjectConfig)
+
+    val sceneModule by lazy { getModule<SceneModule>() }
 
     override fun start() {
         logger.info { "Runtime module started." }
@@ -24,11 +30,15 @@ class RuntimeModule : Module() {
         glfwDefaultWindowHints()
         window = glfwCreateWindow(projectConfig.width, projectConfig.height, projectConfig.title, NULL, NULL)
         check(window != NULL) { "Failed to create window. " }
-        glfwSetKeyCallback(window) { window, key, scancode, action, mods ->
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                glfwSetWindowShouldClose(window, true)
-            }
-        }
+        // register input callbacks
+        glfwSetKeyCallback(window, this::keyCallback)
+        glfwSetCharCallback(window, this::charCallback)
+        glfwSetMouseButtonCallback(window, this::mouseButtonCallback)
+        glfwSetCursorPosCallback(window, this::mouseCursorPositionCallback)
+        // register window callbacks
+        glfwSetWindowFocusCallback(window, this::windowFocusCallback)
+        glfwSetWindowCloseCallback(window, this::windowCloseCallback)
+
         // Get the thread stack and push a new frame
         MemoryStack.stackPush().use { stack ->
             val pWidth = stack.mallocInt(1) // int*
@@ -99,5 +109,43 @@ class RuntimeModule : Module() {
         // TODO: load via resource module
         val inputStream = checkNotNull(this::class.java.classLoader.getResourceAsStream("assets/project.cfg"))
         return json.decodeFromStream(inputStream)
+    }
+
+    private fun keyCallback(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+            glfwSetWindowShouldClose(window, true)
+        }
+    }
+
+    private fun charCallback(window: Long, codePoint: Int) {
+        val char = Char(codePoint)
+        sceneModule.publishEvent(TextEvent(char))
+    }
+
+    private fun mouseButtonCallback(window: Long, button: Int, action: Int, mods: Int) {
+    }
+
+    private fun mouseCursorPositionCallback(window: Long, x: Double, y: Double) {
+        sceneModule.publishEvent(MouseMoveEvent(x.toFloat(), y.toFloat()))
+    }
+
+    private fun windowCloseCallback(window: Long) {
+        val event = WindowCloseEvent()
+        sceneModule.publishEvent(event)
+        if (!event.isConsumed()) {
+            requestExit(0)
+        }
+    }
+
+    private fun windowFocusCallback(window: Long, focused: Boolean) {
+        sceneModule.publishEvent(WindowFocusChangedEvent(focused))
+    }
+
+    override fun getKeyState(key: Key): InputState {
+        TODO("Not yet implemented")
+    }
+
+    override fun getMouseButtonState(button: MouseButton): InputState {
+        TODO("Not yet implemented")
     }
 }
