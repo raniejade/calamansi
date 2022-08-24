@@ -137,7 +137,7 @@ class NodeTest : EngineTest() {
     fun consumedEventNotPropagated() {
 
         val root = NodeImpl("root", EventConsumingScript::class.qualifiedName)
-        root.isSceneRoot = true
+        root.isAttached = true
         val child = NodeImpl("root", EventFailingScript::class.qualifiedName)
         root.addChild(child)
 
@@ -149,7 +149,7 @@ class NodeTest : EngineTest() {
     fun eventPropagated() {
 
         val root = NodeImpl("root", EventCountingScript::class.qualifiedName)
-        root.isSceneRoot = true
+        root.isAttached = true
         root.addChild(NodeImpl("child", EventCountingScript::class.qualifiedName))
         root.addChild(NodeImpl("some-other-child", EventCountingScript::class.qualifiedName))
 

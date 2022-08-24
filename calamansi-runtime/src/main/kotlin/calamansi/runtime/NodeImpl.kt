@@ -25,10 +25,14 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
     override val script: Script?
         get() = scriptHandle?.let { Module.getModule<ScriptModule>().getScriptInstance(it) }
 
-    var isSceneRoot: Boolean = false
+    var isAttached: Boolean = false
+        get() = field
         set(value) {
-            require(_parent == null) { "isSceneRoot can only be set when _parent is null" }
             field = value
+
+            for (child in children) {
+                child.isAttached = field
+            }
         }
 
     override fun <T : Component> addComponent(component: KClass<T>): T {
@@ -105,6 +109,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         node._parent = this
         val added = children.add(node)
 
+        node.isAttached = isAttached
         // only execute when node was successfully added
         if (added) {
             doExecuteAttachCallback(node)
@@ -123,6 +128,9 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         }
         // detach callback can still see parent
         node._parent = null
+        if (isAttached) {
+            node.isAttached = false
+        }
 
         return removed
     }
@@ -151,16 +159,6 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         doExecuteDetachCallback(this)
     }
 
-    // TODO: traverses the parent hierarchy, which can be very expensive.
-    //  find a way to make this fast.
-    private fun isPartOfCurrentScene(): Boolean {
-        if (_parent == null) {
-            return isSceneRoot
-        }
-
-        return checkNotNull(_parent).isPartOfCurrentScene()
-    }
-
     override fun toString(): String {
         return "Node(name=$_name)"
     }
@@ -178,7 +176,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         }
 
         private fun doExecuteDetachCallback(node: NodeImpl) {
-            if (!node.isPartOfCurrentScene()) {
+            if (!node.isAttached) {
                 return
             }
             for (child in node.children) {
@@ -190,7 +188,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         }
 
         private fun doExecuteAttachCallback(node: NodeImpl) {
-            if (!node.isPartOfCurrentScene()) {
+            if (!node.isAttached) {
                 return
             }
             node.scriptHandle?.let {
@@ -202,7 +200,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         }
 
         private fun doExecuteHandleEventCallback(node: NodeImpl, event: Event) {
-            if (!node.isPartOfCurrentScene()) {
+            if (!node.isAttached) {
                 return
             }
             node.scriptHandle?.let {
@@ -220,7 +218,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         }
 
         private fun doExecuteUpdateCallback(node: NodeImpl, delta: Float) {
-            if (!node.isPartOfCurrentScene()) {
+            if (!node.isAttached) {
                 return
             }
             node.scriptHandle?.let {

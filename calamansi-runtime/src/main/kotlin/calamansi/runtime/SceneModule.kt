@@ -19,7 +19,7 @@ class SceneModule : Module() {
         maybeDetachCurrentScene()
         root = scene.get().create() as NodeImpl?
         root?.let {
-            it.isSceneRoot = true
+            it.isAttached = true
             it.attached()
         }
     }
@@ -39,7 +39,7 @@ class SceneModule : Module() {
     private fun maybeDetachCurrentScene() {
         root?.let {
             it.detached()
-            it.isSceneRoot = false
+            it.isAttached = false
         }
 
         root = null
