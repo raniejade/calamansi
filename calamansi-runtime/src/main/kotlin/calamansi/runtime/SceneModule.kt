@@ -29,7 +29,7 @@ class SceneModule : Module() {
     }
 
     fun publishEvent(event: Event) {
-
+        root?.let { it.handleEvent(event) }
     }
 
     fun unloadCurrentScene() {

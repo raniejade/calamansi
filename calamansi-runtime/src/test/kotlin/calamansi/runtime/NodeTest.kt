@@ -1,10 +1,36 @@
 package calamansi.runtime
 
+import calamansi.ExecutionContext
+import calamansi.Script
+import calamansi.event.Event
 import calamansi.runtime.helpers.ComponentWithDependency
 import calamansi.runtime.helpers.ComponentWithNestedDependency
 import calamansi.runtime.helpers.EngineTest
 import calamansi.runtime.helpers.TestComponent
+import calamansi.window.WindowCloseEvent
+import java.lang.RuntimeException
 import kotlin.test.*
+class EventCountingScript : Script() {
+    context(ExecutionContext) override fun handleEvent(event: Event) {
+        counter++
+    }
+
+    companion object {
+        var counter = 0
+    }
+}
+
+class EventConsumingScript : Script() {
+    context(ExecutionContext) override fun handleEvent(event: Event) {
+        event.consume()
+    }
+}
+
+class EventFailingScript : Script() {
+    context(ExecutionContext) override fun handleEvent(event: Event) {
+        throw RuntimeException()
+    }
+}
 
 class NodeTest : EngineTest() {
     @Test
@@ -105,5 +131,29 @@ class NodeTest : EngineTest() {
         node.addComponent(TestComponent::class)
         assertTrue(node.removeComponent(TestComponent::class))
         assertFalse(node.hasComponent(TestComponent::class))
+    }
+
+    @Test
+    fun consumedEventNotPropagated() {
+
+        val root = NodeImpl("root", EventConsumingScript::class.qualifiedName)
+        root.isSceneRoot = true
+        val child = NodeImpl("root", EventFailingScript::class.qualifiedName)
+        root.addChild(child)
+
+        // this should not fail
+        root.handleEvent(WindowCloseEvent())
+    }
+
+    @Test
+    fun eventPropagated() {
+
+        val root = NodeImpl("root", EventCountingScript::class.qualifiedName)
+        root.isSceneRoot = true
+        root.addChild(NodeImpl("child", EventCountingScript::class.qualifiedName))
+        root.addChild(NodeImpl("some-other-child", EventCountingScript::class.qualifiedName))
+
+        root.handleEvent(WindowCloseEvent())
+        assertEquals(3, EventCountingScript.counter)
     }
 }

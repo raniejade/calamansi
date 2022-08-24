@@ -3,6 +3,7 @@ package calamansi.runtime
 import calamansi.Node
 import calamansi.Script
 import calamansi.Component
+import calamansi.event.Event
 import calamansi.runtime.module.Module
 import calamansi.runtime.registry.RegistryModule
 import calamansi.runtime.scripting.ScriptLifeCycle
@@ -134,6 +135,10 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         return children.isNotEmpty()
     }
 
+    fun handleEvent(event: Event) {
+        doExecuteHandleEventCallback(this, event)
+    }
+
     fun update(delta: Float) {
         doExecuteUpdateCallback(this, delta)
     }
@@ -146,6 +151,8 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         doExecuteDetachCallback(this)
     }
 
+    // TODO: traverses the parent hierarchy, which can be very expensive.
+    //  find a way to make this fast.
     private fun isPartOfCurrentScene(): Boolean {
         if (_parent == null) {
             return isSceneRoot
@@ -191,6 +198,24 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
             }
             for (child in node.children) {
                 doExecuteAttachCallback(child)
+            }
+        }
+
+        private fun doExecuteHandleEventCallback(node: NodeImpl, event: Event) {
+            if (!node.isPartOfCurrentScene()) {
+                return
+            }
+            node.scriptHandle?.let {
+                Module.getModule<ScriptModule>().invokeLifeCycle(it, ScriptLifeCycle.HandleEvent(event))
+            }
+
+            // if event consumed we stop propagating
+            if (event.isConsumed()) {
+                return
+            }
+
+            for (child in node.children) {
+                child.handleEvent(event)
             }
         }
 

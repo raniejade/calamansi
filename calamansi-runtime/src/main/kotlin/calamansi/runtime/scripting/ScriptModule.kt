@@ -51,9 +51,8 @@ class ScriptModule : Module() {
     }
 
     fun invokeLifeCycle(script: Handle, lifeCycle: ScriptLifeCycle) {
-        val runtimeModule = getModule<RuntimeModule>()
         val (scriptInstance, owner) = checkNotNull(scripts[script])
-        val executionContext = object : ExecutionContext, InputContext by runtimeModule {
+        val executionContext = object : ExecutionContext {
             override val Script.owner: Node
                 get() = checkNotNull(owner.get())
 
@@ -76,6 +75,14 @@ class ScriptModule : Module() {
             override val logger: Logger by lazy {
                 getLogger(scriptInstance::class)
             }
+
+            override fun getKeyState(key: Key): InputState {
+                return getModule<RuntimeModule>().getKeyState(key)
+            }
+
+            override fun getMouseButtonState(button: MouseButton): InputState {
+                return getModule<RuntimeModule>().getMouseButtonState(button)
+            }
         }
 
         with(executionContext) {
@@ -83,6 +90,7 @@ class ScriptModule : Module() {
                 ScriptLifeCycle.Attached -> scriptInstance.attached()
                 ScriptLifeCycle.Detached -> scriptInstance.detached()
                 is ScriptLifeCycle.Update -> scriptInstance.update(lifeCycle.delta)
+                is ScriptLifeCycle.HandleEvent -> scriptInstance.handleEvent(lifeCycle.event)
             }
         }
     }
