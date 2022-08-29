@@ -7,14 +7,17 @@ import calamansi.input.MouseButton
 import calamansi.runtime.data.ProjectConfig
 import calamansi.runtime.module.Module
 import calamansi.runtime.resource.ResourceModule
-import calamansi.runtime.sys.Window
-import calamansi.runtime.sys.glfw.GlfwWindowDriver
+import calamansi.runtime.sys.gfx.Gfx
+import calamansi.runtime.sys.gfx.vulkan.VulkanGfxDriver
+import calamansi.runtime.sys.window.Window
+import calamansi.runtime.sys.window.glfw.GlfwWindowDriver
 import kotlinx.serialization.json.decodeFromStream
 import java.util.concurrent.TimeUnit
 
 class RuntimeModule : Module(), InputContext {
     private var exitCode = 0
     private lateinit var window: Window
+    private lateinit var gfx: Gfx
 
     // TODO: move to separate module?
     val projectConfig by lazy(this::loadProjectConfig)
@@ -27,11 +30,13 @@ class RuntimeModule : Module(), InputContext {
         GlfwWindowDriver.init()
         window = GlfwWindowDriver.create(width, height, title)
 
+        VulkanGfxDriver.init()
+        gfx = VulkanGfxDriver.create()
+
         window.registerEventHandler { event ->
             sceneModule.publishEvent(event)
         }
 
-        window.makeContextCurrent()
         window.show()
     }
 
@@ -46,13 +51,21 @@ class RuntimeModule : Module(), InputContext {
         var lastTick = millis()
         var deltaMillis: Long
 
+        val surface = gfx.createSurface(window)
+
         do {
+            window.pollEvents()
+
             deltaMillis = (millis() - lastTick)
             lastTick = millis()
             frame(deltaMillis / 1000f)
 
-            window.swapBuffers()
-            window.pollEvents()
+            // for each renderable
+            // render start
+            val frame = gfx.startFrame(surface)
+
+            // submit draw call
+            frame.submit()
         } while (!window.shouldCloseWindow())
     }
 
@@ -65,7 +78,8 @@ class RuntimeModule : Module(), InputContext {
     override fun shutdown() {
         logger.info { "Runtime module shutting down." }
         window.destroy()
-        GlfwWindowDriver.terminate()
+        GlfwWindowDriver.shutdown()
+        VulkanGfxDriver.shutdown()
     }
 
     private fun loadProjectConfig(): ProjectConfig {

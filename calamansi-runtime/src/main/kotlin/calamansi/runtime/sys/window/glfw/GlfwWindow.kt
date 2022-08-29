@@ -1,51 +1,47 @@
-package calamansi.runtime.sys.glfw
+package calamansi.runtime.sys.window.glfw
 
 import calamansi.event.Event
 import calamansi.input.*
-import calamansi.runtime.input.InputModifierMapper
-import calamansi.runtime.input.InputStateMapper
-import calamansi.runtime.input.KeyMapper
-import calamansi.runtime.input.MouseButtonMapper
-import calamansi.runtime.sys.Window
+import calamansi.runtime.sys.window.Window
 import calamansi.window.WindowCloseEvent
 import calamansi.window.WindowFocusChangedEvent
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
 
-class GlfwWindow(private val window: Long, private val contextCreated: Boolean) : Window {
+class GlfwWindow(internal val handle: Long, private val contextCreated: Boolean) : Window {
     private val eventHandlers = mutableSetOf<(Event) -> Unit>()
 
     init {
         // register input callbacks
-        glfwSetKeyCallback(window, this::keyCallback)
-        glfwSetCharCallback(window, this::charCallback)
-        glfwSetMouseButtonCallback(window, this::mouseButtonCallback)
-        glfwSetCursorPosCallback(window, this::mouseCursorPositionCallback)
+        glfwSetKeyCallback(handle, this::keyCallback)
+        glfwSetCharCallback(handle, this::charCallback)
+        glfwSetMouseButtonCallback(handle, this::mouseButtonCallback)
+        glfwSetCursorPosCallback(handle, this::mouseCursorPositionCallback)
         // register window callbacks
-        glfwSetWindowFocusCallback(window, this::windowFocusCallback)
-        glfwSetWindowCloseCallback(window, this::windowCloseCallback)
+        glfwSetWindowFocusCallback(handle, this::windowFocusCallback)
+        glfwSetWindowCloseCallback(handle, this::windowCloseCallback)
     }
 
     override var title: String = ""
         set(value) {
             field = value
-            glfwSetWindowTitle(window, field)
+            glfwSetWindowTitle(handle, field)
         }
 
-    override fun makeContextCurrent() {
+    fun makeContextCurrent() {
         if (contextCreated) {
-            glfwMakeContextCurrent(window)
+            glfwMakeContextCurrent(handle)
         }
     }
 
-    override fun swapBuffers() {
+    fun swapBuffers() {
         if (contextCreated) {
-            glfwSwapBuffers(window)
+            glfwSwapBuffers(handle)
         }
     }
 
     override fun show() {
-        glfwShowWindow(window)
+        glfwShowWindow(handle)
     }
 
     override fun registerEventHandler(handler: (Event) -> Unit): AutoCloseable {
@@ -58,24 +54,24 @@ class GlfwWindow(private val window: Long, private val contextCreated: Boolean) 
     }
 
     override fun closeWindow() {
-        glfwSetWindowShouldClose(window, true)
+        glfwSetWindowShouldClose(handle, true)
     }
 
     override fun shouldCloseWindow(): Boolean {
-        return glfwWindowShouldClose(window)
+        return glfwWindowShouldClose(handle)
     }
 
     override fun destroy() {
-        glfwFreeCallbacks(window)
-        glfwDestroyWindow(window)
+        glfwFreeCallbacks(handle)
+        glfwDestroyWindow(handle)
     }
 
     override fun getKeyState(key: Key): InputState {
-        return InputStateMapper.fromGlfwState(glfwGetKey(window, KeyMapper.toGlfwKey(key)))
+        return InputStateMapper.fromGlfwState(glfwGetKey(handle, KeyMapper.toGlfwKey(key)))
     }
 
     override fun getMouseButtonState(button: MouseButton): InputState {
-        return InputStateMapper.fromGlfwState(glfwGetMouseButton(window, MouseButtonMapper.toGlfwButton(button)))
+        return InputStateMapper.fromGlfwState(glfwGetMouseButton(handle, MouseButtonMapper.toGlfwButton(button)))
     }
 
     private fun publishEvent(event: Event) {

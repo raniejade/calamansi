@@ -1,7 +1,7 @@
-package calamansi.runtime.sys.glfw
+package calamansi.runtime.sys.window.glfw
 
-import calamansi.runtime.sys.Window
-import calamansi.runtime.sys.WindowDriver
+import calamansi.runtime.sys.window.Window
+import calamansi.runtime.sys.window.WindowDriver
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.system.MemoryUtil
 
@@ -10,7 +10,7 @@ object GlfwWindowDriver : WindowDriver {
         check(GLFW.glfwInit()) { "Failed to start GLFW. " }
     }
 
-    override fun terminate() {
+    override fun shutdown() {
         GLFW.glfwTerminate()
     }
 

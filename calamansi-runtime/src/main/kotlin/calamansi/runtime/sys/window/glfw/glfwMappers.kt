@@ -1,4 +1,4 @@
-package calamansi.runtime.input
+package calamansi.runtime.sys.window.glfw
 
 import calamansi.input.InputModifier
 import calamansi.input.InputState

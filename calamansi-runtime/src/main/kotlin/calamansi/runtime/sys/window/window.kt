@@ -1,4 +1,4 @@
-package calamansi.runtime.sys
+package calamansi.runtime.sys.window
 
 import calamansi.event.Event
 import calamansi.input.InputContext
@@ -6,8 +6,6 @@ import calamansi.input.InputContext
 interface Window : InputContext {
     var title: String
 
-    fun makeContextCurrent()
-    fun swapBuffers()
     fun show()
 
     fun registerEventHandler(handler: (Event) -> Unit): AutoCloseable
@@ -22,5 +20,5 @@ interface Window : InputContext {
 interface WindowDriver {
     fun init()
     fun create(width: Int, height: Int, title: String = "", createContext: Boolean = false): Window
-    fun terminate()
+    fun shutdown()
 }
