@@ -17,10 +17,12 @@ object Deps {
     object lwjgl {
         const val core = "org.lwjgl:lwjgl:$lwjglVersion"
         const val glfw = "org.lwjgl:lwjgl-glfw:$lwjglVersion"
+        const val vulkan = "org.lwjgl:lwjgl-vulkan:$lwjglVersion"
 
         object runtime {
             val core = "org.lwjgl:lwjgl::$lwjglNatives"
             val glfw = "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+            val vulkan = "org.lwjgl:lwjgl-vulkan::$lwjglNatives"
         }
     }
 }

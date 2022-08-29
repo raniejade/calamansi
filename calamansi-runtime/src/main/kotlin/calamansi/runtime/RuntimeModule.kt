@@ -1,25 +1,20 @@
 package calamansi.runtime
 
-import calamansi.input.*
+import calamansi.input.InputContext
+import calamansi.input.InputState
+import calamansi.input.Key
+import calamansi.input.MouseButton
 import calamansi.runtime.data.ProjectConfig
-import calamansi.runtime.input.InputModifierMapper
-import calamansi.runtime.input.InputStateMapper
-import calamansi.runtime.input.KeyMapper
-import calamansi.runtime.input.MouseButtonMapper
 import calamansi.runtime.module.Module
 import calamansi.runtime.resource.ResourceModule
-import calamansi.window.WindowCloseEvent
-import calamansi.window.WindowFocusChangedEvent
+import calamansi.runtime.sys.Window
+import calamansi.runtime.sys.glfw.GlfwWindowDriver
 import kotlinx.serialization.json.decodeFromStream
-import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
-import org.lwjgl.glfw.GLFW.*
-import org.lwjgl.system.MemoryStack
-import org.lwjgl.system.MemoryUtil.NULL
 import java.util.concurrent.TimeUnit
 
 class RuntimeModule : Module(), InputContext {
-    private var window = NULL
     private var exitCode = 0
+    private lateinit var window: Window
 
     // TODO: move to separate module?
     val projectConfig by lazy(this::loadProjectConfig)
@@ -28,52 +23,23 @@ class RuntimeModule : Module(), InputContext {
 
     override fun start() {
         logger.info { "Runtime module started." }
+        val (width, height, title) = projectConfig
+        GlfwWindowDriver.init()
+        window = GlfwWindowDriver.create(width, height, title)
 
-        // init glfw
-        check(glfwInit()) { "Failed to start GLFW. " }
-        glfwDefaultWindowHints()
-        window = glfwCreateWindow(projectConfig.width, projectConfig.height, projectConfig.title, NULL, NULL)
-        check(window != NULL) { "Failed to create window. " }
-        // register input callbacks
-        glfwSetKeyCallback(window, this::keyCallback)
-        glfwSetCharCallback(window, this::charCallback)
-        glfwSetMouseButtonCallback(window, this::mouseButtonCallback)
-        glfwSetCursorPosCallback(window, this::mouseCursorPositionCallback)
-        // register window callbacks
-        glfwSetWindowFocusCallback(window, this::windowFocusCallback)
-        glfwSetWindowCloseCallback(window, this::windowCloseCallback)
-
-        // Get the thread stack and push a new frame
-        MemoryStack.stackPush().use { stack ->
-            val pWidth = stack.mallocInt(1) // int*
-            val pHeight = stack.mallocInt(1) // int*
-
-            // Get the window size passed to glfwCreateWindow
-            glfwGetWindowSize(window, pWidth, pHeight)
-
-            // Get the resolution of the primary monitor
-            val videoMode = checkNotNull(glfwGetVideoMode(glfwGetPrimaryMonitor()))
-
-            // Center the window
-            glfwSetWindowPos(
-                window,
-                (videoMode.width() - pWidth[0]) / 2,
-                (videoMode.height() - pHeight[0]) / 2
-            )
+        window.registerEventHandler { event ->
+            sceneModule.publishEvent(event)
         }
-        // Make the OpenGL context current
-        glfwMakeContextCurrent(window)
-        // Enable v-sync
-        glfwSwapInterval(1)
-        // Make the window visible
-        glfwShowWindow(window)
+
+        window.makeContextCurrent()
+        window.show()
     }
 
     fun getExitCode(): Int = exitCode
 
     fun requestExit(exitCode: Int) {
         this.exitCode = exitCode
-        glfwSetWindowShouldClose(window, true)
+        window.closeWindow()
     }
 
     fun loop() {
@@ -85,12 +51,9 @@ class RuntimeModule : Module(), InputContext {
             lastTick = millis()
             frame(deltaMillis / 1000f)
 
-            glfwSwapBuffers(window)// swap the color buffers
-
-            // Poll for window events. The key callback above will only be
-            // invoked during this call.
-            glfwPollEvents()
-        } while (!glfwWindowShouldClose(window))
+            window.swapBuffers()
+            window.pollEvents()
+        } while (!window.shouldCloseWindow())
     }
 
     private fun frame(delta: Float) {
@@ -101,11 +64,8 @@ class RuntimeModule : Module(), InputContext {
 
     override fun shutdown() {
         logger.info { "Runtime module shutting down." }
-        glfwFreeCallbacks(window)
-        glfwDestroyWindow(window)
-
-        // Terminate GLFW and free the error callback
-        glfwTerminate()
+        window.destroy()
+        GlfwWindowDriver.terminate()
     }
 
     private fun loadProjectConfig(): ProjectConfig {
@@ -115,52 +75,11 @@ class RuntimeModule : Module(), InputContext {
         return json.decodeFromStream(inputStream)
     }
 
-    private fun keyCallback(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-        sceneModule.publishEvent(
-            KeyStateEvent(
-                KeyMapper.fromGlfwKey(key),
-                InputStateMapper.fromGlfwState(action),
-                InputModifierMapper.fromGlfwModifier(mods)
-            )
-        )
-    }
-
-    private fun charCallback(window: Long, codePoint: Int) {
-        val char = Char(codePoint)
-        sceneModule.publishEvent(TextEvent(char))
-    }
-
-    private fun mouseButtonCallback(window: Long, button: Int, action: Int, mods: Int) {
-        sceneModule.publishEvent(
-            MouseButtonStateEvent(
-                MouseButtonMapper.fromGlfwMouseButton(button),
-                InputStateMapper.fromGlfwState(action),
-                InputModifierMapper.fromGlfwModifier(mods)
-            )
-        )
-    }
-
-    private fun mouseCursorPositionCallback(window: Long, x: Double, y: Double) {
-        sceneModule.publishEvent(MouseMoveEvent(x.toFloat(), y.toFloat()))
-    }
-
-    private fun windowCloseCallback(window: Long) {
-        val event = WindowCloseEvent()
-        sceneModule.publishEvent(event)
-        if (!event.isConsumed()) {
-            requestExit(0)
-        }
-    }
-
-    private fun windowFocusCallback(window: Long, focused: Boolean) {
-        sceneModule.publishEvent(WindowFocusChangedEvent(focused))
-    }
-
     override fun getKeyState(key: Key): InputState {
-        return InputStateMapper.fromGlfwState(glfwGetKey(window, KeyMapper.toGlfwKey(key)))
+        return window.getKeyState(key)
     }
 
     override fun getMouseButtonState(button: MouseButton): InputState {
-        return InputStateMapper.fromGlfwState(glfwGetMouseButton(window, MouseButtonMapper.toGlfwButton(button)))
+        return window.getMouseButtonState(button)
     }
 }

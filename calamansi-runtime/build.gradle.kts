@@ -9,9 +9,11 @@ dependencies {
     implementation(Deps.kotlinSerializationJson)
     implementation(Deps.lwjgl.core)
     implementation(Deps.lwjgl.glfw)
+    implementation(Deps.lwjgl.vulkan)
 
     runtimeOnly(Deps.lwjgl.runtime.core)
     runtimeOnly(Deps.lwjgl.runtime.glfw)
+    runtimeOnly(Deps.lwjgl.runtime.vulkan)
 
     kspTest(project(":calamansi-symbol-processor"))
 }
