@@ -7,6 +7,7 @@ plugins {
 dependencies {
     implementation(project(":calamansi-api"))
     implementation(Deps.kotlinSerializationJson)
+    implementation(Deps.kotlinCoroutines)
     implementation(Deps.lwjgl.core)
     implementation(Deps.lwjgl.glfw)
     implementation(Deps.lwjgl.vulkan)

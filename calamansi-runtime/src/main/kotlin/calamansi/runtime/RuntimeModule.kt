@@ -11,13 +11,44 @@ import calamansi.runtime.sys.gfx.Gfx
 import calamansi.runtime.sys.gfx.vulkan.VulkanGfxDriver
 import calamansi.runtime.sys.window.Window
 import calamansi.runtime.sys.window.glfw.GlfwWindowDriver
+import kotlinx.coroutines.*
 import kotlinx.serialization.json.decodeFromStream
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.CoroutineContext
+
+object MainDispatcher : CoroutineDispatcher() {
+    private lateinit var thread: Thread
+    private val queue = LinkedBlockingQueue<java.lang.Runnable>()
+    private var shouldShutdown = false
+
+    override fun isDispatchNeeded(context: CoroutineContext): Boolean {
+        return thread !== Thread.currentThread()
+    }
+
+    override fun dispatch(context: CoroutineContext, block: Runnable) {
+        queue.put(block)
+    }
+
+    fun shutdown() {
+        shouldShutdown = true
+    }
+
+    fun loop() {
+        thread = Thread.currentThread()
+
+        while (!shouldShutdown) {
+            queue.poll()?.run()
+        }
+    }
+}
 
 class RuntimeModule : Module(), InputContext {
     private var exitCode = 0
     private lateinit var window: Window
     private lateinit var gfx: Gfx
+    @OptIn(DelicateCoroutinesApi::class)
+    private val frameDispatcher = newSingleThreadContext("calamansi-frame")
 
     // TODO: move to separate module?
     val projectConfig by lazy(this::loadProjectConfig)
@@ -34,7 +65,14 @@ class RuntimeModule : Module(), InputContext {
         gfx = VulkanGfxDriver.create()
 
         window.registerEventHandler { event ->
-            sceneModule.publishEvent(event)
+            val scope = CoroutineScope(Dispatchers.Default)
+            runBlocking {
+                coroutineScope {
+                    withContext(frameDispatcher) {
+                        sceneModule.publishEvent(event)
+                    }
+                }
+            }
         }
 
         window.show()
@@ -53,24 +91,72 @@ class RuntimeModule : Module(), InputContext {
 
         val surface = gfx.createSurface(window)
 
-        do {
-            window.pollEvents()
+        val t = Thread {
+            runBlocking {
+                do {
+                    withContext(MainDispatcher) {
+                        window.pollEvents()
+                    }
 
-            deltaMillis = (millis() - lastTick)
-            lastTick = millis()
-            frame(deltaMillis / 1000f)
+                    withContext(frameDispatcher) {
+                        deltaMillis = (millis() - lastTick)
+                        lastTick = millis()
+                        frame(deltaMillis / 1000f).join()
+                    }
 
-            // for each renderable
-            // render start
-            val frame = gfx.startFrame(surface)
+                    withContext(MainDispatcher) {
+                        // for each renderable
+                        // render start
+                        val frame = gfx.startDraw(surface)
 
-            // submit draw call
-            frame.submit()
-        } while (!window.shouldCloseWindow())
+                        // submit draw call
+                        // frame.draw(DrawMode.TRIANGLE)
+                    }
+
+                } while (!window.shouldCloseWindow())
+            }
+
+            MainDispatcher.shutdown()
+        }
+        t.name = "calamansi-sync"
+        t.isDaemon = true
+        t.start()
+
+        MainDispatcher.loop()
+
+//        runBlocking {
+//            do {
+//                window.pollEvents()
+//
+//                deltaMillis = (millis() - lastTick)
+//                lastTick = millis()
+//                val job = frame(deltaMillis / 1000f)
+//                var frameProcessed = false
+//
+//                while (!frameProcessed) {
+//                    select<Unit> {
+//                        // render frame
+//                        job.onJoin {
+//                            // for each renderable
+//                            // render start
+//                            val frame = gfx.startDraw(surface)
+//
+//                            // submit draw call
+//                            // frame.draw(DrawMode.TRIANGLE)
+//                            frameProcessed = true
+//                        }
+//                    }
+//                }
+//            } while (!window.shouldCloseWindow())
+//        }
     }
 
-    private fun frame(delta: Float) {
-        getModule<SceneModule>().frame(delta)
+    private suspend fun frame(delta: Float): Job {
+        return coroutineScope {
+            launch(Dispatchers.Default) {
+                getModule<SceneModule>().frame(delta)
+            }
+        }
     }
 
     private fun millis() = TimeUnit.NANOSECONDS.toMillis(System.nanoTime())

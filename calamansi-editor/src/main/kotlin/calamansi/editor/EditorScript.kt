@@ -16,7 +16,7 @@ class EditorScript : Script() {
     }
 
     context(ExecutionContext) override fun handleEvent(event: Event) {
-        logger.info { "Received event: $event" }
+        logger.info { "Received event: $event - ${Thread.currentThread()}" }
     }
 
     context(ExecutionContext) override fun update(delta: Float) {

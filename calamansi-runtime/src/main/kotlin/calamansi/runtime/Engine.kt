@@ -34,6 +34,7 @@ class Engine {
     }
 
     fun run() {
+        Thread.currentThread().name = "calamansi-main"
         start()
         runtimeModule.loop()
         shutdown()
