@@ -11,6 +11,7 @@ import calamansi.runtime.resource.source.JarFileSource
 import calamansi.runtime.resource.source.RelativeFileSource
 import calamansi.runtime.scripting.ScriptModule
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlin.system.exitProcess
 
 
@@ -41,7 +42,9 @@ class Engine {
             runBlocking {
                 // load default scene
                 val defaultScene = runtimeModule.projectConfig.defaultScene
-                sceneModule.setCurrentScene(resourceModule.fetchResource(defaultScene) as ResourceRef<Scene>)
+                withContext(ScriptDispatcher) {
+                    sceneModule.setCurrentScene(resourceModule.fetchResource(defaultScene) as ResourceRef<Scene>)
+                }
                 runtimeModule.mainLoop()
                 sceneModule.unloadCurrentScene()
             }

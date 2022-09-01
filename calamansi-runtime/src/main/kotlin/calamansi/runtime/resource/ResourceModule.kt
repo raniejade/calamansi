@@ -2,9 +2,11 @@ package calamansi.runtime.resource
 
 import calamansi.resource.Resource
 import calamansi.resource.ResourceRef
+import calamansi.runtime.ResourceDispatcher
 import calamansi.runtime.module.Module
 import calamansi.runtime.registry.RegistryModule
 import calamansi.runtime.resource.source.FileSource
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.io.IOException
@@ -57,8 +59,10 @@ class ResourceModule : Module() {
         val source = getSource(path.protocol)
         val loader = getLoader(path.extension)
         val resourceRef = ResourceRefImpl(resource) {
-            logger.debug { "Loading resource: $resource" }
-            loader.load(source.getReader(path.resource))
+            withContext(ResourceDispatcher) {
+                logger.debug { "Loading resource: $resource" }
+                loader.load(source.getReader(path.resource))
+            }
         }
         // value is a weak reference, meaning it won't stop the ref from being gc'd
         loadedResources[resource] = WeakReference(resourceRef)

@@ -19,8 +19,6 @@ class RuntimeModule : Module(), InputContext {
     private var exitCode = 0
     private lateinit var window: Window
     private lateinit var gfx: Gfx
-    @OptIn(DelicateCoroutinesApi::class)
-    private val scriptDispatcher = newSingleThreadContext("calamansi-script")
 
     private val publishedEvents = mutableListOf<Job>()
 
@@ -41,7 +39,7 @@ class RuntimeModule : Module(), InputContext {
         window.registerEventHandler { event ->
             val job = GlobalScope.launch {
                 coroutineScope {
-                    launch(scriptDispatcher) {
+                    launch(ScriptDispatcher) {
                         sceneModule.publishEvent(event)
                     }
                 }
@@ -74,7 +72,7 @@ class RuntimeModule : Module(), InputContext {
                 copy.joinAll()
             }
 
-            withContext(scriptDispatcher) {
+            withContext(ScriptDispatcher) {
                 deltaMillis = (millis() - lastTick)
                 lastTick = millis()
                 frame(deltaMillis / 1000f).join()
