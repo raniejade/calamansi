@@ -13,7 +13,7 @@ class ResourceRefSerializer : KSerializer<ResourceRef<out Resource>> {
     override val descriptor: SerialDescriptor = String.serializer().descriptor
 
     override fun deserialize(decoder: Decoder): ResourceRef<out Resource> {
-        return Module.getModule<ResourceModule>().loadResource(decoder.decodeSerializableValue(String.serializer()))
+        return Module.getModule<ResourceModule>().fetchResource(decoder.decodeSerializableValue(String.serializer()))
     }
 
     override fun serialize(encoder: Encoder, value: ResourceRef<out Resource>) {

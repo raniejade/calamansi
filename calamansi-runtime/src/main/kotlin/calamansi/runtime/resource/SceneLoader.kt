@@ -2,11 +2,15 @@ package calamansi.runtime.resource
 
 import calamansi.Node
 import calamansi.Scene
+import calamansi.runtime.MainDispatcher
 import calamansi.runtime.NodeImpl
 import calamansi.runtime.data.SerializedNode
 import calamansi.runtime.data.SerializedScene
 import calamansi.runtime.module.Module
+import calamansi.runtime.registry.ComponentData
 import calamansi.runtime.registry.RegistryModule
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.decodeFromStream
 import java.io.InputStream
 
@@ -16,30 +20,32 @@ class SceneLoader : ResourceLoader<Scene> {
     }
 
     private inner class SceneImpl(val serializedScene: SerializedScene) : Scene {
-        override fun create(): Node? {
-            return buildSceneGraph(serializedScene)
+        override suspend fun create(preloadResources: Boolean): Node? {
+            return buildSceneGraph(serializedScene, preloadResources)
         }
     }
 
     override val supportedExtensions: Set<String> = setOf("scn")
 
-    override fun load(
+    override suspend fun load(
         inputStream: InputStream,
     ): LoadedResource<Scene> {
-        val serializedScene =
-            Module.getModule<ResourceModule>().getJsonSerializer().decodeFromStream<SerializedScene>(inputStream)
-        return LoadedResource(SceneImpl(serializedScene)) {
-            // no clean up needed, once this scene is garbage collected every sub resource
-            // will be collected as well (if there are no other reference to the sub resource).
+        return coroutineScope {
+            val serializedScene =
+                Module.getModule<ResourceModule>().getJsonSerializer().decodeFromStream<SerializedScene>(inputStream)
+            LoadedResource(SceneImpl(serializedScene)) {
+                // no clean up needed, once this scene is garbage collected every sub resource
+                // will be collected as well (if there are no other reference to the sub resource).
+            }
         }
     }
 
-    private fun buildSceneGraph(scene: SerializedScene): NodeImpl? {
+    private suspend fun buildSceneGraph(scene: SerializedScene, preloadResources: Boolean): NodeImpl? {
         val potentialRoots = mutableListOf<NodeImpl>()
         val nodes = mutableListOf<NodeImpl>()
         // first pass: create all nodes without establishing hierarchy
         for (serializedNode in scene.nodes) {
-            val node = createNode(serializedNode)
+            val node = createNode(serializedNode, preloadResources)
             nodes.add(node)
         }
 
@@ -76,13 +82,16 @@ class SceneLoader : ResourceLoader<Scene> {
     }
 
     // only sets component, parent is established in second pass
-    private fun createNode(config: SerializedNode): NodeImpl {
+    private suspend fun createNode(config: SerializedNode, preloadResources: Boolean): NodeImpl {
         check(config.name.isNotBlank()) { "Node has blank name" }
         val node = NodeImpl(config.name, config.script)
 
         for (data in config.components) {
             val component = node.addComponent(data.type)
             Module.getModule<RegistryModule>().fromComponentData(data, component)
+            if (preloadResources) {
+                data.preloadResourceRefs()
+            }
         }
         return node
     }

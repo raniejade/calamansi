@@ -20,8 +20,8 @@ abstract class Node {
     abstract val script: Script?
     abstract fun hasScript(): Boolean
 
-    abstract fun addChild(node: Node): Boolean
-    abstract fun removeChild(node: Node): Boolean
+    abstract suspend fun addChild(node: Node): Boolean
+    abstract suspend fun removeChild(node: Node): Boolean
     abstract fun getChildren(): List<Node>
 
     abstract fun hasChildren(): Boolean

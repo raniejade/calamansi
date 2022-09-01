@@ -3,5 +3,5 @@ package calamansi
 import calamansi.resource.Resource
 
 interface Scene : Resource {
-    fun create(): Node?
+    suspend fun create(preloadResources: Boolean = true): Node?
 }

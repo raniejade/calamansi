@@ -26,7 +26,6 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         get() = scriptHandle?.let { Module.getModule<ScriptModule>().getScriptInstance(it) }
 
     var isAttached: Boolean = false
-        get() = field
         set(value) {
             field = value
 
@@ -97,7 +96,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         return script != null
     }
 
-    override fun addChild(node: Node): Boolean {
+    override suspend fun addChild(node: Node): Boolean {
         require(node is NodeImpl)
         if (isSelfOrAncestor(this, node)) {
             logger.warn { "Not adding $node to $this, cycles detected." }
@@ -118,7 +117,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         return added
     }
 
-    override fun removeChild(node: Node): Boolean {
+    override suspend fun removeChild(node: Node): Boolean {
         require(node is NodeImpl)
         val removed = children.remove(node)
 
@@ -143,19 +142,19 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         return children.isNotEmpty()
     }
 
-    fun handleEvent(event: Event) {
+    suspend fun handleEvent(event: Event) {
         doExecuteHandleEventCallback(this, event)
     }
 
-    fun update(delta: Float) {
+    suspend fun update(delta: Float) {
         doExecuteUpdateCallback(this, delta)
     }
 
-    fun attached() {
+    suspend fun attached() {
         doExecuteAttachCallback(this)
     }
 
-    fun detached() {
+    suspend fun detached() {
         doExecuteDetachCallback(this)
     }
 
@@ -168,14 +167,14 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
             Module.getLogger(NodeImpl::class)
         }
 
-        private fun detachFromParent(child: NodeImpl) {
+        private suspend fun detachFromParent(child: NodeImpl) {
             if (child._parent == null) {
                 return
             }
             child._parent!!.removeChild(child)
         }
 
-        private fun doExecuteDetachCallback(node: NodeImpl) {
+        private suspend fun doExecuteDetachCallback(node: NodeImpl) {
             if (!node.isAttached) {
                 return
             }
@@ -187,7 +186,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
             }
         }
 
-        private fun doExecuteAttachCallback(node: NodeImpl) {
+        private suspend fun doExecuteAttachCallback(node: NodeImpl) {
             if (!node.isAttached) {
                 return
             }
@@ -199,7 +198,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
             }
         }
 
-        private fun doExecuteHandleEventCallback(node: NodeImpl, event: Event) {
+        private suspend fun doExecuteHandleEventCallback(node: NodeImpl, event: Event) {
             if (!node.isAttached) {
                 return
             }
@@ -217,7 +216,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
             }
         }
 
-        private fun doExecuteUpdateCallback(node: NodeImpl, delta: Float) {
+        private suspend fun doExecuteUpdateCallback(node: NodeImpl, delta: Float) {
             if (!node.isAttached) {
                 return
             }

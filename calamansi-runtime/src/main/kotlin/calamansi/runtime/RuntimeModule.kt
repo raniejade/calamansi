@@ -13,42 +13,16 @@ import calamansi.runtime.sys.window.Window
 import calamansi.runtime.sys.window.glfw.GlfwWindowDriver
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.decodeFromStream
-import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.CoroutineContext
-
-object MainDispatcher : CoroutineDispatcher() {
-    private lateinit var thread: Thread
-    private val queue = LinkedBlockingQueue<java.lang.Runnable>()
-    private var shouldShutdown = false
-
-    override fun isDispatchNeeded(context: CoroutineContext): Boolean {
-        return thread !== Thread.currentThread()
-    }
-
-    override fun dispatch(context: CoroutineContext, block: Runnable) {
-        queue.put(block)
-    }
-
-    fun shutdown() {
-        shouldShutdown = true
-    }
-
-    fun loop() {
-        thread = Thread.currentThread()
-
-        while (!shouldShutdown) {
-            queue.poll()?.run()
-        }
-    }
-}
 
 class RuntimeModule : Module(), InputContext {
     private var exitCode = 0
     private lateinit var window: Window
     private lateinit var gfx: Gfx
     @OptIn(DelicateCoroutinesApi::class)
-    private val frameDispatcher = newSingleThreadContext("calamansi-frame")
+    private val scriptDispatcher = newSingleThreadContext("calamansi-script")
+
+    private val publishedEvents = mutableListOf<Job>()
 
     // TODO: move to separate module?
     val projectConfig by lazy(this::loadProjectConfig)
@@ -65,14 +39,15 @@ class RuntimeModule : Module(), InputContext {
         gfx = VulkanGfxDriver.create()
 
         window.registerEventHandler { event ->
-            val scope = CoroutineScope(Dispatchers.Default)
-            runBlocking {
+            val job = GlobalScope.launch {
                 coroutineScope {
-                    withContext(frameDispatcher) {
+                    launch(scriptDispatcher) {
                         sceneModule.publishEvent(event)
                     }
                 }
             }
+
+            publishedEvents.add(job)
         }
 
         window.show()
@@ -85,44 +60,36 @@ class RuntimeModule : Module(), InputContext {
         window.closeWindow()
     }
 
-    fun loop() {
+    suspend fun mainLoop() {
         var lastTick = millis()
         var deltaMillis: Long
 
         val surface = gfx.createSurface(window)
 
-        val t = Thread {
-            runBlocking {
-                do {
-                    withContext(MainDispatcher) {
-                        window.pollEvents()
-                    }
-
-                    withContext(frameDispatcher) {
-                        deltaMillis = (millis() - lastTick)
-                        lastTick = millis()
-                        frame(deltaMillis / 1000f).join()
-                    }
-
-                    withContext(MainDispatcher) {
-                        // for each renderable
-                        // render start
-                        val frame = gfx.startDraw(surface)
-
-                        // submit draw call
-                        // frame.draw(DrawMode.TRIANGLE)
-                    }
-
-                } while (!window.shouldCloseWindow())
+        do {
+            withContext(MainDispatcher) {
+                window.pollEvents()
+                val copy = publishedEvents.toList()
+                publishedEvents.clear()
+                copy.joinAll()
             }
 
-            MainDispatcher.shutdown()
-        }
-        t.name = "calamansi-sync"
-        t.isDaemon = true
-        t.start()
+            withContext(scriptDispatcher) {
+                deltaMillis = (millis() - lastTick)
+                lastTick = millis()
+                frame(deltaMillis / 1000f).join()
+            }
 
-        MainDispatcher.loop()
+            withContext(MainDispatcher) {
+                // for each renderable
+                // render start
+                val frame = gfx.startDraw(surface)
+
+                // submit draw call
+                // frame.draw(DrawMode.TRIANGLE)
+            }
+
+        } while (!window.shouldCloseWindow())
 
 //        runBlocking {
 //            do {

@@ -4,6 +4,7 @@ import calamansi.runtime.helpers.EngineTest
 import calamansi.runtime.helpers.TestComponent
 import calamansi.runtime.helpers.TestScript
 import calamansi.runtime.helpers.dataType
+import kotlinx.coroutines.runBlocking
 import kotlin.test.*
 
 class SceneLoaderTest : EngineTest() {
@@ -15,7 +16,7 @@ class SceneLoaderTest : EngineTest() {
     }
 
     @Test
-    fun simple() {
+    fun simple() = runBlocking {
         // language=JSON
         val raw = """
             {
@@ -35,7 +36,9 @@ class SceneLoaderTest : EngineTest() {
         """.trimIndent()
 
 
-        val scene = raw.byteInputStream().use(sceneLoader::load)
+        val scene = raw.byteInputStream().use {
+            sceneLoader.load(it)
+        }
         val root = assertNotNull(scene.resource.create())
         assertTrue(root.getChildren().isEmpty())
         assertEquals("root", root.name)
@@ -45,7 +48,7 @@ class SceneLoaderTest : EngineTest() {
     }
 
     @Test
-    fun multiplePossibleRoots() {
+    fun multiplePossibleRoots() = runBlocking {
         // language=JSON
         val raw = """
             {
@@ -67,7 +70,9 @@ class SceneLoaderTest : EngineTest() {
             }
         """.trimIndent()
 
-        val scene = raw.byteInputStream().use(sceneLoader::load)
+        val scene = raw.byteInputStream().use {
+            sceneLoader.load(it)
+        }
         val instance = scene.resource.create()
         assertNotNull(instance)
         assertTrue(instance.getChildren().isEmpty())
@@ -75,7 +80,7 @@ class SceneLoaderTest : EngineTest() {
     }
 
     @Test
-    fun nested() {
+    fun nested() = runBlocking {
         // language=JSON
         val raw = """
             {
@@ -107,7 +112,9 @@ class SceneLoaderTest : EngineTest() {
         """.trimIndent()
 
 
-        val scene = raw.byteInputStream().use(sceneLoader::load)
+        val scene = raw.byteInputStream().use {
+            sceneLoader.load(it)
+        }
         val root = assertNotNull(scene.resource.create())
         assertEquals("root", root.name)
         assertNull(root.script)
@@ -133,7 +140,7 @@ class SceneLoaderTest : EngineTest() {
     }
 
     @Test
-    fun noRoot() {
+    fun noRoot() = runBlocking {
         // language=JSON
         val raw = """
             {
@@ -154,18 +161,22 @@ class SceneLoaderTest : EngineTest() {
             }
         """.trimIndent()
 
-        val scene = raw.byteInputStream().use(sceneLoader::load)
+        val scene = raw.byteInputStream().use {
+            sceneLoader.load(it)
+        }
         assertNull(scene.resource.create())
     }
 
     @Test
-    fun decodeEmptyScene() {
+    fun decodeEmptyScene() = runBlocking {
         // language=JSON
         val raw = """
             {}
         """.trimIndent()
 
-        val scene = raw.byteInputStream().use(sceneLoader::load)
+        val scene = raw.byteInputStream().use {
+            sceneLoader.load(it)
+        }
         assertNull(scene.resource.create())
     }
 }

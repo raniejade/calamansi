@@ -8,10 +8,11 @@ import calamansi.runtime.helpers.ComponentWithNestedDependency
 import calamansi.runtime.helpers.EngineTest
 import calamansi.runtime.helpers.TestComponent
 import calamansi.window.WindowCloseEvent
+import kotlinx.coroutines.runBlocking
 import java.lang.RuntimeException
 import kotlin.test.*
 class EventCountingScript : Script() {
-    context(ExecutionContext) override fun handleEvent(event: Event) {
+    context(ExecutionContext) override suspend fun handleEvent(event: Event) {
         counter++
     }
 
@@ -21,20 +22,20 @@ class EventCountingScript : Script() {
 }
 
 class EventConsumingScript : Script() {
-    context(ExecutionContext) override fun handleEvent(event: Event) {
+    context(ExecutionContext) override suspend fun handleEvent(event: Event) {
         event.consume()
     }
 }
 
 class EventFailingScript : Script() {
-    context(ExecutionContext) override fun handleEvent(event: Event) {
+    context(ExecutionContext) override suspend fun handleEvent(event: Event) {
         throw RuntimeException()
     }
 }
 
 class NodeTest : EngineTest() {
     @Test
-    fun cycles() {
+    fun cycles() = runBlocking {
         val root = NodeImpl("root", null)
         val child = NodeImpl("child", null)
 
@@ -134,7 +135,7 @@ class NodeTest : EngineTest() {
     }
 
     @Test
-    fun consumedEventNotPropagated() {
+    fun consumedEventNotPropagated() = runBlocking {
 
         val root = NodeImpl("root", EventConsumingScript::class.qualifiedName)
         root.isAttached = true
@@ -146,7 +147,7 @@ class NodeTest : EngineTest() {
     }
 
     @Test
-    fun eventPropagated() {
+    fun eventPropagated() = runBlocking {
 
         val root = NodeImpl("root", EventCountingScript::class.qualifiedName)
         root.isAttached = true

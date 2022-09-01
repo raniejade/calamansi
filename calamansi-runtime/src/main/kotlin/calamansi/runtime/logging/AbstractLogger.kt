@@ -42,6 +42,6 @@ abstract class AbstractLogger(private val source: String, var logLevel: LogLevel
 
     private fun format(msg: String, level: LogLevel): String {
         val prefix = "[$level]".padEnd(5 /* length of DEBUG and ERROR */ + 2 /* [ ] characters */)
-        return "$prefix ($source): $msg"
+        return "$prefix [${Thread.currentThread().name}] ($source): $msg"
     }
 }

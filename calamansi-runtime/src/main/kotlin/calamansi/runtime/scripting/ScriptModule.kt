@@ -4,7 +4,6 @@ import calamansi.ExecutionContext
 import calamansi.Node
 import calamansi.Scene
 import calamansi.Script
-import calamansi.input.InputContext
 import calamansi.input.InputState
 import calamansi.input.Key
 import calamansi.input.MouseButton
@@ -50,7 +49,7 @@ class ScriptModule : Module() {
         return checkNotNull(scripts[script]).instance
     }
 
-    fun invokeLifeCycle(script: Handle, lifeCycle: ScriptLifeCycle) {
+    suspend fun invokeLifeCycle(script: Handle, lifeCycle: ScriptLifeCycle) {
         val (scriptInstance, owner) = checkNotNull(scripts[script])
         val executionContext = object : ExecutionContext {
             override val Script.owner: Node
@@ -60,12 +59,16 @@ class ScriptModule : Module() {
                 return NodeImpl(name, script?.let { it.qualifiedName })
             }
 
-            override fun setCurrentScene(scene: ResourceRef<Scene>) {
+            override suspend fun setCurrentScene(scene: ResourceRef<Scene>) {
                 getModule<SceneModule>().setCurrentScene(scene)
             }
 
-            override fun <T : Resource> loadResource(resource: String): ResourceRef<T> {
-                return getModule<ResourceModule>().loadResource(resource) as ResourceRef<T>
+            override suspend fun <T : Resource> fetchResource(resource: String, preload: Boolean): ResourceRef<T> {
+                val ref = getModule<ResourceModule>().fetchResource(resource) as ResourceRef<T>
+                if (preload) {
+                    ref.get()
+                }
+                return ref
             }
 
             override fun exit(exitCode: Int) {

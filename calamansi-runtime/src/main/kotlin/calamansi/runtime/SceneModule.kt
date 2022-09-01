@@ -15,7 +15,8 @@ class SceneModule : Module() {
         logger.info { "Node module started." }
     }
 
-    fun setCurrentScene(scene: ResourceRef<Scene>) {
+    suspend fun setCurrentScene(scene: ResourceRef<Scene>) {
+        logger.info { "Setting current scene: ${scene.path}" }
         maybeDetachCurrentScene()
         root = scene.get().create() as NodeImpl?
         root?.let {
@@ -24,19 +25,19 @@ class SceneModule : Module() {
         }
     }
 
-    fun frame(delta: Float) {
+    suspend fun frame(delta: Float) {
         root?.let { it.update(delta) }
     }
 
-    fun publishEvent(event: Event) {
+    suspend fun publishEvent(event: Event) {
         root?.let { it.handleEvent(event) }
     }
 
-    fun unloadCurrentScene() {
+    suspend fun unloadCurrentScene() {
         maybeDetachCurrentScene()
     }
 
-    private fun maybeDetachCurrentScene() {
+    private suspend fun maybeDetachCurrentScene() {
         root?.let {
             it.detached()
             it.isAttached = false

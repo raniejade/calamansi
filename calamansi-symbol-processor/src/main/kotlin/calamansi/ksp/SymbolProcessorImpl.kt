@@ -129,6 +129,9 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 "${prop.name} = component.${prop.name}"
             }
 
+            val resourceRefs = definition.properties.filter { it.type.qualifiedName?.asString() == QualifiedNames.ResourceRef }
+                .joinToString(separator = "\n${indent(4, 2)}") { "${it.name}.get()" }
+
             val fromDataAssignments = definition.properties.joinToString(separator = "\n${indent(4, 2)}") { prop ->
                 "component.${prop.name} = data.${prop.name}"
             }
@@ -169,6 +172,10 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 ) : ComponentData<$componentQualifiedName> {
                     override val type: KClass<$componentQualifiedName>
                         get() = $componentQualifiedName::class
+                        
+                    override suspend fun preloadResourceRefs() {
+                        $resourceRefs
+                    }
                 }
                 
                 class ${definition.name} : ComponentDefinition<$componentQualifiedName> {
@@ -333,6 +340,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             const val Property = "calamansi.Property"
             const val Dependencies = "calamansi.Dependencies"
             const val Script = "calamansi.Script"
+            const val ResourceRef = "calamansi.resource.ResourceRef"
         }
 
         // extra baseIndent indents is for trimIndent when using string blocks

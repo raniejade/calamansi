@@ -1,5 +1,5 @@
 package calamansi.resource
 
 interface ResourceContext {
-    fun <T: Resource> loadResource(resource: String): ResourceRef<T>
+    suspend fun <T : Resource> fetchResource(resource: String, preload: Boolean = true): ResourceRef<T>
 }

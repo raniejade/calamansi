@@ -10,7 +10,7 @@ import calamansi.runtime.resource.SceneLoader
 import calamansi.runtime.resource.source.JarFileSource
 import calamansi.runtime.resource.source.RelativeFileSource
 import calamansi.runtime.scripting.ScriptModule
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.runBlocking
 import kotlin.system.exitProcess
 
 
@@ -36,12 +36,28 @@ class Engine {
     fun run() {
         Thread.currentThread().name = "calamansi-main"
         start()
-        runtimeModule.loop()
+
+        val t = Thread {
+            runBlocking {
+                // load default scene
+                val defaultScene = runtimeModule.projectConfig.defaultScene
+                sceneModule.setCurrentScene(resourceModule.fetchResource(defaultScene) as ResourceRef<Scene>)
+                runtimeModule.mainLoop()
+                sceneModule.unloadCurrentScene()
+            }
+            MainDispatcher.shutdown()
+        }
+
+        t.name = "calamansi-sync"
+        t.isDaemon = true
+        t.start()
+        MainDispatcher.loop()
+
         shutdown()
     }
 
     private fun start() {
-        Module.configureLogging(LogLevel.INFO)
+        Module.configureLogging(LogLevel.DEBUG)
         modules.forEach(Module::start)
         registryModule.pushContext(this::class.java.classLoader)
 
@@ -55,15 +71,9 @@ class Engine {
         // resource loaders
         logger.info { "Registering resource loaders." }
         resourceModule.registerLoader(SceneLoader())
-
-        // load default scene
-        val defaultScene = runtimeModule.projectConfig.defaultScene
-        logger.info { "Using default scene: $defaultScene" }
-        sceneModule.setCurrentScene(resourceModule.loadResource(defaultScene) as ResourceRef<Scene>)
     }
 
     private fun shutdown() {
-        sceneModule.unloadCurrentScene()
         registryModule.popContext()
         val exitCode = runtimeModule.getExitCode()
         modules.reversed().forEach(Module::shutdown)

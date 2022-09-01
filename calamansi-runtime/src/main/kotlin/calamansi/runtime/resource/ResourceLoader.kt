@@ -7,5 +7,5 @@ data class LoadedResource<T : Resource>(val resource: T, val cleanup: () -> Unit
 
 interface ResourceLoader<T : Resource> {
     val supportedExtensions: Set<String>
-    fun load(inputStream: InputStream): LoadedResource<T>
+    suspend fun load(inputStream: InputStream): LoadedResource<T>
 }

@@ -11,6 +11,7 @@ import java.io.IOException
 import java.lang.ref.Cleaner
 import java.lang.ref.WeakReference
 import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicReference
 
 class ResourceModule : Module() {
     private val sources = mutableMapOf<String, FileSource>()
@@ -46,7 +47,7 @@ class ResourceModule : Module() {
 
     }
 
-    fun loadResource(resource: String): ResourceRef<out Resource> {
+    fun fetchResource(resource: String): ResourceRef<out Resource> {
         val cached = loadedResources[resource]?.get()
         if (cached != null) {
             return cached
@@ -55,12 +56,12 @@ class ResourceModule : Module() {
         val path = ParsedPath.parse(resource)
         val source = getSource(path.protocol)
         val loader = getLoader(path.extension)
-        val loadedResource = loader.load(source.getReader(path.resource))
-        val resourceRef = ResourceRefImpl(resource, loadedResource.resource)
+        val resourceRef = ResourceRefImpl(resource) {
+            logger.debug { "Loading resource: $resource" }
+            loader.load(source.getReader(path.resource))
+        }
         // value is a weak reference, meaning it won't stop the ref from being gc'd
         loadedResources[resource] = WeakReference(resourceRef)
-        // schedule cleanup when ref is gc'd
-        cleaner.register(resourceRef, loadedResource.cleanup)
         return resourceRef
     }
 
@@ -92,9 +93,19 @@ class ResourceModule : Module() {
         }
     }
 
-    private class ResourceRefImpl<T : Resource>(override val path: String, val resource: T) : ResourceRef<T> {
-        override fun get(): T {
-            return resource
+    private inner class ResourceRefImpl<T : Resource>(
+        override val path: String,
+        val provider: suspend () -> LoadedResource<T>
+    ) : ResourceRef<T> {
+        private val ref = AtomicReference<T>()
+        override suspend fun get(): T {
+            if (ref.get() == null) {
+                val loadedResource = provider()
+                ref.compareAndSet(null, loadedResource.resource)
+                // schedule cleanup when ref is gc'd
+                cleaner.register(this, loadedResource.cleanup)
+            }
+            return ref.get()
         }
     }
 

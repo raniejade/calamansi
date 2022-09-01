@@ -15,6 +15,8 @@ interface Definition<T : Any> {
 
 interface ComponentData<T : Component> {
     val type: KClass<T>
+
+    suspend fun preloadResourceRefs()
 }
 
 interface ComponentDefinition<T : Component> : Definition<T> {
