@@ -250,7 +250,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         require(isDirectSubTypeOf(classDecl, QualifiedNames.Component))
         val dependencies = mutableListOf<KSClassDeclaration>()
         // check for dependencies
-        val depAnnotation = classDecl.getAnnotation(QualifiedNames.Dependencies)
+        val depAnnotation = classDecl.getAnnotation(QualifiedNames.RequiredComponents)
         if (depAnnotation != null) {
             val components = depAnnotation.arguments[0].value as List<KSType>
             dependencies.addAll(components.map {
@@ -338,7 +338,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         private object QualifiedNames {
             const val Component = "calamansi.Component"
             const val Property = "calamansi.Property"
-            const val Dependencies = "calamansi.Dependencies"
+            const val RequiredComponents = "calamansi.RequiredComponents"
             const val Script = "calamansi.Script"
             const val ResourceRef = "calamansi.resource.ResourceRef"
         }

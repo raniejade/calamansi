@@ -11,4 +11,4 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
 @MustBeDocumented
-annotation class Dependencies(val components: Array<KClass<out Component>>)
+annotation class RequiredComponents(val components: Array<KClass<out Component>>)

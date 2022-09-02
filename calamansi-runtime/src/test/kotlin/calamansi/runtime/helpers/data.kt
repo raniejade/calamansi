@@ -2,7 +2,7 @@ package calamansi.runtime.helpers
 
 import calamansi.Script
 import calamansi.Component
-import calamansi.Dependencies
+import calamansi.RequiredComponents
 import calamansi.Property
 
 class TestComponent : Component {
@@ -10,10 +10,10 @@ class TestComponent : Component {
     var int: Int = 0
 }
 
-@Dependencies([TestComponent::class])
+@RequiredComponents([TestComponent::class])
 class ComponentWithDependency : Component
 
-@Dependencies([ComponentWithDependency::class])
+@RequiredComponents([ComponentWithDependency::class])
 class ComponentWithNestedDependency : Component
 
 inline fun <reified T : Component> dataType(): String =

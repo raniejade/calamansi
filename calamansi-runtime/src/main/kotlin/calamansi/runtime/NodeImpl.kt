@@ -75,8 +75,8 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         val qualifiedName = checkNotNull(component.qualifiedName)
         val requiredComponents = registryModule.getRequiredComponents(qualifiedName)
         for (requiredComponent in requiredComponents) {
-            val requirement = requirements.getOrElse(requiredComponent) { mutableSetOf() }
-            requirement.remove(component)
+            val requirement = requirements.getOrElse(requiredComponent) { null }
+            requirement?.remove(component)
         }
 
         return components.remove(component) != null
@@ -108,6 +108,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         node._parent = this
         val added = children.add(node)
 
+        // set isAttached here so callbacks are invoked
         node.isAttached = isAttached
         // only execute when node was successfully added
         if (added) {
@@ -125,7 +126,7 @@ class NodeImpl(private var _name: String, script: String?) : Node() {
         if (removed) {
             doExecuteDetachCallback(node)
         }
-        // detach callback can still see parent
+        // detach callback should still be able to see parent, so we remove it only now.
         node._parent = null
         if (isAttached) {
             node.isAttached = false
