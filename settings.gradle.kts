@@ -16,3 +16,7 @@ include("calamansi-runtime")
 include("calamansi-editor")
 
 include("symbol-processor-harness")
+
+
+include("calamansi-api-v2")
+include("calamansi-symbol-processor-v2")
