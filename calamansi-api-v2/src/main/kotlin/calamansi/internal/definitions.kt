@@ -3,6 +3,7 @@ package calamansi.internal
 import calamansi.Script
 import calamansi.meta.CalamansiInternal
 import calamansi.meta.Property
+import kotlinx.serialization.modules.SerializersModule
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KType
@@ -35,6 +36,7 @@ interface ScriptDefinition {
     fun create(): Script
     fun applyData(target: Script, data: ScriptData)
     fun extractData(target: Script): ScriptData
+    fun serializersModule(): SerializersModule
 }
 
 @CalamansiInternal

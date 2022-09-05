@@ -1,0 +1,8 @@
+{
+  "nodes": [
+    {
+      "name": "root",
+      "script": "calamansi.editor.EditorScript"
+    }
+  ]
+}

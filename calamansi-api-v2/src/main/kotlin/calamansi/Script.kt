@@ -1,17 +1,29 @@
 package calamansi
 
 import calamansi.event.Event
+import calamansi.logging.Logger
+import calamansi.meta.CalamansiInternal
 
 abstract class Script {
-    /**
-     * Invoked after a script is instantiated.
-     */
-    context(ExecutionContext) open fun onInit() = Unit
+    @CalamansiInternal
+    var _owner: Node? = null
+        set(value) {
+            check(field == null) { "_owner can only be set once." }
+            field = value
+        }
 
-    /**
-     * Invoked before the [owner][ExecutionContext.owner] of this script is destroyed.
-     */
-    context(ExecutionContext) open fun onFinalize() = Unit
+    @CalamansiInternal
+    var _logger: Logger? = null
+        set(value) {
+            check(field == null) { "_logger can only be set once." }
+            field = value
+        }
+
+    inline val owner: Node
+        get() = @OptIn(CalamansiInternal::class) _owner!!
+
+    inline val logger: Logger
+        get() = @OptIn(CalamansiInternal::class) _logger!!
 
     /**
      * Invoked after the [owner][ExecutionContext.owner] this script is added to the scene tree.

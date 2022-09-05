@@ -141,6 +141,12 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                             $toDataAssignments
                         )
                     }
+                    
+                    override fun serializersModule(): SerializersModule = SerializersModule {
+                        polymorphic(ScriptData::class) {
+                            subclass($dataClassName::class)
+                        }
+                    }
                 }
             """.trimIndent()
             )
