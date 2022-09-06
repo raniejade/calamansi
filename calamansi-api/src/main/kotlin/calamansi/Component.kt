@@ -1,3 +1,0 @@
-package calamansi
-
-interface Component

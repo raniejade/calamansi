@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 typealias Viewport = Any
 
 @OptIn(CalamansiInternal::class)
-open class NodeImpl(override var name: String, val script: Script?) : Node {
+class NodeImpl(override var name: String, val script: Script?) : Node {
     protected val logger by lazy { Services.getService<LoggingService>().getLogger(this::class) }
 
     private val translation = Vector3f()
