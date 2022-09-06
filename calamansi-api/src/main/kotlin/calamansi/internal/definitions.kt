@@ -43,8 +43,3 @@ interface ScriptDefinition {
 interface ScriptData {
     val type: KClass<out Script>
 }
-
-class MyScript : Script() {
-    @Property
-    var int: Int = 0
-}

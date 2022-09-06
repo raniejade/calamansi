@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":calamansi-api-v2"))
+    implementation(project(":calamansi-api"))
     implementation(Deps.kotlinSerializationJson)
     implementation(Deps.kotlinCoroutines)
     implementation(Deps.lwjgl.core)
@@ -16,5 +16,5 @@ dependencies {
     runtimeOnly(Deps.lwjgl.runtime.glfw)
     runtimeOnly(Deps.lwjgl.runtime.vulkan)
 
-    kspTest(project(":calamansi-symbol-processor-v2"))
+    kspTest(project(":calamansi-symbol-processor"))
 }

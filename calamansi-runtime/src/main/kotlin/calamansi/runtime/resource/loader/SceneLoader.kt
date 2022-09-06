@@ -8,6 +8,7 @@ import calamansi.runtime.Services
 import calamansi.runtime.logging.LoggingService
 import calamansi.runtime.registry.RegistryService
 import calamansi.runtime.resource.ResourceService
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import java.io.InputStream
 
@@ -26,6 +27,7 @@ class SceneLoader : ResourceLoader<Scene> {
 
     override val supportedExtensions: Set<String> = setOf("scn")
 
+    @OptIn(ExperimentalSerializationApi::class)
     override fun load(
         inputStream: InputStream,
     ): LoadedResource<Scene> {

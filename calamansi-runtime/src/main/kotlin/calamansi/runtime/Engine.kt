@@ -11,6 +11,7 @@ import calamansi.runtime.resource.loader.SceneLoader
 import calamansi.runtime.resource.source.JarFileSource
 import calamansi.runtime.resource.source.RelativeFileSource
 import calamansi.runtime.window.WindowService
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import java.util.concurrent.TimeUnit
@@ -121,6 +122,7 @@ class Engine {
 
     private fun millis() = TimeUnit.NANOSECONDS.toMillis(System.nanoTime())
 
+    @OptIn(ExperimentalSerializationApi::class)
     private fun loadProjectConfig(): ProjectConfig {
         val stream = javaClass.classLoader.getResourceAsStream("project.cfg") ?: return ProjectConfig()
         return Json.Default.decodeFromStream(stream)

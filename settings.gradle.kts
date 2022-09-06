@@ -12,8 +12,8 @@ rootProject.name = "calamansi"
 
 
 
-include("calamansi-api-v2")
-include("calamansi-runtime-v2")
+include("calamansi-api")
+include("calamansi-runtime")
 include("calamansi-gradle-plugin")
-include("calamansi-editor-v2")
-include("calamansi-symbol-processor-v2")
+include("calamansi-editor")
+include("calamansi-symbol-processor")
