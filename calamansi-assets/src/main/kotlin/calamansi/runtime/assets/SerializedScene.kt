@@ -1,4 +1,4 @@
-package calamansi.runtime.resource.loader
+package calamansi.runtime.assets
 
 import calamansi.component.Component
 import calamansi.internal.ScriptData

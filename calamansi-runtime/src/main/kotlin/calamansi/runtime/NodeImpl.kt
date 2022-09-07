@@ -188,7 +188,7 @@ class NodeImpl(override var name: String, val script: Script?) : Node {
             if (node == null) {
                 return false
             }
-            return node === potentialAncestor || isSelfOrAncestor(node.parent as NodeImpl, potentialAncestor)
+            return node === potentialAncestor || isSelfOrAncestor(node.parent as NodeImpl?, potentialAncestor)
         }
 
     }

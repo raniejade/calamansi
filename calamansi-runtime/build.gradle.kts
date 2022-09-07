@@ -6,15 +6,17 @@ plugins {
 
 dependencies {
     implementation(project(":calamansi-api"))
+    implementation(project(":calamansi-assets"))
     implementation(Deps.kotlinSerializationJson)
-    implementation(Deps.kotlinCoroutines)
     implementation(Deps.lwjgl.core)
     implementation(Deps.lwjgl.glfw)
-    implementation(Deps.lwjgl.vulkan)
+    implementation(Deps.lwjgl.opengl)
 
     runtimeOnly(Deps.lwjgl.runtime.core)
     runtimeOnly(Deps.lwjgl.runtime.glfw)
-    runtimeOnly(Deps.lwjgl.runtime.vulkan)
+    runtimeOnly(Deps.lwjgl.runtime.opengl)
 
     kspTest(project(":calamansi-symbol-processor"))
 }
+
+enableContextReceivers()

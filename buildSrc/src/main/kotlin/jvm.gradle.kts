@@ -15,12 +15,6 @@ dependencies {
 }
 
 tasks {
-    withType<KotlinCompile>().all {
-        kotlinOptions.freeCompilerArgs += listOf(
-            "-Xcontext-receivers" // context receivers
-        )
-    }
-
     test {
         useJUnitPlatform()
     }

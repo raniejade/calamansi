@@ -9,10 +9,8 @@
 
 rootProject.name = "calamansi"
 
-
-
-
 include("calamansi-api")
+include("calamansi-assets")
 include("calamansi-runtime")
 include("calamansi-gradle-plugin")
 include("calamansi-editor")

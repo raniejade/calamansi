@@ -20,11 +20,13 @@ object Deps {
         const val core = "org.lwjgl:lwjgl:$lwjglVersion"
         const val glfw = "org.lwjgl:lwjgl-glfw:$lwjglVersion"
         const val vulkan = "org.lwjgl:lwjgl-vulkan:$lwjglVersion"
+        const val opengl = "org.lwjgl:lwjgl-opengl:$lwjglVersion"
 
         object runtime {
             val core = "org.lwjgl:lwjgl::$lwjglNatives"
             val glfw = "org.lwjgl:lwjgl-glfw::$lwjglNatives"
             val vulkan = "org.lwjgl:lwjgl-vulkan::$lwjglNatives"
+            val opengl = "org.lwjgl:lwjgl-opengl::$lwjglNatives"
         }
     }
 }

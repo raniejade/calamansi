@@ -10,10 +10,15 @@ import calamansi.runtime.resource.ResourceService
 import calamansi.runtime.resource.loader.SceneLoader
 import calamansi.runtime.resource.source.JarFileSource
 import calamansi.runtime.resource.source.RelativeFileSource
+import calamansi.runtime.sys.Gfx
+import calamansi.runtime.sys.opengl.OpenGLGfxDriver
 import calamansi.runtime.window.WindowService
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT
+import org.lwjgl.opengl.GL41.glClear
+import org.lwjgl.opengl.GL41.glClearColor
 import java.util.concurrent.TimeUnit
 
 class Engine {
@@ -23,6 +28,7 @@ class Engine {
     private val windowService = Services.create(::WindowService)
     private val logger by lazy { loggingService.getLogger(Engine::class) }
     private lateinit var mainWindowContext: WindowContext
+    private lateinit var gfx: Gfx
 
     fun run() {
         // load project.cfg
@@ -32,6 +38,8 @@ class Engine {
         // create main window
         val mainWindow = windowService.createWindow(projectConfig.width, projectConfig.height, projectConfig.title)
         mainWindowContext = WindowContext(mainWindow)
+
+        gfx = OpenGLGfxDriver.create(mainWindow)
 
         mainLoop()
 
@@ -68,7 +76,9 @@ class Engine {
 
                     // draw (main thread)
                     EventLoops.Main.scheduleNow {
-
+                        glClearColor(0.1f, 0.1f, 0.1f, 1.0f)
+                        glClear(GL_COLOR_BUFFER_BIT)
+                        gfx.swapBuffers()
                     }
                 }
             } while (!mainWindowContext.shouldCloseWindow())
@@ -110,6 +120,8 @@ class Engine {
         // resource loaders
         logger.info { "Registering resource loaders." }
         resourceService.registerLoader(SceneLoader())
+
+        OpenGLGfxDriver.start()
     }
 
     private fun stopServices() {
@@ -118,6 +130,8 @@ class Engine {
         resourceService.stop()
         registryService.stop()
         loggingService.stop()
+
+        OpenGLGfxDriver.stop()
     }
 
     private fun millis() = TimeUnit.NANOSECONDS.toMillis(System.nanoTime())

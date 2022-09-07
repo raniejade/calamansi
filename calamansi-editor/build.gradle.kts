@@ -17,3 +17,5 @@ application {
     mainClass.set("calamansi.runtime.EngineKt")
     applicationDefaultJvmArgs += listOf("-XstartOnFirstThread")
 }
+
+enableContextReceivers()

@@ -1,9 +1,10 @@
-package calamansi.runtime.window.sys.glfw
+package calamansi.runtime.sys.glfw
 
 import calamansi.event.Event
 import calamansi.input.*
-import calamansi.runtime.window.sys.EventHandlerRegistration
-import calamansi.runtime.window.sys.Window
+import calamansi.runtime.sys.PlatformStateChange
+import calamansi.runtime.sys.Window
+import calamansi.runtime.sys.WindowHandlerRegistration
 import calamansi.window.WindowCloseEvent
 import calamansi.window.WindowFocusChangedEvent
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
@@ -11,6 +12,7 @@ import org.lwjgl.glfw.GLFW.*
 
 class GlfwWindow(internal val handle: Long, private val contextCreated: Boolean) : Window {
     private val eventHandlers = mutableSetOf<(Event) -> Unit>()
+    private val platformStateChangeHandlers = mutableSetOf<(PlatformStateChange) -> Unit>()
 
     init {
         // register input callbacks
@@ -21,6 +23,8 @@ class GlfwWindow(internal val handle: Long, private val contextCreated: Boolean)
         // register window callbacks
         glfwSetWindowFocusCallback(handle, this::windowFocusCallback)
         glfwSetWindowCloseCallback(handle, this::windowCloseCallback)
+        glfwSetWindowSizeCallback(handle, this::windowResizedCallback)
+        glfwSetFramebufferSizeCallback(handle, this::framebufferResizedCallback)
     }
 
     override var title: String = ""
@@ -45,9 +49,16 @@ class GlfwWindow(internal val handle: Long, private val contextCreated: Boolean)
         glfwShowWindow(handle)
     }
 
-    override fun registerEventHandler(handler: (Event) -> Unit): EventHandlerRegistration {
+    override fun registerEventHandler(handler: (Event) -> Unit): WindowHandlerRegistration {
         eventHandlers.add(handler)
-        return EventHandlerRegistration { eventHandlers.remove(handler) }
+        return WindowHandlerRegistration { eventHandlers.remove(handler) }
+    }
+
+    override fun registerPlatformStateChangeHandler(handler: (PlatformStateChange) -> Unit): WindowHandlerRegistration {
+        platformStateChangeHandlers.add(handler)
+        return WindowHandlerRegistration {
+            platformStateChangeHandlers.remove(handler)
+        }
     }
 
     override fun pollEvents() {
@@ -85,6 +96,10 @@ class GlfwWindow(internal val handle: Long, private val contextCreated: Boolean)
 
     private fun publishEvent(event: Event) {
         eventHandlers.forEach { it(event) }
+    }
+
+    private fun publishPlatformStateChange(stateChange: PlatformStateChange) {
+        platformStateChangeHandlers.forEach { it(stateChange) }
     }
 
     private fun keyCallback(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
@@ -126,5 +141,13 @@ class GlfwWindow(internal val handle: Long, private val contextCreated: Boolean)
 
     private fun windowFocusCallback(window: Long, focused: Boolean) {
         publishEvent(WindowFocusChangedEvent(focused))
+    }
+
+    private fun windowResizedCallback(window: Long, width: Int, height: Int) {
+        publishPlatformStateChange(PlatformStateChange.WindowSize(width, height))
+    }
+
+    private fun framebufferResizedCallback(window: Long, width: Int, height: Int) {
+        publishPlatformStateChange(PlatformStateChange.FramebufferSize(width, height))
     }
 }

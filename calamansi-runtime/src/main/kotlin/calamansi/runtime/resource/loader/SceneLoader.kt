@@ -5,6 +5,8 @@ import calamansi.Scene
 import calamansi.meta.CalamansiInternal
 import calamansi.runtime.NodeImpl
 import calamansi.runtime.Services
+import calamansi.runtime.assets.SerializedNode
+import calamansi.runtime.assets.SerializedScene
 import calamansi.runtime.logging.LoggingService
 import calamansi.runtime.registry.RegistryService
 import calamansi.runtime.resource.ResourceService
@@ -80,13 +82,13 @@ class SceneLoader : ResourceLoader<Scene> {
         return potentialRoots[0]
     }
 
-    // only sets component, parent is established in second pass
+    // only sets the script, parent is established in second pass
     @OptIn(CalamansiInternal::class)
     private fun createNode(config: SerializedNode): NodeImpl {
         check(config.name.isNotBlank()) { "Node has blank name" }
         val script = config.script?.let(registryService::createScript)
         if (config.data != null) {
-            registryService.applyData(script!!, config.data)
+            registryService.applyData(script!!, config.data!!)
         }
         config.data?.let { registryService.applyData(script!!, it) }
 

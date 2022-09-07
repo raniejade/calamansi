@@ -1,2 +1,2 @@
-//includeBuild("../harness")
+includeBuild("../harness")
 includeBuild("../")
