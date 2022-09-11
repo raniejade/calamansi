@@ -5,7 +5,6 @@ import calamansi.input.InputState
 import calamansi.input.Key
 import calamansi.input.MouseButton
 import org.lwjgl.glfw.GLFW.*
-import java.lang.AssertionError
 
 object InputModifierMapper {
     fun fromGlfwModifier(mods: Int): Set<InputModifier> {

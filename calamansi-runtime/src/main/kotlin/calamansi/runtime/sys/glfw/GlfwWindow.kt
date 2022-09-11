@@ -7,8 +7,11 @@ import calamansi.runtime.sys.Window
 import calamansi.runtime.sys.WindowHandlerRegistration
 import calamansi.window.WindowCloseEvent
 import calamansi.window.WindowFocusChangedEvent
+import org.joml.Vector2i
+import org.joml.Vector2ic
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.system.MemoryStack.stackPush
 
 class GlfwWindow(internal val handle: Long, private val contextCreated: Boolean) : Window {
     private val eventHandlers = mutableSetOf<(Event) -> Unit>()
@@ -33,12 +36,6 @@ class GlfwWindow(internal val handle: Long, private val contextCreated: Boolean)
             glfwSetWindowTitle(handle, field)
         }
 
-    fun makeContextCurrent() {
-        if (contextCreated) {
-            glfwMakeContextCurrent(handle)
-        }
-    }
-
     fun swapBuffers() {
         if (contextCreated) {
             glfwSwapBuffers(handle)
@@ -47,6 +44,15 @@ class GlfwWindow(internal val handle: Long, private val contextCreated: Boolean)
 
     override fun show() {
         glfwShowWindow(handle)
+    }
+
+    override fun getFramebufferSize(): Vector2ic {
+        return stackPush().use { stack ->
+            val width = stack.mallocInt(1)
+            val height = stack.mallocInt(1)
+            glfwGetFramebufferSize(handle, width, height)
+            Vector2i(width[0], height[0])
+        }
     }
 
     override fun registerEventHandler(handler: (Event) -> Unit): WindowHandlerRegistration {
