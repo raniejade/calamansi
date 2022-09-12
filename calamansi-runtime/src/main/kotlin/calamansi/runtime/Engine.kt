@@ -24,6 +24,7 @@ class Engine {
     private val resourceService = Services.create(::ResourceService)
     private val windowService = Services.create(::WindowService)
     private val logger by lazy { loggingService.getLogger(Engine::class) }
+    private lateinit var windowHandlerRegistration: WindowHandlerRegistration
     private lateinit var mainWindowContext: WindowContext
     private lateinit var gfx: Gfx
     private lateinit var mainRenderTarget: RenderTarget
@@ -41,11 +42,12 @@ class Engine {
         mainWindow.show()
 
         gfx = OpenGLGfxDriver.create(mainWindow)
-        // TODO: handle recreation
-        mainRenderTarget = gfx.createRenderTarget {
-            val size = mainWindow.getFramebufferSize()
-            setSize(size.x(), size.y())
-            setAttachments(setOf(Attachment.COLOR))
+        createMainRenderTarget(mainWindow)
+
+        windowHandlerRegistration = mainWindow.registerPlatformStateChangeHandler {
+            if (it is PlatformStateChange.FramebufferSize) {
+                createMainRenderTarget(mainWindow)
+            }
         }
 
         defaultPipeline = gfx.createPipeline {
@@ -81,7 +83,18 @@ class Engine {
         }
         mainLoop()
 
+        defaultPipeline.destroy()
+        mainRenderTarget.destroy()
+
         stopServices()
+    }
+
+    private fun createMainRenderTarget(mainWindow: Window) {
+        mainRenderTarget = gfx.createRenderTarget {
+            val size = mainWindow.getFramebufferSize()
+            setSize(size.x(), size.y())
+            setAttachments(setOf(Attachment.COLOR))
+        }
     }
 
     private fun mainLoop() {
@@ -117,7 +130,7 @@ class Engine {
                         val size = mainWindowContext.getFramebufferSize()
                         mainRenderTarget.render(defaultPipeline) {
                             setViewport(0, 0, size.x(), size.y())
-                            clearColor(0.5f, 0.2f, 0.6f, 1f)
+                            clearColor(0.5f, 0.2f, 0.2f, 1f)
                         }
                         gfx.present(mainRenderTarget)
                     }

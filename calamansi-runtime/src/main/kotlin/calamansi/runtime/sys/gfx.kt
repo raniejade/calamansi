@@ -9,13 +9,17 @@ import java.nio.IntBuffer
 
 interface VertexBuffer {
     val sizeInBytes: Long
+    fun destroy()
 }
 
 interface IndexBuffer {
     val sizeInBytes: Long
+    fun destroy()
 }
 
-sealed interface Texture
+sealed interface Texture {
+    fun destroy()
+}
 interface Texture2d : Texture
 enum class TextureFormat {
     RGB,
@@ -62,7 +66,9 @@ interface DrawSpec {
     fun draw(mode: PrimitiveMode, count: Int, offset: Long, instances: Int)
 }
 
-interface Pipeline
+interface Pipeline {
+    fun destroy()
+}
 enum class PrimitiveType(val size: Int) {
     FLOAT(Float.SIZE_BYTES),
     UNSIGNED_BYTE(UByte.SIZE_BYTES),
@@ -84,6 +90,7 @@ interface RenderSpec {
 interface RenderTarget {
     fun renderToTexture(): Texture2d
     fun render(pipeline: Pipeline, body: DrawSpec.() -> Unit)
+    fun destroy()
 }
 
 enum class Attachment {

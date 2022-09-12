@@ -1,6 +1,7 @@
 package calamansi.runtime.sys.opengl
 
 import calamansi.runtime.sys.Pipeline
+import org.lwjgl.opengl.GL30
 import org.lwjgl.opengl.GL31.*
 
 class PipelineImpl(
@@ -39,5 +40,12 @@ class PipelineImpl(
         glBindBuffer(GL_COPY_WRITE_BUFFER, buffer)
         glBufferData(GL_COPY_WRITE_BUFFER, requiredSize, GL_DYNAMIC_DRAW)
         glBindBuffer(GL_COPY_WRITE_BUFFER, 0)
+    }
+
+    override fun destroy() {
+        GL30.glDeleteVertexArrays(handle)
+        glDeleteProgram(program)
+        vertexBuffer.destroy()
+        indexBuffer.destroy()
     }
 }

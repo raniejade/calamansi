@@ -2,14 +2,30 @@ package calamansi.runtime.sys.opengl
 
 import calamansi.runtime.sys.*
 import calamansi.runtime.sys.glfw.GlfwWindow
+import org.lwjgl.opengl.GL11.glDeleteTextures
+import org.lwjgl.opengl.GL15.glDeleteBuffers
 import org.lwjgl.opengl.GL30.*
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class VertexBufferImpl(val handle: Int, override val sizeInBytes: Long) : VertexBuffer
-class IndexBufferImpl(val handle: Int, override val sizeInBytes: Long) : IndexBuffer
-class Texture2dImpl(val handle: Int) : Texture2d
+class VertexBufferImpl(val handle: Int, override val sizeInBytes: Long) : VertexBuffer {
+    override fun destroy() {
+        glDeleteBuffers(handle)
+    }
+}
+
+class IndexBufferImpl(val handle: Int, override val sizeInBytes: Long) : IndexBuffer {
+    override fun destroy() {
+        glDeleteBuffers(handle)
+    }
+}
+
+class Texture2dImpl(val handle: Int) : Texture2d {
+    override fun destroy() {
+        glDeleteTextures(handle)
+    }
+}
 
 class OpenGLGfx(val window: Window) : Gfx {
     private val presentationQuadData = floatArrayOf(

@@ -9,6 +9,8 @@ import org.lwjgl.opengl.GL11.glDrawElements
 import org.lwjgl.opengl.GL13.*
 import org.lwjgl.opengl.GL31.glDrawElementsInstanced
 import org.lwjgl.system.MemoryStack.stackPush
+import java.nio.FloatBuffer
+import java.nio.IntBuffer
 
 class DrawSpecImpl(private val pipeline: PipelineImpl) : DrawSpec {
     override fun setVertices(vertices: VertexBuffer) {
