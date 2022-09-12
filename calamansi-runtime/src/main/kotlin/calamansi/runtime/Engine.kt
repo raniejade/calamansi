@@ -16,6 +16,9 @@ import calamansi.runtime.window.WindowService
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import org.lwjgl.system.MemoryStack.stackPush
+import java.nio.FloatBuffer
+import java.nio.IntBuffer
 import java.util.concurrent.TimeUnit
 
 class Engine {
@@ -29,6 +32,10 @@ class Engine {
     private lateinit var gfx: Gfx
     private lateinit var mainRenderTarget: RenderTarget
     private lateinit var defaultPipeline: Pipeline
+
+    private lateinit var triangleVertices: VertexBuffer
+
+    private lateinit var triangleIndices: IndexBuffer
 
     fun run() {
         // load project.cfg
@@ -81,15 +88,41 @@ class Engine {
                 )
             )
         }
+        triangleVertices = stackPush().use {
+            val buffer = it.floats(
+                0.5f,  0.5f, 0.0f,  // top right
+                0.5f, -0.5f, 0.0f,  // bottom right
+                -0.5f, -0.5f, 0.0f,  // bottom left
+                -0.5f,  0.5f, 0.0f   // top left
+            )
+            gfx.createVertexBuffer(buffer)
+        }
+
+        triangleIndices = stackPush().use {
+            val buffer = it.ints(
+                0, 1, 3,   // first triangle
+                1, 2, 3    // second triangle
+            )
+            gfx.createIndexBuffer(buffer)
+        }
+
         mainLoop()
 
+        triangleVertices.destroy()
+        triangleIndices.destroy()
         defaultPipeline.destroy()
         mainRenderTarget.destroy()
+
+        windowHandlerRegistration.unregister()
 
         stopServices()
     }
 
     private fun createMainRenderTarget(mainWindow: Window) {
+        if (this::mainRenderTarget.isInitialized) {
+            mainRenderTarget.destroy()
+        }
+
         mainRenderTarget = gfx.createRenderTarget {
             val size = mainWindow.getFramebufferSize()
             setSize(size.x(), size.y())
@@ -131,6 +164,11 @@ class Engine {
                         mainRenderTarget.render(defaultPipeline) {
                             setViewport(0, 0, size.x(), size.y())
                             clearColor(0.5f, 0.2f, 0.2f, 1f)
+
+                            setVertices(triangleVertices)
+                            setIndices(triangleIndices)
+
+                            draw(PrimitiveMode.TRIANGLE, 6, 0)
                         }
                         gfx.present(mainRenderTarget)
                     }
