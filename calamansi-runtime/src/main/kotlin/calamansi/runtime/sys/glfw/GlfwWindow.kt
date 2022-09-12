@@ -7,6 +7,8 @@ import calamansi.runtime.sys.Window
 import calamansi.runtime.sys.WindowHandlerRegistration
 import calamansi.window.WindowCloseEvent
 import calamansi.window.WindowFocusChangedEvent
+import org.joml.Vector2f
+import org.joml.Vector2fc
 import org.joml.Vector2i
 import org.joml.Vector2ic
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
@@ -44,6 +46,15 @@ class GlfwWindow(internal val handle: Long, private val contextCreated: Boolean)
 
     override fun show() {
         glfwShowWindow(handle)
+    }
+
+    override fun getContentScale(): Vector2fc {
+        return stackPush().use { stack ->
+            val scaleX = stack.mallocFloat(1)
+            val scaleY = stack.mallocFloat(1)
+            glfwGetWindowContentScale(handle, scaleX, scaleY)
+            Vector2f(scaleX[0], scaleY[0])
+        }
     }
 
     override fun getFramebufferSize(): Vector2ic {

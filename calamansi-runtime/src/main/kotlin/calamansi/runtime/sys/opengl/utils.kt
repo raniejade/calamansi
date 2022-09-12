@@ -18,6 +18,7 @@ fun PrimitiveMode.toGL(): Int {
     return when (this) {
         PrimitiveMode.TRIANGLE -> GL_TRIANGLES
         PrimitiveMode.QUAD -> GL_QUADS
+        PrimitiveMode.TRIANGLE_STRIP -> GL_TRIANGLE_STRIP
     }
 }
 
@@ -28,9 +29,9 @@ fun PrimitiveType.toGL(): Int {
     }
 }
 
-fun checkOpenGLError() {
+fun checkOpenGLError(frameNo: Long) {
     val error = glGetError()
     check(error == GL_NO_ERROR) {
-        "${error.toString(16)}"
+        "[frame: $frameNo]: opengl error ${error.toString(16)}"
     }
 }

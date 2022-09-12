@@ -12,13 +12,14 @@ import calamansi.runtime.resource.source.JarFileSource
 import calamansi.runtime.resource.source.RelativeFileSource
 import calamansi.runtime.sys.*
 import calamansi.runtime.sys.opengl.OpenGLGfxDriver
+import calamansi.runtime.sys.opengl.checkOpenGLError
 import calamansi.runtime.window.WindowService
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import org.joml.Matrix4f
+import org.joml.Matrix4fc
 import org.lwjgl.system.MemoryStack.stackPush
-import java.nio.FloatBuffer
-import java.nio.IntBuffer
 import java.util.concurrent.TimeUnit
 
 class Engine {
@@ -32,10 +33,15 @@ class Engine {
     private lateinit var gfx: Gfx
     private lateinit var mainRenderTarget: RenderTarget
     private lateinit var defaultPipeline: Pipeline
+    private lateinit var uiPipeline: Pipeline
 
     private lateinit var triangleVertices: VertexBuffer
-
     private lateinit var triangleIndices: IndexBuffer
+
+    private lateinit var orthoProjection: Matrix4fc
+    private lateinit var uiQuad: VertexBuffer
+    private lateinit var uiQuadIndices: IndexBuffer
+    private var frameNo = 0L
 
     fun run() {
         // load project.cfg
@@ -49,13 +55,36 @@ class Engine {
         mainWindow.show()
 
         gfx = OpenGLGfxDriver.create(mainWindow)
-        createMainRenderTarget(mainWindow)
+        onFramebufferResize(mainWindow)
 
         windowHandlerRegistration = mainWindow.registerPlatformStateChangeHandler {
             if (it is PlatformStateChange.FramebufferSize) {
-                createMainRenderTarget(mainWindow)
+                onFramebufferResize(mainWindow)
             }
         }
+
+        uiQuad = stackPush().use {
+            val buffer = it.floats(
+                // pos      // tex
+                0.0f, 1.0f, 0.0f, 1.0f,
+                1.0f, 0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 0.0f,
+
+                0.0f, 1.0f, 0.0f, 1.0f,
+                1.0f, 1.0f, 1.0f, 1.0f,
+                1.0f, 0.0f, 1.0f, 0.0f
+            )
+
+
+            gfx.createVertexBuffer(buffer)
+        }
+
+//        uiQuadIndices = gfx.createIndexBuffer(stackPush().use {
+//            it.ints(
+//                0, 1, 2,
+//                1, 2, 3
+//            )
+//        })
 
         defaultPipeline = gfx.createPipeline {
             vertexAttributes {
@@ -82,18 +111,56 @@ class Engine {
                     out vec4 FragColor;
     
                     void main() {
-                        FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+                        FragColor = vec4(1.0, 0.5, 0.2, 1.0);
                     } 
                     """.trimIndent()
                 )
             )
         }
+
+        uiPipeline = gfx.createPipeline {
+            vertexAttributes {
+                attribute(0, 2, PrimitiveType.FLOAT, 4 * PrimitiveType.FLOAT.size, 0)
+                attribute(1, 2, PrimitiveType.FLOAT, 4 * PrimitiveType.FLOAT.size, (2 * PrimitiveType.FLOAT.size).toLong())
+            }
+
+            shaderStage(
+                ShaderStage.VERTEX, TextShaderSource(
+                    """
+                    #version 330 core
+                    layout(location = 0) in vec2 pos;
+                    layout(location = 1) in vec2 texCoords;
+                    
+                    uniform mat4 model;
+                    uniform mat4 projection;
+                    
+                    void main() {
+                        gl_Position = projection * model * vec4(pos, 0.0, 1.0);
+                    }
+                    """.trimIndent()
+                )
+            )
+
+            shaderStage(
+                ShaderStage.FRAGMENT, TextShaderSource(
+                    """
+                    #version 330 core
+                    out vec4 FragColor;
+    
+                    void main() {
+                        FragColor = vec4(0.8, 0.3, 0.2, 1.0);
+                    } 
+                    """.trimIndent()
+                )
+            )
+        }
+
         triangleVertices = stackPush().use {
             val buffer = it.floats(
-                0.5f,  0.5f, 0.0f,  // top right
+                0.5f, 0.5f, 0.0f,  // top right
                 0.5f, -0.5f, 0.0f,  // bottom right
                 -0.5f, -0.5f, 0.0f,  // bottom left
-                -0.5f,  0.5f, 0.0f   // top left
+                -0.5f, 0.5f, 0.0f   // top left
             )
             gfx.createVertexBuffer(buffer)
         }
@@ -118,16 +185,19 @@ class Engine {
         stopServices()
     }
 
-    private fun createMainRenderTarget(mainWindow: Window) {
+    private fun onFramebufferResize(mainWindow: Window) {
         if (this::mainRenderTarget.isInitialized) {
             mainRenderTarget.destroy()
         }
 
+        val size = mainWindow.getFramebufferSize()
+
         mainRenderTarget = gfx.createRenderTarget {
-            val size = mainWindow.getFramebufferSize()
             setSize(size.x(), size.y())
             setAttachments(setOf(Attachment.COLOR))
         }
+
+        orthoProjection = Matrix4f().ortho(0f, size.x().toFloat(), size.y().toFloat(), 0f, -1f, 1f)
     }
 
     private fun mainLoop() {
@@ -168,9 +238,26 @@ class Engine {
                             setVertices(triangleVertices)
                             setIndices(triangleIndices)
 
-                            draw(PrimitiveMode.TRIANGLE, 6, 0)
+                            drawIndexed(PrimitiveMode.TRIANGLE, 6, 0)
                         }
+
+                        val contentScale = mainWindowContext.getContentScale()
+                        val model = Matrix4f()
+                            .translate(10f, 10f, 0f)
+                            .scale(200 * contentScale.x(), 30 * contentScale.y(), 0f)
+                        mainRenderTarget.render(uiPipeline) {
+                            setViewport(0, 0, size.x(), size.y())
+                            setVertices(uiQuad)
+
+                            setShaderParam("projection", orthoProjection, false)
+                            setShaderParam("model", model, false)
+
+                            draw(PrimitiveMode.TRIANGLE_STRIP, 6)
+                        }
+
                         gfx.present(mainRenderTarget)
+
+                        checkOpenGLError(frameNo++)
                     }
                 }
             } while (!mainWindowContext.shouldCloseWindow())

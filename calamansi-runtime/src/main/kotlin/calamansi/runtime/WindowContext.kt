@@ -51,6 +51,8 @@ class WindowContext(private val window: Window) {
         }
     }
 
+    fun getContentScale() = window.getContentScale()
+
     fun getFramebufferSize() = window.getFramebufferSize()
 
     fun pollEvents() {

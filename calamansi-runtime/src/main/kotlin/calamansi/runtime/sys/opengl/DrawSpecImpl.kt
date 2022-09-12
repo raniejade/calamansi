@@ -7,7 +7,9 @@ import org.joml.Vector4fc
 import org.lwjgl.opengl.ARBSeparateShaderObjects.*
 import org.lwjgl.opengl.GL11.glDrawElements
 import org.lwjgl.opengl.GL13.*
-import org.lwjgl.opengl.GL31.glDrawElementsInstanced
+import org.lwjgl.opengl.GL20
+import org.lwjgl.opengl.GL20.glGetUniformLocation
+import org.lwjgl.opengl.GL31.*
 import org.lwjgl.system.MemoryStack.stackPush
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
@@ -25,11 +27,11 @@ class DrawSpecImpl(private val pipeline: PipelineImpl) : DrawSpec {
         glViewport(x, y, width, height)
     }
 
-    override fun setShaderParam(location: Int, resource: Vector3fc) {
-        glProgramUniform3f(pipeline.program, location, resource.x(), resource.y(), resource.z())
+    override fun setShaderParam(name: String, resource: Vector3fc) {
+        glProgramUniform3f(pipeline.program, getUniformLocation(name), resource.x(), resource.y(), resource.z())
     }
 
-    override fun setShaderParam(location: Int, resource: Array<Vector3fc>) {
+    override fun setShaderParam(name: String, resource: Array<Vector3fc>) {
         stackPush().use { stack ->
             val buffer = stack.mallocFloat(3 * resource.size)
             for (i in resource.indices) {
@@ -38,16 +40,22 @@ class DrawSpecImpl(private val pipeline: PipelineImpl) : DrawSpec {
                 buffer.put(element.y())
                 buffer.put(element.z())
             }
-            buffer.reset()
-            glProgramUniform3fv(pipeline.program, location, buffer)
+            glProgramUniform3fv(pipeline.program, getUniformLocation(name), buffer)
         }
     }
 
-    override fun setShaderParam(location: Int, resource: Vector4fc) {
-        glProgramUniform4f(pipeline.program, location, resource.x(), resource.y(), resource.z(), resource.w())
+    override fun setShaderParam(name: String, resource: Vector4fc) {
+        glProgramUniform4f(
+            pipeline.program,
+            getUniformLocation(name),
+            resource.x(),
+            resource.y(),
+            resource.z(),
+            resource.w()
+        )
     }
 
-    override fun setShaderParam(location: Int, resource: Array<Vector4fc>) {
+    override fun setShaderParam(name: String, resource: Array<Vector4fc>) {
         stackPush().use { stack ->
             val buffer = stack.mallocFloat(4 * resource.size)
             for (i in resource.indices) {
@@ -57,32 +65,29 @@ class DrawSpecImpl(private val pipeline: PipelineImpl) : DrawSpec {
                 buffer.put(element.z())
                 buffer.put(element.w())
             }
-            buffer.reset()
-            glProgramUniform4fv(pipeline.program, location, buffer)
+            glProgramUniform4fv(pipeline.program, getUniformLocation(name), buffer)
         }
     }
 
-    override fun setShaderParam(location: Int, resource: Matrix4fc, transpose: Boolean) {
+    override fun setShaderParam(name: String, resource: Matrix4fc, transpose: Boolean) {
         stackPush().use { stack ->
             val buffer = resource.get(stack.mallocFloat(16))
-            buffer.reset()
-            glProgramUniform4fv(pipeline.program, location, buffer)
+            glProgramUniformMatrix4fv(pipeline.program, getUniformLocation(name), transpose, buffer)
         }
     }
 
-    override fun setShaderParam(location: Int, resource: Array<Matrix4fc>, transpose: Boolean) {
+    override fun setShaderParam(name: String, resource: Array<Matrix4fc>, transpose: Boolean) {
         stackPush().use { stack ->
             val buffer = stack.mallocFloat(16 * resource.size)
             resource.forEach { matrix ->
                 matrix.get(buffer)
             }
-            buffer.reset()
-            glProgramUniform4fv(pipeline.program, location, buffer)
+            glProgramUniformMatrix4fv(pipeline.program, getUniformLocation(name), transpose, buffer)
         }
     }
 
-    override fun setShaderParam(location: Int, resource: Texture) {
-        glActiveTexture(GL_TEXTURE0 + location)
+    override fun setShaderParam(name: String, resource: Texture) {
+        glActiveTexture(GL_TEXTURE0 + getUniformLocation(name))
         when (resource) {
             is Texture2d -> {
                 glBindTexture(GL_TEXTURE_2D, (resource as Texture2dImpl).handle)
@@ -100,11 +105,23 @@ class DrawSpecImpl(private val pipeline: PipelineImpl) : DrawSpec {
         glClear(GL_DEPTH_BUFFER_BIT)
     }
 
-    override fun draw(mode: PrimitiveMode, count: Int, offset: Long) {
+    override fun draw(mode: PrimitiveMode, count: Int) {
+        glDrawArrays(mode.toGL(), 0, count)
+    }
+
+    override fun drawInstanced(mode: PrimitiveMode, count: Int, instances: Int) {
+        glDrawArraysInstanced(mode.toGL(), 0, count, instances)
+    }
+
+    override fun drawIndexed(mode: PrimitiveMode, count: Int, offset: Long) {
         glDrawElements(mode.toGL(), count, GL_UNSIGNED_INT, offset)
     }
 
-    override fun draw(mode: PrimitiveMode, count: Int, offset: Long, instances: Int) {
+    override fun drawIndexedInstanced(mode: PrimitiveMode, count: Int, offset: Long, instances: Int) {
         glDrawElementsInstanced(mode.toGL(), count, GL_UNSIGNED_INT, offset, instances)
+    }
+
+    private fun getUniformLocation(name: String): Int {
+        return glGetUniformLocation(pipeline.program, name)
     }
 }

@@ -2,6 +2,7 @@ package calamansi.runtime.sys
 
 import calamansi.event.Event
 import calamansi.input.InputContext
+import org.joml.Vector2fc
 import org.joml.Vector2ic
 
 fun interface WindowHandlerRegistration {
@@ -13,6 +14,7 @@ interface Window : InputContext {
 
     fun show()
 
+    fun getContentScale(): Vector2fc
     fun getFramebufferSize(): Vector2ic
 
     fun registerEventHandler(handler: (Event) -> Unit): WindowHandlerRegistration

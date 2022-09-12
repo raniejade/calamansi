@@ -37,7 +37,8 @@ enum class ShaderStage {
 
 enum class PrimitiveMode {
     TRIANGLE,
-    QUAD
+    QUAD,
+    TRIANGLE_STRIP,
 }
 
 interface DrawSpec {
@@ -47,23 +48,25 @@ interface DrawSpec {
     fun setViewport(x: Int, y: Int, width: Int, height: Int)
 
     // vector
-    fun setShaderParam(location: Int, resource: Vector3fc)
-    fun setShaderParam(location: Int, resource: Array<Vector3fc>)
-    fun setShaderParam(location: Int, resource: Vector4fc)
-    fun setShaderParam(location: Int, resource: Array<Vector4fc>)
+    fun setShaderParam(name: String, resource: Vector3fc)
+    fun setShaderParam(name: String, resource: Array<Vector3fc>)
+    fun setShaderParam(name: String, resource: Vector4fc)
+    fun setShaderParam(name: String, resource: Array<Vector4fc>)
 
     // matrix
-    fun setShaderParam(location: Int, resource: Matrix4fc, transpose: Boolean)
-    fun setShaderParam(location: Int, resource: Array<Matrix4fc>, transpose: Boolean)
+    fun setShaderParam(name: String, resource: Matrix4fc, transpose: Boolean)
+    fun setShaderParam(name: String, resource: Array<Matrix4fc>, transpose: Boolean)
 
     // texture
-    fun setShaderParam(location: Int, resource: Texture)
+    fun setShaderParam(name: String, resource: Texture)
 
     fun clearColor(r: Float, g: Float, b: Float, a: Float)
     fun clearDepth(depth: Float)
 
-    fun draw(mode: PrimitiveMode, count: Int, offset: Long)
-    fun draw(mode: PrimitiveMode, count: Int, offset: Long, instances: Int)
+    fun draw(mode: PrimitiveMode, count: Int)
+    fun drawInstanced(mode: PrimitiveMode, count: Int, instances: Int)
+    fun drawIndexed(mode: PrimitiveMode, count: Int, offset: Long)
+    fun drawIndexedInstanced(mode: PrimitiveMode, count: Int, offset: Long, instances: Int)
 }
 
 interface Pipeline {
