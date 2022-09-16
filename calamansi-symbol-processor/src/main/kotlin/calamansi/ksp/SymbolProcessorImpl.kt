@@ -1,15 +1,14 @@
 package calamansi.ksp
 
+import calamansi.ksp.model.NodeDefinition
 import calamansi.ksp.model.PropertyDefinition
-import calamansi.ksp.model.ScriptDefinition
-import com.google.devtools.ksp.getDeclaredProperties
+import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.*
-import kotlin.reflect.typeOf
 
 class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
     private val codeGenerator = environment.codeGenerator
@@ -20,17 +19,14 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             return emptyList()
         }
         val entryDependencies = mutableListOf<KSFile>()
-        val scripts = mutableListOf<ScriptDefinition>()
+        val nodes = mutableListOf<NodeDefinition>()
         for (file in resolver.getAllFiles()) {
             var definitionGenerated = false
-            for (decl in file.declarations.filter { it.qualifiedName != null }) {
-                val classDecl = resolver.getClassDeclarationByName(checkNotNull(decl.qualifiedName))
-                if (classDecl != null) {
-                    val generatedDefinition = createScriptDefinition(resolver, classDecl)
-                    if (generatedDefinition != null) {
-                        definitionGenerated = true
-                        scripts.add(generatedDefinition)
-                    }
+            for (decl in file.declarations.filter { it.qualifiedName != null}.filterIsInstance<KSClassDeclaration>()) {
+                val generatedDefinition = createNodeDefinition(resolver, decl)
+                if (generatedDefinition != null) {
+                    definitionGenerated = true
+                    nodes.add(generatedDefinition)
                 }
             }
 
@@ -41,42 +37,42 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             }
         }
 
-        scripts.forEach { script -> generateCodeForScriptDefinition(resolver, script) }
+        nodes.forEach { node -> generateCodeForNodeDefinition(resolver, node) }
 
         // service file
         codeGenerator.createNewFile(
             Dependencies(true, *entryDependencies.toTypedArray()),
             "META-INF.services",
-            "calamansi.internal.ScriptDefinition",
+            "calamansi.internal.NodeDefinition",
             extensionName = ""
         ).writer().use { writer ->
-            scripts.forEach { script -> writer.appendLine("calamansi._gen.${script.name}") }
+            nodes.forEach { node -> writer.appendLine("calamansi._gen.${node.name}") }
         }
 
         processed = true
         return emptyList()
     }
 
-    private fun generateCodeForScriptDefinition(resolver: Resolver, definition: ScriptDefinition) {
+    private fun generateCodeForNodeDefinition(resolver: Resolver, definition: NodeDefinition) {
         val deps = mutableSetOf<KSFile>()
         deps.add(checkNotNull(definition.original.containingFile))
         codeGenerator.createNewFile(
             Dependencies(false, *deps.toTypedArray()), GEN_PACKAGE_NAME, definition.name
         ).writer().use { writer ->
-            val scriptQualifiedName = checkNotNull(definition.original.qualifiedName).asString()
+            val nodeQualifiedName = checkNotNull(definition.original.qualifiedName).asString()
             val dataClassName = "${definition.name}Data"
 
             val properties = definition.properties.joinToString(separator = ",\n${indent(4, 2)}") { prop ->
                 val typeRef = checkNotNull(prop.type.qualifiedName).asString()
                 val propertyName = "\"${prop.name}\""
                 val propertyRef = "$dataClassName::${prop.name}"
-                val scriptPropertyType = if (!prop.isEnum) {
-                    "ScriptPropertyType.Simple(typeOf<$typeRef>())"
+                val nodePropertyType = if (!prop.isEnum) {
+                    "NodePropertyType.Simple(typeOf<$typeRef>())"
                 } else {
-                    "ScriptPropertyType.Enum(typeOf<$typeRef>(), enumValues<$typeRef>(), $propertyRef)"
+                    "NodePropertyType.Enum(typeOf<$typeRef>(), enumValues<$typeRef>())"
                 }
 
-                "ScriptProperty($propertyName, $scriptPropertyType , { thisRef, value -> $propertyRef.set(thisRef as $dataClassName, value as $typeRef) }, { thisRef -> $propertyRef.get(thisRef as $dataClassName) })"
+                "NodeProperty($propertyName, $nodePropertyType , { thisRef, value -> $propertyRef.set(thisRef as $dataClassName, value as $typeRef) }, { thisRef -> $propertyRef.get(thisRef as $dataClassName) })"
             }
 
             val dataProperties = definition.properties.joinToString(separator = ",\n${indent(4, 1)}") { prop ->
@@ -94,7 +90,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
 
             writer.appendLine(
                 """
-                // GENERATED from $scriptQualifiedName
+                // GENERATED from $nodeQualifiedName
                 package $GEN_PACKAGE_NAME
                 import kotlin.collections.setOf
                 import kotlin.reflect.KClass
@@ -105,45 +101,45 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 import kotlinx.serialization.modules.polymorphic
                 import kotlinx.serialization.modules.subclass
                 
-                import calamansi.Script
-                import calamansi.internal.ScriptDefinition
-                import calamansi.internal.ScriptProperty
-                import calamansi.internal.ScriptPropertyType
-                import calamansi.internal.ScriptData
+                import calamansi.node.Node
+                import calamansi.internal.NodeDefinition
+                import calamansi.internal.NodeProperty
+                import calamansi.internal.NodePropertyType
+                import calamansi.internal.NodeData
                 import calamansi.meta.CalamansiInternal
                 
                 @Serializable
                 @CalamansiInternal
                 data class $dataClassName(
                     $dataProperties
-                ) : ScriptData {
-                    override val type: KClass<out Script>
-                        get() = $scriptQualifiedName::class
+                ) : NodeData {
+                    override val type: KClass<out Node>
+                        get() = $nodeQualifiedName::class
                 }
                 
                 @CalamansiInternal
-                class ${definition.name} : ScriptDefinition {
-                    override val type: KClass<out Script> = $scriptQualifiedName::class
-                    override fun create(): $scriptQualifiedName = $scriptQualifiedName()
+                class ${definition.name} : NodeDefinition {
+                    override val type: KClass<out Node> = $nodeQualifiedName::class
+                    override fun create(): $nodeQualifiedName = $nodeQualifiedName()
                     
-                    override val properties: Set<ScriptProperty> = setOf(
+                    override val properties: Set<NodeProperty> = setOf(
                         $properties
                     )
                     
-                    override fun applyData(target: Script, data: ScriptData) {
-                        require(target is $scriptQualifiedName && data is $dataClassName)
+                    override fun applyData(target: Node, data: NodeData) {
+                        require(target is $nodeQualifiedName && data is $dataClassName)
                         $fromDataAssignments
                     }
 
-                    override fun extractData(target: Script): ScriptData {
-                        require(target is $scriptQualifiedName)
+                    override fun extractData(target: Node): NodeData {
+                        require(target is $nodeQualifiedName)
                         return $dataClassName(
                             $toDataAssignments
                         )
                     }
                     
                     override fun serializersModule(): SerializersModule = SerializersModule {
-                        polymorphic(ScriptData::class) {
+                        polymorphic(NodeData::class) {
                             subclass($dataClassName::class)
                         }
                     }
@@ -153,12 +149,17 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         }
     }
 
-    private fun createScriptDefinition(resolver: Resolver, classDecl: KSClassDeclaration): ScriptDefinition? {
-        if (!isDirectSubTypeOf(classDecl, QualifiedNames.Script)) {
+    private fun createNodeDefinition(resolver: Resolver, classDecl: KSClassDeclaration): NodeDefinition? {
+        // subtype of Node or Node itself
+        if (!isDirectSubTypeOf(
+                classDecl,
+                QualifiedNames.Node
+            ) && checkNotNull(classDecl.qualifiedName).asString() != QualifiedNames.Node
+        ) {
             return null
         }
 
-        val properties = classDecl.getDeclaredProperties().filter { isSupportedProperty(resolver, it) }.map {
+        val properties = classDecl.getAllProperties().filter { isSupportedProperty(resolver, it) }.map {
             val propTypeDecl = it.type.resolve().declaration as KSClassDeclaration
             PropertyDefinition(
                 checkNotNull(it.qualifiedName).getShortName(),
@@ -166,7 +167,9 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             )
         }.toList()
 
-        return ScriptDefinition(
+        environment.logger.info("properties for $classDecl: ${classDecl.getAllProperties().map { it.qualifiedName?.asString() to it.annotations.map {it.shortName }.toList() }.toList()}")
+
+        return NodeDefinition(
             generateDefinitionName(classDecl), classDecl, properties
         )
     }
@@ -188,7 +191,8 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 property
             )
         }
-        return property.isMutable && property.hasBackingField && property.isPublic() && hasPropertyAnnotation && isSupportedType
+        // no need to check for hasBackingProperty as Property annotation can only be applied for fields.
+        return property.isMutable && property.isPublic() && hasPropertyAnnotation && isSupportedType
     }
 
     fun KSAnnotated.hasAnnotation(qualifiedName: String): Boolean {
@@ -198,7 +202,6 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
     fun KSAnnotated.getAnnotation(qualifiedName: String): KSAnnotation? {
         for (annotation in annotations) {
             val type = annotation.annotationType.resolve().declaration
-            type.qualifiedName
             if (type !is KSClassDeclaration) {
                 return null
             }
@@ -219,12 +222,25 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
     companion object {
         private const val GEN_PACKAGE_NAME = "calamansi._gen"
         private val SUPPORTED_TYPES = setOf(
+            // JOML
             "org.joml.Vector2f",
             "org.joml.Vector3f",
+
+            // Calamansi UI
+            "calamansi.ui.FlexLayout",
+            "calamansi.ui.FlexAlign",
+            "calamansi.ui.FlexDirection",
+            "calamansi.ui.FlexJustify",
+            "calamansi.ui.FlexWrap",
+            "calamansi.ui.FlexBounds",
+            "calamansi.ui.FlexAxisValue",
+            "calamansi.ui.FlexAxisValue.Auto",
+            "calamansi.ui.FlexAxisValue.Fixed",
+            "calamansi.ui.FlexAxisValue.Relative",
         )
 
         private object QualifiedNames {
-            const val Script = "calamansi.Script"
+            const val Node = "calamansi.node.Node"
             const val Property = "calamansi.meta.Property"
             const val ResourceRef = "calamansi.resource.ResourceRef"
         }

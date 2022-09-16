@@ -1,4 +1,4 @@
-package calamansi
+package calamansi.node
 
 import calamansi.resource.Resource
 

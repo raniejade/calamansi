@@ -1,8 +1,11 @@
 {
   "nodes": [
     {
-      "name": "root",
-      "script": "calamansi.editor.EditorScript"
+      "type": "calamansi.editor.Editor",
+      "data": {
+        "type": "calamansi._gen.calamansi_editor_EditorData",
+        "name": "editor"
+      }
     }
   ]
 }

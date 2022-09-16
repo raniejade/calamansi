@@ -1,9 +1,8 @@
 package calamansi.runtime.resource.loader
 
-import calamansi.Node
-import calamansi.Scene
 import calamansi.meta.CalamansiInternal
-import calamansi.runtime.NodeImpl
+import calamansi.node.Node
+import calamansi.node.Scene
 import calamansi.runtime.Services
 import calamansi.runtime.assets.SerializedNode
 import calamansi.runtime.assets.SerializedScene
@@ -41,9 +40,9 @@ class SceneLoader : ResourceLoader<Scene> {
         }
     }
 
-    private fun buildSceneGraph(scene: SerializedScene): NodeImpl? {
-        val potentialRoots = mutableListOf<NodeImpl>()
-        val nodes = mutableListOf<NodeImpl>()
+    private fun buildSceneGraph(scene: SerializedScene): Node? {
+        val potentialRoots = mutableListOf<Node>()
+        val nodes = mutableListOf<Node>()
         // first pass: create all nodes without establishing hierarchy
         for (serializedNode in scene.nodes) {
             val node = createNode(serializedNode)
@@ -82,16 +81,11 @@ class SceneLoader : ResourceLoader<Scene> {
         return potentialRoots[0]
     }
 
-    // only sets the script, parent is established in second pass
     @OptIn(CalamansiInternal::class)
-    private fun createNode(config: SerializedNode): NodeImpl {
-        check(config.name.isNotBlank()) { "Node has blank name" }
-        val script = config.script?.let(registryService::createScript)
-        if (config.data != null) {
-            registryService.applyData(script!!, config.data!!)
-        }
-        config.data?.let { registryService.applyData(script!!, it) }
-
-        return NodeImpl(config.name, script)
+    private fun createNode(config: SerializedNode): Node {
+        check(config.type.isNotBlank()) { "Type not specified" }
+        val instance = registryService.createNode(config.type)
+        registryService.applyData(instance, config.data)
+        return instance
     }
 }

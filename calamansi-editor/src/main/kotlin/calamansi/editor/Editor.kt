@@ -1,19 +1,15 @@
 package calamansi.editor
 
-import calamansi.ExecutionContext
-import calamansi.Script
 import calamansi.event.Event
 import calamansi.input.InputState
 import calamansi.input.Key
 import calamansi.input.KeyStateEvent
+import calamansi.node.ExecutionContext
+import calamansi.node.Node
 
-class EditorScript : Script() {
-    context(ExecutionContext) override fun onAttached() {
-        logger.info { "attached" }
-    }
-
-    context(ExecutionContext) override fun onDetached() {
-        logger.info { "detached" }
+class Editor : Node() {
+    context(ExecutionContext) override fun onInit() {
+        logger.info { "onInit" }
     }
 
     context(ExecutionContext) override fun onEvent(event: Event) {

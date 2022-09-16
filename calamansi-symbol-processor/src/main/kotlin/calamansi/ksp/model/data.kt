@@ -7,4 +7,4 @@ class PropertyDefinition(val name: String, val type: KSClassDeclaration) {
     val isEnum: Boolean = type.classKind == ClassKind.ENUM_CLASS
 }
 
-class ScriptDefinition(val name: String, val original: KSClassDeclaration, val properties: List<PropertyDefinition>)
+class NodeDefinition(val name: String, val original: KSClassDeclaration, val properties: List<PropertyDefinition>)

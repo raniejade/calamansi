@@ -1,7 +1,6 @@
 package calamansi.runtime.assets
 
-import calamansi.component.Component
-import calamansi.internal.ScriptData
+import calamansi.internal.NodeData
 import calamansi.meta.CalamansiInternal
 import kotlinx.serialization.Serializable
 
@@ -9,11 +8,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 @OptIn(CalamansiInternal::class)
 data class SerializedNode constructor(
-    val name: String,
+    val type: String,
     val parent: Int?,
-    val script: String?,
-    val data: ScriptData?,
-    val components: List<Component> = emptyList(),
+    val data: NodeData,
 )
 
 @Serializable

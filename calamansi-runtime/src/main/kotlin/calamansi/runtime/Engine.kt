@@ -1,6 +1,6 @@
 package calamansi.runtime
 
-import calamansi.Scene
+import calamansi.node.Scene
 import calamansi.resource.ResourceRef
 import calamansi.runtime.logging.LogLevel
 import calamansi.runtime.logging.LoggingService

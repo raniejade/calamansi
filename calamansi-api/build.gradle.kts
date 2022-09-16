@@ -9,6 +9,8 @@ dependencies {
     api(Deps.kotlinSerializationCore)
     api(Deps.joml)
 
+    ksp(project(":calamansi-symbol-processor"))
+
 }
 
 enableContextReceivers()

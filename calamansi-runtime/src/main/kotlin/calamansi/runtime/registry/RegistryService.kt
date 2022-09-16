@@ -1,16 +1,14 @@
 package calamansi.runtime.registry
 
-import calamansi.Script
-import calamansi.internal.Bootstrap
+import calamansi.internal.NodeData
+import calamansi.internal.NodeDefinition
 import calamansi.internal.Registry
-import calamansi.internal.ScriptData
-import calamansi.internal.ScriptDefinition
 import calamansi.meta.CalamansiInternal
+import calamansi.node.Node
 import calamansi.runtime.service.Service
 import kotlinx.serialization.modules.SerializersModule
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.reflect.KClass
 
 interface Registration {
     fun unregister()
@@ -42,31 +40,31 @@ class RegistryService : Service {
         }
     }
 
-    fun createScript(script: String): Script {
-        return getScriptDefinition(script).create()
+    fun createNode(type: String): Node {
+        return getNodeDefinition(type).create()
     }
 
-    fun applyData(target: Script, data: ScriptData) {
-        getScriptDefinition(checkNotNull(target::class.qualifiedName)).applyData(target, data)
+    fun applyData(target: Node, data: NodeData) {
+        getNodeDefinition(checkNotNull(target::class.qualifiedName)).applyData(target, data)
     }
 
-    fun extractData(target: Script): ScriptData {
-        return getScriptDefinition(checkNotNull(target::class.qualifiedName)).extractData(target)
+    fun extractData(target: Node): NodeData {
+        return getNodeDefinition(checkNotNull(target::class.qualifiedName)).extractData(target)
     }
 
-    private fun getScriptDefinition(script: String): ScriptDefinition {
-        var definition = coreRegistry.findScriptDefinition(script)
+    private fun getNodeDefinition(type: String): NodeDefinition {
+        var definition = coreRegistry.findNodeDefinition(type)
         if (definition != null) {
             return definition
         }
 
         for ((_, registry) in appRegistries) {
-            definition = registry.findScriptDefinition(script)
+            definition = registry.findNodeDefinition(type)
             if (definition != null) {
                 return definition
             }
         }
-        throw IllegalStateException("Failed to find definition for $script.")
+        throw IllegalStateException("Failed to find definition for $type.")
     }
 
     override fun stop() {
@@ -93,31 +91,31 @@ class RegistryService : Service {
 
 
     private fun findAndLoadBootstrap(registry: Registry) {
-        val loader = ServiceLoader.load(ScriptDefinition::class.java)
+        val loader = ServiceLoader.load(NodeDefinition::class.java)
         for (definition in loader) {
-            registry.registerScript(definition.type, definition)
+            registry.registerNode(definition)
         }
     }
 
 
     private class RegistryImpl : Registry {
-        private val definitions = mutableMapOf<String, ScriptDefinition>()
+        private val definitions = mutableMapOf<String, NodeDefinition>()
 
-        override fun registerScript(type: KClass<out Script>, definition: ScriptDefinition) {
-            val qualifiedName = type.qualifiedName!!
-            require(!definitions.containsKey(qualifiedName))
-            println("registring script: $type")
-            definitions[qualifiedName] = definition
-        }
-
-        fun findScriptDefinition(script: String): ScriptDefinition? {
-            return definitions[script]
+        fun findNodeDefinition(type: String): NodeDefinition? {
+            return definitions[type]
         }
 
         fun computeSerializersModule() = SerializersModule {
             for ((_, definition) in definitions) {
                 include(definition.serializersModule())
             }
+        }
+
+        override fun registerNode(definition: NodeDefinition) {
+            val qualifiedName = definition.type.qualifiedName!!
+            require(!definitions.containsKey(qualifiedName))
+            println("Registering node: ${definition.type}")
+            definitions[qualifiedName] = definition
         }
     }
 }
