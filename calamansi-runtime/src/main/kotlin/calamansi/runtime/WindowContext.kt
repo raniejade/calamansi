@@ -76,7 +76,6 @@ class WindowContext(private val window: Window) {
     }
 
     fun onUpdate(delta: Long) {
-        invokeLifecycle(root, Lifecycle.OnReady)
         invokeLifecycle(root, Lifecycle.OnUpdate(delta))
     }
 

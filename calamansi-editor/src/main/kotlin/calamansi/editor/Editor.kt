@@ -9,7 +9,7 @@ import calamansi.node.Node
 
 class Editor : Node() {
     context(ExecutionContext) override fun onReady() {
-        logger.info { "onInit" }
+        logger.info { "onReady" }
     }
 
     context(ExecutionContext) override fun onEvent(event: Event) {

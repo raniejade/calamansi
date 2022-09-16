@@ -7,7 +7,6 @@ import calamansi.node.Node
 
 @CalamansiInternal
 sealed class Lifecycle {
-    object OnReady : Lifecycle()
     class OnUpdate(val delta: Long) : Lifecycle()
     class OnEvent(val event: Event) : Lifecycle()
 }

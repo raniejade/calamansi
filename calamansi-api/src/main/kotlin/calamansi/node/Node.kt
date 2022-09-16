@@ -50,14 +50,11 @@ open class Node {
 
     context(ExecutionContext) @OptIn(CalamansiInternal::class)
     internal fun invokeLifecycle(lifecycle: Lifecycle) {
+        if (!onReadyInvoked) {
+            onReady()
+            onReadyInvoked = true
+        }
         when (lifecycle) {
-            is Lifecycle.OnReady -> {
-                if (!onReadyInvoked) {
-                    onReady()
-                    onReadyInvoked = true
-                }
-            }
-
             is Lifecycle.OnEvent -> onEvent(lifecycle.event)
             is Lifecycle.OnUpdate -> onUpdate(lifecycle.delta)
         }
