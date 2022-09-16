@@ -1,9 +1,11 @@
 package calamansi.runtime
 
-import calamansi.event.Event
 import calamansi.input.Key
 import calamansi.input.MouseButton
+import calamansi.internal.Lifecycle
+import calamansi.internal.LifecycleInvoker
 import calamansi.logging.Logger
+import calamansi.meta.CalamansiInternal
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
 import calamansi.node.Scene
@@ -15,6 +17,7 @@ import calamansi.runtime.resource.ResourceService
 import calamansi.runtime.sys.Window
 import calamansi.runtime.sys.WindowHandlerRegistration
 
+@OptIn(CalamansiInternal::class)
 class WindowContext(private val window: Window) {
     private val logger by lazy { Services.getService<LoggingService>().getLogger(WindowContext::class) }
     private var root: Node? = null
@@ -67,48 +70,31 @@ class WindowContext(private val window: Window) {
         // start receiving events
         registration = window.registerEventHandler {
             EventLoops.Script.scheduleNow {
-                invokeOnEvent(root, it)
+                invokeLifecycle(root, Lifecycle.OnEvent(it))
             }
         }
     }
 
     fun onUpdate(delta: Long) {
-        invokeOnUpdate(root, delta)
+        invokeLifecycle(root, Lifecycle.OnReady)
+        invokeLifecycle(root, Lifecycle.OnUpdate(delta))
     }
 
     fun getExecutionContext(): ExecutionContext {
         return executionContext
     }
 
-    private fun invokeOnUpdate(node: Node?, delta: Long) {
+    private fun invokeLifecycle(node: Node?, lifecycle: Lifecycle) {
         if (node == null) {
             return
         }
 
         with(executionContext) {
-            node.onUpdate(delta)
+            LifecycleInvoker.invoke(node, lifecycle)
         }
 
         for (child in node.getChildren()) {
-            invokeOnUpdate(child, delta)
-        }
-    }
-
-    private fun invokeOnEvent(node: Node?, event: Event) {
-        if (node == null) {
-            return
-        }
-
-        with(executionContext) {
-            node.onEvent(event)
-        }
-
-        if (event.isConsumed()) {
-            return
-        }
-
-        for (child in node.getChildren()) {
-            invokeOnEvent(child, event)
+            invokeLifecycle(child, lifecycle)
         }
     }
 

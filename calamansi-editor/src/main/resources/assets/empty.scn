@@ -1,7 +1,11 @@
 {
   "nodes": [
     {
-      "name": "root"
+      "type": "calamansi.node.Node",
+      "data": {
+        "type": "calamansi._gen.calamansi_node_NodeData",
+        "name": "root"
+      }
     }
   ]
 }
