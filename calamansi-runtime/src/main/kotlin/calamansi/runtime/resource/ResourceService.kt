@@ -123,7 +123,7 @@ class ResourceService : Service {
             }
 
             private fun getExtension(resource: String): String {
-                val extension = resource.substringAfterLast('.', "")
+                val extension = resource.substringAfterLast("/", resource).substringAfter('.', "")
                 check(extension.isNotBlank()) { "Unable to parse extension from '$resource'." }
                 return extension
             }

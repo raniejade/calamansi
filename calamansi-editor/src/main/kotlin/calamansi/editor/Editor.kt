@@ -15,7 +15,7 @@ class Editor : Node() {
     context(ExecutionContext) override fun onEvent(event: Event) {
         logger.info { "Received event: $event" }
         if (event is KeyStateEvent && event.state == InputState.RELEASED && event.key == Key.A) {
-            setScene(loadResource("assets://empty.scn"))
+            setScene(loadResource("assets://empty.scn.json"))
         }
     }
 

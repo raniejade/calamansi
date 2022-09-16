@@ -26,7 +26,7 @@ class SceneLoader : ResourceLoader<Scene> {
         }
     }
 
-    override val supportedExtensions: Set<String> = setOf("scn")
+    override val supportedExtensions: Set<String> = setOf("scn.json")
 
     @OptIn(ExperimentalSerializationApi::class)
     override fun load(

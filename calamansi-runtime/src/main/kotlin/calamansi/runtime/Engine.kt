@@ -208,7 +208,7 @@ class Engine {
             runCatching {
                 EventLoops.Script.scheduleNow {
                     // load default scene
-                    val defaultScene = resourceService.loadResource("assets://default.scn") as ResourceRef<Scene>
+                    val defaultScene = resourceService.loadResource("assets://default.scn.json") as ResourceRef<Scene>
                     mainWindowContext.setScene(defaultScene)
                 }
             }
@@ -317,7 +317,7 @@ class Engine {
 
     @OptIn(ExperimentalSerializationApi::class)
     private fun loadProjectConfig(): ProjectConfig {
-        val stream = javaClass.classLoader.getResourceAsStream("project.cfg") ?: return ProjectConfig()
+        val stream = javaClass.classLoader.getResourceAsStream("project.json") ?: return ProjectConfig()
         return Json.Default.decodeFromStream(stream)
     }
 }
