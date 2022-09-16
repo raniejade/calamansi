@@ -2,6 +2,8 @@ package calamansi.ui
 
 import calamansi.meta.Property
 import calamansi.node.Node
+import calamansi.resource.Font
+import calamansi.resource.ResourceRef
 import kotlinx.serialization.Serializable
 
 enum class FlexLayout {
@@ -61,6 +63,11 @@ sealed class FlexAxisValue {
     }
 }
 
+sealed class FontValue {
+    object Inherit : FontValue()
+    class Ref(val font: ResourceRef<Font>) : FontValue()
+}
+
 open class CanvasElement : Node() {
     @Property
     var alignContent: FlexAlign = FlexAlign.FLEX_START
@@ -118,4 +125,7 @@ open class CanvasElement : Node() {
 
     @Property
     var maxHeight: FlexAxisValue = FlexAxisValue.Auto
+
+    @Property
+    var font: FontValue = FontValue.Inherit
 }

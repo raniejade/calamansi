@@ -2,6 +2,7 @@ package calamansi.ksp
 
 import calamansi.ksp.model.NodeDefinition
 import calamansi.ksp.model.PropertyDefinition
+import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.processing.Dependencies
@@ -22,7 +23,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         val nodes = mutableListOf<NodeDefinition>()
         for (file in resolver.getAllFiles()) {
             var definitionGenerated = false
-            for (decl in file.declarations.filter { it.qualifiedName != null}.filterIsInstance<KSClassDeclaration>()) {
+            for (decl in file.declarations.filter { it.qualifiedName != null }.filterIsInstance<KSClassDeclaration>()) {
                 val generatedDefinition = createNodeDefinition(resolver, decl)
                 if (generatedDefinition != null) {
                     definitionGenerated = true
@@ -167,7 +168,12 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             )
         }.toList()
 
-        environment.logger.info("properties for $classDecl: ${classDecl.getAllProperties().map { it.qualifiedName?.asString() to it.annotations.map {it.shortName }.toList() }.toList()}")
+        environment.logger.info(
+            "properties for $classDecl: ${
+                classDecl.getAllProperties()
+                    .map { it.qualifiedName?.asString() to it.annotations.map { it.shortName }.toList() }.toList()
+            }"
+        )
 
         return NodeDefinition(
             generateDefinitionName(classDecl), classDecl, properties
@@ -216,7 +222,8 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
     }
 
     private fun isDirectSubTypeOf(classDecl: KSClassDeclaration, type: String): Boolean {
-        return classDecl.superTypes.any { checkNotNull(it.resolve().declaration.qualifiedName).asString() == type }
+        return classDecl.getAllSuperTypes()
+            .any { checkNotNull(it.declaration.qualifiedName).asString() == type }
     }
 
     companion object {
@@ -237,6 +244,9 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             "calamansi.ui.FlexAxisValue.Auto",
             "calamansi.ui.FlexAxisValue.Fixed",
             "calamansi.ui.FlexAxisValue.Relative",
+            "calamansi.ui.FontValue",
+            "calamansi.ui.FontValue.Inherit",
+            "calamansi.ui.FontValue.Ref",
         )
 
         private object QualifiedNames {
