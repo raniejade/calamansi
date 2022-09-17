@@ -5,6 +5,8 @@ import calamansi.internal.NodeDefinition
 import calamansi.internal.Registry
 import calamansi.meta.CalamansiInternal
 import calamansi.node.Node
+import calamansi.runtime.Services
+import calamansi.runtime.logging.LoggingService
 import calamansi.runtime.service.Service
 import kotlinx.serialization.modules.SerializersModule
 import java.util.*
@@ -16,6 +18,8 @@ interface Registration {
 
 @OptIn(CalamansiInternal::class)
 class RegistryService : Service {
+    private val logger by lazy { Services.getService<LoggingService>().getLogger(RegistryService::class) }
+
     // contains all definitions for the engine, i.e. all core types of the engine
     private val coreRegistry = RegistryImpl()
 
@@ -98,7 +102,7 @@ class RegistryService : Service {
     }
 
 
-    private class RegistryImpl : Registry {
+    private inner class RegistryImpl : Registry {
         private val definitions = mutableMapOf<String, NodeDefinition>()
 
         fun findNodeDefinition(type: String): NodeDefinition? {
@@ -114,7 +118,7 @@ class RegistryService : Service {
         override fun registerNode(definition: NodeDefinition) {
             val qualifiedName = definition.type.qualifiedName!!
             require(!definitions.containsKey(qualifiedName))
-            println("Registering node: ${definition.type}")
+            logger.info { "Registering node: ${definition.type}." }
             definitions[qualifiedName] = definition
         }
     }
