@@ -16,6 +16,8 @@ import calamansi.runtime.registry.RegistryService
 import calamansi.runtime.resource.ResourceService
 import calamansi.runtime.sys.Window
 import calamansi.runtime.sys.WindowHandlerRegistration
+import java.util.concurrent.CompletableFuture
+import kotlin.reflect.KClass
 
 @OptIn(CalamansiInternal::class)
 class WindowContext(private val window: Window) {
@@ -42,8 +44,14 @@ class WindowContext(private val window: Window) {
             return window.isMouseButtonPressed(button)
         }
 
-        override fun <T : Resource> loadResource(path: String, cb: ((ResourceRef<T>) -> Unit)?): ResourceRef<T> {
-            return resourceService.loadResource(path, cb as ((ResourceRef<out Resource>) -> Unit)?) as ResourceRef<T>
+        override fun <T : Resource> loadResourceAsync(
+            path: String,
+            type: KClass<T>,
+            index: Int,
+        ): CompletableFuture<ResourceRef<T>> {
+            return EventLoops.Resource.schedule {
+                resourceService.loadResource(path, type, index) as ResourceRef<T>
+            }
         }
 
         override inline val Node.logger: Logger

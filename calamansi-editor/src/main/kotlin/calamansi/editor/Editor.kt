@@ -6,6 +6,7 @@ import calamansi.input.Key
 import calamansi.input.KeyStateEvent
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
+import calamansi.resource.loadResource
 
 class Editor : Node() {
     context(ExecutionContext) override fun onReady() {

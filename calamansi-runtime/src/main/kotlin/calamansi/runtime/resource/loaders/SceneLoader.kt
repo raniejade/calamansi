@@ -1,19 +1,22 @@
-package calamansi.runtime.resource.loader
+package calamansi.runtime.resource.loaders
 
 import calamansi.meta.CalamansiInternal
 import calamansi.node.Node
 import calamansi.node.Scene
+import calamansi.resource.LoadedResource
+import calamansi.resource.Resource
+import calamansi.resource.ResourceLoader
 import calamansi.runtime.Services
 import calamansi.runtime.assets.SerializedNode
 import calamansi.runtime.assets.SerializedScene
 import calamansi.runtime.logging.LoggingService
 import calamansi.runtime.registry.RegistryService
 import calamansi.runtime.resource.ResourceService
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import java.io.InputStream
+import kotlin.reflect.KClass
 
-class SceneLoader : ResourceLoader<Scene> {
+class SceneLoader : ResourceLoader(setOf("scn.json")) {
     private val resourceService: ResourceService by Services.get()
     private val registryService: RegistryService by Services.get()
     private val logger by lazy {
@@ -26,14 +29,9 @@ class SceneLoader : ResourceLoader<Scene> {
         }
     }
 
-    override val supportedExtensions: Set<String> = setOf("scn.json")
-
-    @OptIn(ExperimentalSerializationApi::class)
-    override fun load(
-        inputStream: InputStream,
-    ): LoadedResource<Scene> {
+    override fun loadResource(stream: InputStream, type: KClass<out Resource>, index: Int): LoadedResource {
         val serializedScene =
-            resourceService.getJsonSerializer().decodeFromStream<SerializedScene>(inputStream)
+            resourceService.getJsonSerializer().decodeFromStream<SerializedScene>(stream)
         return LoadedResource(SceneImpl(serializedScene)) {
             // no clean up needed, once this scene is garbage collected every sub resource
             // will be collected as well (if there are no other reference to the sub resource).

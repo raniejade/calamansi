@@ -7,7 +7,7 @@ import calamansi.runtime.logging.LoggingService
 import calamansi.runtime.model.ProjectConfig
 import calamansi.runtime.registry.RegistryService
 import calamansi.runtime.resource.ResourceService
-import calamansi.runtime.resource.loader.SceneLoader
+import calamansi.runtime.resource.loaders.SceneLoader
 import calamansi.runtime.resource.source.JarFileSource
 import calamansi.runtime.resource.source.RelativeFileSource
 import calamansi.runtime.sys.*
@@ -121,7 +121,13 @@ class Engine {
         uiPipeline = gfx.createPipeline {
             vertexAttributes {
                 attribute(0, 2, PrimitiveType.FLOAT, 4 * PrimitiveType.FLOAT.size, 0)
-                attribute(1, 2, PrimitiveType.FLOAT, 4 * PrimitiveType.FLOAT.size, (2 * PrimitiveType.FLOAT.size).toLong())
+                attribute(
+                    1,
+                    2,
+                    PrimitiveType.FLOAT,
+                    4 * PrimitiveType.FLOAT.size,
+                    (2 * PrimitiveType.FLOAT.size).toLong()
+                )
             }
 
             shaderStage(
@@ -208,7 +214,8 @@ class Engine {
             runCatching {
                 EventLoops.Script.scheduleNow {
                     // load default scene
-                    val defaultScene = resourceService.loadResource("assets://default.scn.json") as ResourceRef<Scene>
+                    val defaultScene =
+                        resourceService.loadResource("assets://default.scn.json", Scene::class, 0) as ResourceRef<Scene>
                     mainWindowContext.setScene(defaultScene)
                 }
             }
@@ -295,10 +302,6 @@ class Engine {
             "assets",
             RelativeFileSource("assets", JarFileSource(this::class.java.classLoader))
         )
-
-        // resource loaders
-        logger.info { "Registering resource loaders." }
-        resourceService.registerLoader(SceneLoader())
 
         OpenGLGfxDriver.start()
     }

@@ -1,34 +1,23 @@
 package calamansi.resource
 
-/**
- * Base type for all resources.
- */
-interface Resource
+import java.util.concurrent.CompletableFuture
+import kotlin.reflect.KClass
 
-/**
- * Reference to a [resource][Resource].
- */
-interface ResourceRef<T : Resource> {
-    val path: String
-
-    /**
-     * Fetch the underlying [resource][Resource].
-     *
-     * Blocks the current thread if loading is still in-progress.
-     */
-    fun get(): T
-
-    /**
-     * Check if the underlying [resource][Resource] is loaded.
-     */
-    fun isLoaded(): Boolean
-}
 
 interface ResourceContext {
-    /**
-     * Load a resource asynchronously.
-     *
-     * Optionally, a [callback][cb] can be passed which will be invoked when loading has completed.
-     */
-    fun <T : Resource> loadResource(path: String, cb: ((ResourceRef<T>) -> Unit)? = null): ResourceRef<T>
+    fun <T : Resource> loadResource(path: String, type: KClass<T>, index: Int = 0): ResourceRef<T> {
+        return loadResourceAsync(path, type, index).get()
+    }
+
+    fun <T : Resource> loadResourceAsync(
+        path: String,
+        type: KClass<T>,
+        index: Int = 0,
+    ): CompletableFuture<ResourceRef<T>>
 }
+
+inline fun <reified T : Resource> ResourceContext.loadResource(path: String, index: Int = 0) =
+    loadResource(path, T::class, index)
+
+inline fun <reified T : Resource> ResourceContext.loadResourceAsync(path: String, index: Int = 0) =
+    loadResourceAsync(path, T::class, index)
