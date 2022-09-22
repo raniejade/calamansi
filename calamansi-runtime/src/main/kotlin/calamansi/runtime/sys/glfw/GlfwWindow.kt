@@ -48,6 +48,15 @@ class GlfwWindow(internal val handle: Long, private val contextCreated: Boolean)
         glfwShowWindow(handle)
     }
 
+    override fun getWindowSize(): Vector2ic {
+        return stackPush().use { stack ->
+            val width = stack.mallocInt(1)
+            val height = stack.mallocInt(1)
+            glfwGetWindowSize(handle, width, height)
+            Vector2i(width[0], height[0])
+        }
+    }
+
     override fun getContentScale(): Vector2fc {
         return stackPush().use { stack ->
             val scaleX = stack.mallocFloat(1)

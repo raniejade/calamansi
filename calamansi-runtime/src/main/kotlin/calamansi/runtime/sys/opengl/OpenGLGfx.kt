@@ -150,8 +150,6 @@ class OpenGLGfx(val window: Window) : Gfx {
         return spec.build()
     }
 
-    private var counter = 0
-
     override fun present(target: RenderTarget) {
         check(target is RenderTargetImpl)
         // bind default
@@ -168,7 +166,9 @@ class OpenGLGfx(val window: Window) : Gfx {
 
         glUseProgram(0)
         glBindVertexArray(0)
+    }
 
+    override fun swap() {
         if (window is GlfwWindow) {
             window.swapBuffers()
         }

@@ -11,7 +11,7 @@ import org.lwjgl.opengl.GL30.glBindVertexArray
 
 class Framebuffer(val handle: Int, val color: Int, val depth: Int?)
 class RenderTargetImpl(
-    private val front: Framebuffer,
+    val front: Framebuffer,
 ) : RenderTarget {
     override fun renderToTexture(): Texture2d {
         return Texture2dImpl(front.color)

@@ -23,6 +23,7 @@ object GlfwWindowDriver : WindowDriver {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1)
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
         }
+        glfwInitHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE)
         val window = glfwCreateWindow(
             width, height, title,
             MemoryUtil.NULL,

@@ -11,10 +11,13 @@ dependencies {
     implementation(Deps.lwjgl.core)
     implementation(Deps.lwjgl.glfw)
     implementation(Deps.lwjgl.opengl)
+    implementation(Deps.lwjgl.stb)
+    implementation(Deps.skija)
 
     runtimeOnly(Deps.lwjgl.runtime.core)
     runtimeOnly(Deps.lwjgl.runtime.glfw)
     runtimeOnly(Deps.lwjgl.runtime.opengl)
+    runtimeOnly(Deps.lwjgl.runtime.stb)
 
     kspTest(project(":calamansi-symbol-processor"))
 }

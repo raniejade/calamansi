@@ -1,8 +1,8 @@
 package calamansi.ui
 
+import calamansi.font.Font
 import calamansi.meta.Property
 import calamansi.node.Node
-import calamansi.resource.Font
 import calamansi.resource.ResourceRef
 import kotlinx.serialization.Serializable
 

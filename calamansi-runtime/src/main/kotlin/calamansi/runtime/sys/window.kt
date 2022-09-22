@@ -14,6 +14,7 @@ interface Window : InputContext {
 
     fun show()
 
+    fun getWindowSize(): Vector2ic
     fun getContentScale(): Vector2fc
     fun getFramebufferSize(): Vector2ic
 

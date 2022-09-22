@@ -23,6 +23,14 @@ class DrawSpecImpl(private val pipeline: PipelineImpl) : DrawSpec {
         glViewport(x, y, width, height)
     }
 
+    override fun setEnableDepthTest(enable: Boolean) {
+        if (enable) {
+            glEnable(GL_DEPTH_TEST)
+        } else {
+            glDisable(GL_DEPTH_TEST)
+        }
+    }
+
     override fun setShaderParam(name: String, resource: Vector3fc) {
         glProgramUniform3f(pipeline.program, getUniformLocation(name), resource.x(), resource.y(), resource.z())
     }

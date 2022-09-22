@@ -4,9 +4,15 @@ object Deps {
     const val kotlinSerializationVersion = "1.4.0-RC"
     const val kotlinCoroutinesVersion = "1.6.4"
     const val lwjglVersion = "3.3.1"
+    const val skijaVersion = "0.93.6"
     // TODO: check os
     val lwjglNatives by lazy {
         "natives-macos-arm64"
+    }
+
+    // TODO: check os
+    val skijaArtifact by lazy {
+        "skija-macos-arm64"
     }
 
     const val joml = "org.joml:joml:$jomlVersion"
@@ -15,18 +21,21 @@ object Deps {
     const val kotlinSerializationCore = "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinSerializationVersion"
     const val kotlinSerializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$kotlinSerializationVersion"
     const val kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
+    val skija = "org.jetbrains.skija:$skijaArtifact:$skijaVersion"
 
     object lwjgl {
         const val core = "org.lwjgl:lwjgl:$lwjglVersion"
         const val glfw = "org.lwjgl:lwjgl-glfw:$lwjglVersion"
         const val vulkan = "org.lwjgl:lwjgl-vulkan:$lwjglVersion"
         const val opengl = "org.lwjgl:lwjgl-opengl:$lwjglVersion"
+        const val stb = "org.lwjgl:lwjgl-stb:$lwjglVersion"
 
         object runtime {
             val core = "org.lwjgl:lwjgl::$lwjglNatives"
             val glfw = "org.lwjgl:lwjgl-glfw::$lwjglNatives"
             val vulkan = "org.lwjgl:lwjgl-vulkan::$lwjglNatives"
             val opengl = "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+            val stb = "org.lwjgl:lwjgl-stb::$lwjglNatives"
         }
     }
 }

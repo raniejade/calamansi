@@ -46,6 +46,7 @@ interface DrawSpec {
     fun setIndices(indices: IndexBuffer)
 
     fun setViewport(x: Int, y: Int, width: Int, height: Int)
+    fun setEnableDepthTest(enable: Boolean)
 
     // vector
     fun setShaderParam(name: String, resource: Vector3fc)
@@ -120,6 +121,7 @@ interface Gfx {
     fun createRenderTarget(body: RenderTargetSpec.() -> Unit): RenderTarget
     fun createPipeline(body: PipelineSpec.() -> Unit): Pipeline
     fun present(target: RenderTarget)
+    fun swap()
 }
 
 interface GfxDriver {

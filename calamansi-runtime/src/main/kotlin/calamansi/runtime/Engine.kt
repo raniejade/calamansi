@@ -1,13 +1,14 @@
 package calamansi.runtime
 
+import calamansi.font.Font
 import calamansi.node.Scene
 import calamansi.resource.ResourceRef
+import calamansi.runtime.font.FontImpl
 import calamansi.runtime.logging.LogLevel
 import calamansi.runtime.logging.LoggingService
 import calamansi.runtime.model.ProjectConfig
 import calamansi.runtime.registry.RegistryService
 import calamansi.runtime.resource.ResourceService
-import calamansi.runtime.resource.loaders.SceneLoader
 import calamansi.runtime.resource.source.JarFileSource
 import calamansi.runtime.resource.source.RelativeFileSource
 import calamansi.runtime.sys.*
@@ -17,6 +18,8 @@ import calamansi.runtime.window.WindowService
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import org.jetbrains.skija.Paint
+import org.jetbrains.skija.shaper.Shaper
 import org.joml.Matrix4f
 import org.joml.Matrix4fc
 import org.lwjgl.system.MemoryStack.stackPush
@@ -34,6 +37,7 @@ class Engine {
     private lateinit var mainRenderTarget: RenderTarget
     private lateinit var defaultPipeline: Pipeline
     private lateinit var uiPipeline: Pipeline
+    private lateinit var skijaContext: SkijaContext
 
     private lateinit var triangleVertices: VertexBuffer
     private lateinit var triangleIndices: IndexBuffer
@@ -42,6 +46,9 @@ class Engine {
     private lateinit var uiQuad: VertexBuffer
     private lateinit var uiQuadIndices: IndexBuffer
     private var frameNo = 0L
+
+    private lateinit var ref: FontImpl
+    private lateinit var font: org.jetbrains.skija.Font
 
     fun run() {
         // load project.cfg
@@ -179,12 +186,16 @@ class Engine {
             gfx.createIndexBuffer(buffer)
         }
 
+        ref = resourceService.loadResource("rt://OpenSans-Regular.ttf", Font::class, 0).get() as FontImpl
+        font = org.jetbrains.skija.Font(ref.typeface, 32f)
+
         mainLoop()
 
         triangleVertices.destroy()
         triangleIndices.destroy()
         defaultPipeline.destroy()
         mainRenderTarget.destroy()
+        skijaContext.destroy()
 
         windowHandlerRegistration.unregister()
 
@@ -200,10 +211,20 @@ class Engine {
 
         mainRenderTarget = gfx.createRenderTarget {
             setSize(size.x(), size.y())
-            setAttachments(setOf(Attachment.COLOR))
+            setAttachments(setOf(Attachment.COLOR, Attachment.DEPTH))
         }
 
         orthoProjection = Matrix4f().ortho(0f, size.x().toFloat(), size.y().toFloat(), 0f, -1f, 1f)
+
+        if (this::skijaContext.isInitialized) {
+            skijaContext.destroy()
+        }
+
+        skijaContext = SkijaContext.create(
+            size.x(),
+            size.y(),
+            mainRenderTarget
+        )
     }
 
     private fun mainLoop() {
@@ -249,20 +270,26 @@ class Engine {
                         }
 
                         val contentScale = mainWindowContext.getContentScale()
-                        val model = Matrix4f()
-                            .translate(10f, 10f, 0f)
-                            .scale(200 * contentScale.x(), 30 * contentScale.y(), 0f)
-                        mainRenderTarget.render(uiPipeline) {
-                            setViewport(0, 0, size.x(), size.y())
-                            setVertices(uiQuad)
+                        skijaContext.draw {
+                            resetMatrix()
+                            scale(contentScale.x(), contentScale.y())
+                            val text = Shaper.make()
+                                .shape(
+                                    "Hello World",
+                                    font,
+                                )!!
 
-                            setShaderParam("projection", orthoProjection, false)
-                            setShaderParam("model", model, false)
-
-                            draw(PrimitiveMode.TRIANGLE_STRIP, 6)
+                            val paint = Paint().setARGB(255, 65, 112, 158)
+                            drawTextBlob(
+                                text,
+                                0f * contentScale.x(),
+                                0f * contentScale.y(),
+                                paint
+                            )
                         }
 
                         gfx.present(mainRenderTarget)
+                        gfx.swap()
 
                         checkOpenGLError(frameNo++)
                     }
@@ -301,6 +328,11 @@ class Engine {
         resourceService.registerSource(
             "assets",
             RelativeFileSource("assets", JarFileSource(this::class.java.classLoader))
+        )
+
+        resourceService.registerSource(
+            "rt",
+            RelativeFileSource("rt", JarFileSource(this::class.java.classLoader))
         )
 
         OpenGLGfxDriver.start()
