@@ -1,20 +1,23 @@
 package calamansi.ui
 
+import calamansi.runtime.WindowContext
+import org.jetbrains.skija.Canvas
+import org.jetbrains.skija.Paint
 import org.jetbrains.skija.TextBlob
 import org.jetbrains.skija.shaper.Shaper
 import java.util.*
 
-open class Text : CanvasElement() {
-    private var stateHash: Int? = null
+open class Text(text: String = "") : CanvasElement() {
+    private var stateHash: Int = 0
     private lateinit var blob: TextBlob
-    var text: String = ""
+    var text: String = text
     var size: Float = 12f
 
     override fun applyLayout() {
         super.applyLayout()
-        val font = computeFont()
+        val font = (executionContext as WindowContext).defaultFont.get()
         val newStateHash = Objects.hash(text, size, width, maxWidth, font)
-        if (stateHash != newStateHash) {
+        if (newStateHash != stateHash) {
             // cleanup
             if (::blob.isInitialized) {
                 blob.close()
@@ -29,6 +32,14 @@ open class Text : CanvasElement() {
                 }!!
             }
             stateHash = newStateHash
+        }
+    }
+
+    override fun draw(canvas: Canvas) {
+        super.draw(canvas)
+
+        Paint().setARGB(255, 128, 232, 162).use {
+            canvas.drawTextBlob(blob, 0f, 0f, it)
         }
     }
 }

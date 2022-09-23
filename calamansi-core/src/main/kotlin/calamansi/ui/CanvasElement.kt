@@ -2,7 +2,9 @@ package calamansi.ui
 
 import calamansi.meta.Property
 import calamansi.node.Node
+import calamansi.runtime.WindowContext
 import calamansi.runtime.gc.Bin
+import org.jetbrains.skija.Canvas
 import org.lwjgl.util.yoga.Yoga.*
 
 open class CanvasElement : Node() {
@@ -89,8 +91,9 @@ open class CanvasElement : Node() {
 
             null -> Unit
             else -> {
-                val insertIndex = YGNodeGetChildCount(impliedRoot.ygNode)
-                YGNodeInsertChild(impliedRoot.ygNode, ygNode, insertIndex)
+                val context = executionContext as WindowContext
+                val insertIndex = YGNodeGetChildCount(context.yogaRoot)
+                YGNodeInsertChild(context.yogaRoot, ygNode, insertIndex)
             }
         }
     }
@@ -105,14 +108,12 @@ open class CanvasElement : Node() {
             // inherit
             current = parent as? CanvasElement
         }
-        return (impliedRoot.font as FontValue.Ref).ref.get()
+        return (executionContext as WindowContext).defaultFont.get()
     }
 
     internal open fun applyLayout() {
         // TODO: apply flex style values
     }
 
-    companion object {
-        private val impliedRoot = CanvasElement()
-    }
+    internal open fun draw(canvas: Canvas) = Unit
 }

@@ -12,6 +12,7 @@ import calamansi.runtime.service.Services
 import calamansi.runtime.sys.glfw.GlfwWindowDriver
 import calamansi.runtime.sys.opengl.OpenGLGfxDriver
 import calamansi.runtime.threading.EventLoops
+import calamansi.runtime.utils.FrameStats
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -24,6 +25,7 @@ internal class Engine {
     private val resourceService = Services.create(::ResourceService)
     private val fontService = Services.create(::FontService)
     private var frameCount = 0L
+    private val frameStats = FrameStats(100)
 
     private lateinit var mainWindowContext: WindowContext
 
@@ -37,8 +39,8 @@ internal class Engine {
 
     private fun mainLoop() {
         val orchestrator = Thread {
-            var lastTick = millis()
-            var deltaMillis: Long
+            var lastTick = nanoTime()
+            var deltaNano: Long
 
             runCatching {
                 EventLoops.Script.scheduleNow {
@@ -53,9 +55,11 @@ internal class Engine {
                 mainWindowContext.pollEvents()
 
                 // run scene
-                deltaMillis = (millis() - lastTick)
-                lastTick = millis()
-                mainWindowContext.frame(deltaMillis, frameCount)
+                deltaNano = (nanoTime() - lastTick)
+                lastTick = nanoTime()
+                val delta = TimeUnit.NANOSECONDS.toMillis(deltaNano).toFloat()
+                frameStats.addSample(delta)
+                mainWindowContext.frame(delta, frameCount)
 
                 mainWindowContext.render(frameCount)
                 frameCount++
@@ -96,6 +100,7 @@ internal class Engine {
             WindowContext(
                 window,
                 OpenGLGfxDriver.create(window),
+                frameStats,
             )
 
         mainWindowContext.init()
@@ -121,7 +126,7 @@ internal class Engine {
         }
     }
 
-    private fun millis() = TimeUnit.NANOSECONDS.toMillis(System.nanoTime())
+    private fun nanoTime() = System.nanoTime()
 
     @OptIn(ExperimentalSerializationApi::class)
     private fun loadProjectConfig(): ProjectConfig {

@@ -11,8 +11,13 @@ import calamansi.runtime.resource.ResourceService
 import calamansi.runtime.service.Services
 import calamansi.runtime.sys.*
 import calamansi.runtime.threading.EventLoops
+import calamansi.runtime.utils.FrameStats
+import calamansi.ui.CanvasElement
+import calamansi.ui.Font
+import org.jetbrains.skija.Canvas
 import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryStack
+import org.lwjgl.util.yoga.Yoga.YGNodeNew
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
@@ -20,6 +25,7 @@ import kotlin.reflect.KClass
 internal class WindowContext(
     private val window: Window,
     private val gfx: Gfx,
+    private val frameStats: FrameStats,
 ) : ExecutionContext,
     InputContext by window {
     private val logger = LoggerFactory.getLogger(WindowContext::class.java)
@@ -33,6 +39,12 @@ internal class WindowContext(
     private lateinit var pipeline: Pipeline
     private lateinit var triangleVertices: VertexBuffer
     private lateinit var triangleIndices: IndexBuffer
+    private lateinit var _defaultFont: ResourceRef<Font>
+
+    inline val defaultFont: ResourceRef<Font>
+        get() = _defaultFont
+
+    val yogaRoot = YGNodeNew()
 
     fun init() {
         framebufferResized()
@@ -89,6 +101,8 @@ internal class WindowContext(
         }
 
         gfx.unbind()
+
+        _defaultFont = loadResource("rt://OpenSans-Regular.ttf", Font::class)
     }
 
     fun destroy() {
@@ -106,7 +120,7 @@ internal class WindowContext(
         }
     }
 
-    fun frame(delta: Long, frameCount: Long) {
+    fun frame(delta: Float, frameCount: Long) {
         EventLoops.Script.scheduleNow {
             node?.invokeOnUpdate(delta)
         }
@@ -126,11 +140,33 @@ internal class WindowContext(
                 drawIndexed(PrimitiveMode.TRIANGLE, 6, 0)
             }
 
-            checkOpenGLError(frameCount)
+            val contentScale = window.getContentScale()
+            renderTarget.draw {
+                resetMatrix()
+                scale(contentScale.x(), contentScale.y())
+                testDraw(this, node)
+            }
 
             gfx.present(renderTarget)
             gfx.swap()
+
+            checkOpenGLError(frameCount)
             gfx.unbind()
+        }
+    }
+
+    private fun testDraw(canvas: Canvas, node: Node?) {
+        if (node == null) {
+            return
+        }
+
+        if (node is CanvasElement) {
+            node.applyLayout()
+            node.draw(canvas)
+        }
+
+        for (child in node.getChildren()) {
+            testDraw(canvas, child)
         }
     }
 
@@ -178,6 +214,14 @@ internal class WindowContext(
         gfx.unbind()
     }
 
+    override fun getFrameTime(): Float {
+        return frameStats.avgFrameTime
+    }
+
+    override fun getFps(): Float {
+        return frameStats.avgFps
+    }
+
     override fun setScene(ref: ResourceRef<Scene>) {
         maybeUnloadCurrentScene()
         node = ref.get().instance()
@@ -209,6 +253,5 @@ internal class WindowContext(
             oldRoot.executionContext = null
             node = null
         }
-
     }
 }

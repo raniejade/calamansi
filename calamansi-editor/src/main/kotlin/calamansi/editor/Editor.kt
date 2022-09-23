@@ -7,17 +7,24 @@ import calamansi.input.KeyStateEvent
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
 import calamansi.resource.loadResource
+import calamansi.ui.Text
 import org.slf4j.LoggerFactory
 
 class Editor : Node() {
     private val logger = LoggerFactory.getLogger(Editor::class.java)
 
+    private lateinit var text: Text
+
     context(ExecutionContext) override fun onEnterTree() {
         logger.info("Enter tree.")
+        text = Text("Hello World!")
+
+        addChild(text)
     }
 
     context(ExecutionContext) override fun onExitTree() {
         logger.info("Exit tree.")
+        removeChild(text)
     }
 
     context(ExecutionContext) override fun onEvent(event: Event) {
@@ -27,9 +34,19 @@ class Editor : Node() {
         }
     }
 
-    context(ExecutionContext) override fun onUpdate(delta: Long) {
+    context(ExecutionContext) override fun onUpdate(delta: Float) {
         if (isKeyPressed(Key.ESCAPE)) {
             exit()
+        }
+
+        text.text = String.format("Frame time: %.3f FPS: %.3f", getFrameTime(), getFps())
+
+        if (isKeyPressed(Key.NUM_1)) {
+            text.size = 12f
+        } else if (isKeyPressed(Key.NUM_2)) {
+            text.size = 32f
+        } else if (isKeyPressed(Key.NUM_3)) {
+            text.size = 64f
         }
     }
 }

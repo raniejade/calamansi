@@ -5,6 +5,7 @@ import calamansi.runtime.sys.GfxDriver
 import calamansi.runtime.sys.Window
 import calamansi.runtime.sys.glfw.GlfwWindow
 import org.lwjgl.glfw.GLFW.glfwMakeContextCurrent
+import org.lwjgl.glfw.GLFW.glfwSwapInterval
 import org.lwjgl.opengl.GL
 
 internal object OpenGLGfxDriver : GfxDriver {
@@ -16,6 +17,7 @@ internal object OpenGLGfxDriver : GfxDriver {
         require(window is GlfwWindow)
         glfwMakeContextCurrent(window.handle)
         val capabilities = GL.createCapabilities()
+        glfwSwapInterval(0)
         glfwMakeContextCurrent(0)
         return OpenGLGfx(window, capabilities)
     }

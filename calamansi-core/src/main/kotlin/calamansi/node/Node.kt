@@ -60,7 +60,7 @@ open class Node {
 
     context (ExecutionContext) open fun onEnterTree() = Unit
     context (ExecutionContext) open fun onEvent(event: Event) = Unit
-    context (ExecutionContext) open fun onUpdate(delta: Long) = Unit
+    context (ExecutionContext) open fun onUpdate(delta: Float) = Unit
     context (ExecutionContext) open fun onExitTree() = Unit
 
     internal fun invokeOnEnterTree() {
@@ -99,7 +99,7 @@ open class Node {
         }
     }
 
-    internal fun invokeOnUpdate(delta: Long) {
+    internal fun invokeOnUpdate(delta: Float) {
         with(checkNotNull(executionContext)) {
             onUpdate(delta)
         }
