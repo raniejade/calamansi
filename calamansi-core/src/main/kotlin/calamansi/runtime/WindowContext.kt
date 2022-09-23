@@ -14,10 +14,10 @@ import calamansi.runtime.threading.EventLoops
 import calamansi.runtime.utils.FrameStats
 import calamansi.ui.CanvasElement
 import calamansi.ui.Font
+import calamansi.ui.applyStyle
 import org.jetbrains.skija.Canvas
 import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.util.yoga.Yoga
 import org.lwjgl.util.yoga.Yoga.*
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
@@ -121,13 +121,13 @@ internal class WindowContext(
         }
     }
 
-    fun frame(delta: Float, frameCount: Long) {
+    fun frame(delta: Float, frameNo: Long) {
         EventLoops.Script.scheduleNow {
             node?.invokeOnUpdate(delta)
         }
     }
 
-    fun render(frameCount: Long) {
+    fun render(frameNo: Long) {
         EventLoops.Main.scheduleNow {
             gfx.bind()
             val size = window.getFramebufferSize()
@@ -142,6 +142,7 @@ internal class WindowContext(
             }
 
             val contentScale = window.getContentScale()
+            canvas.applyStyle(yogaRoot)
             applyLayout(node)
             YGNodeCalculateLayout(yogaRoot, YGUndefined, YGUndefined, YGDirectionLTR)
             renderTarget.draw {
@@ -153,7 +154,7 @@ internal class WindowContext(
             gfx.present(renderTarget)
             gfx.swap()
 
-            checkOpenGLError(frameCount)
+            checkOpenGLError(frameNo)
             gfx.unbind()
         }
     }
@@ -234,6 +235,8 @@ internal class WindowContext(
         YGNodeStyleSetWidth(yogaRoot, windowSize.x().toFloat())
         YGNodeStyleSetHeight(yogaRoot, windowSize.y().toFloat())
     }
+
+    override val canvas = calamansi.ui.Canvas()
 
     override fun getFrameTime(): Float {
         return frameStats.avgFrameTime

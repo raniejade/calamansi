@@ -33,7 +33,8 @@ open class Text(text: String = "") : CanvasElement() {
                 }!!
             }
 
-            YGNodeStyleSetWidth(ygNode, blob.tightBounds.width)
+            YGNodeStyleSetWidth(ygNode, blob.blockBounds.width)
+            YGNodeStyleSetHeight(ygNode, blob.blockBounds.height)
             stateHash = newStateHash
         }
     }
@@ -43,6 +44,10 @@ open class Text(text: String = "") : CanvasElement() {
 
         val left = YGNodeLayoutGetLeft(ygNode)
         val top = YGNodeLayoutGetTop(ygNode)
+        val right = YGNodeLayoutGetRight(ygNode)
+        val bottom = YGNodeLayoutGetBottom(ygNode)
+
+        println("$left $top $right $bottom")
 
         Paint().setARGB(255, 128, 232, 162).use {
             canvas.drawTextBlob(blob, left, top, it)

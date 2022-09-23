@@ -7,9 +7,7 @@ import calamansi.input.KeyStateEvent
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
 import calamansi.resource.loadResource
-import calamansi.ui.FlexAlign
-import calamansi.ui.FlexValue
-import calamansi.ui.Text
+import calamansi.ui.*
 import org.slf4j.LoggerFactory
 
 class Editor : Node() {
@@ -19,9 +17,10 @@ class Editor : Node() {
 
     context(ExecutionContext) override fun onEnterTree() {
         logger.info("Enter tree.")
+        canvas.justifyContent = FlexJustify.CENTER
         text = Text("Hello World!").apply {
-            alignSelf = FlexAlign.CENTER
-            position.top = FlexValue.Fixed(10f)
+            margin.bottom = FlexValue.Fixed(5f)
+            alignSelf = FlexAlign.FLEX_END
         }
         addChild(text)
     }

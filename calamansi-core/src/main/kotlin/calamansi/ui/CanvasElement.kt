@@ -7,68 +7,68 @@ import calamansi.runtime.gc.Bin
 import org.jetbrains.skija.Canvas
 import org.lwjgl.util.yoga.Yoga.*
 
-open class CanvasElement : Node() {
+open class CanvasElement : Node(), FlexElement {
     protected val ygNode = YGNodeNew()
 
     @Property
-    var alignContent: FlexAlign = FlexAlign.FLEX_START
+    override var alignContent: FlexAlign = FlexAlign.FLEX_START
 
     @Property
-    var alignItems: FlexAlign = FlexAlign.STRETCH
+    override var alignItems: FlexAlign = FlexAlign.STRETCH
 
     @Property
-    var direction: FlexDirection = FlexDirection.ROW
+    override var direction: FlexDirection = FlexDirection.ROW
 
     @Property
-    var justifyContent: FlexJustify = FlexJustify.FLEX_START
+    override var justifyContent: FlexJustify = FlexJustify.FLEX_START
 
     @Property
-    var wrap: FlexWrap = FlexWrap.WRAP
+    override var wrap: FlexWrap = FlexWrap.WRAP
 
     @Property
-    var layout: FlexLayout = FlexLayout.RELATIVE
+    override var layout: FlexLayout = FlexLayout.RELATIVE
 
     @Property
-    var position: FlexBounds = FlexBounds()
+    override var position: FlexBounds = FlexBounds()
 
     @Property
-    var margin: FlexBounds = FlexBounds()
+    override var margin: FlexBounds = FlexBounds()
 
     @Property
-    var padding: FlexBounds = FlexBounds()
+    override var padding: FlexBounds = FlexBounds()
 
     @Property
-    var alignSelf: FlexAlign = FlexAlign.AUTO
+    override var alignSelf: FlexAlign = FlexAlign.AUTO
 
     @Property
-    var grow: Float = 0f
+    override var grow: Float = 0f
 
     @Property
-    var shrink: Float = 1f
+    override var shrink: Float = 1f
 
     @Property
-    var basis: FlexValue? = null
+    override var basis: FlexValue? = null
 
     @Property
-    var width: FlexValue? = null
+    override var width: FlexValue? = null
 
     @Property
-    var height: FlexValue? = null
+    override var height: FlexValue? = null
 
     @Property
-    var minWidth: FlexValue? = null
+    override var minWidth: FlexValue? = null
 
     @Property
-    var minHeight: FlexValue? = null
+    override var minHeight: FlexValue? = null
 
     @Property
-    var maxWidth: FlexValue? = null
+    override var maxWidth: FlexValue? = null
 
     @Property
-    var maxHeight: FlexValue? = null
+    override var maxHeight: FlexValue? = null
 
     @Property
-    var font: FontValue = FontValue.Inherit
+    override var font: FontValue = FontValue.Inherit
 
     init {
         Bin.register(this) {
@@ -114,41 +114,7 @@ open class CanvasElement : Node() {
     }
 
     internal open fun applyLayout() {
-        // TODO: apply flex style values
-
-        YGNodeStyleSetFlexDirection(ygNode, direction.toYGValue())
-        YGNodeStyleSetAlignItems(ygNode, alignItems.toYGValue())
-        YGNodeStyleSetAlignContent(ygNode, alignContent.toYGValue())
-        YGNodeStyleSetJustifyContent(ygNode, justifyContent.toYGValue())
-
-        YGNodeStyleSetPositionType(
-            ygNode,
-            when (layout) {
-                FlexLayout.RELATIVE -> YGPositionTypeRelative
-                FlexLayout.ABSOLUTE -> YGPositionTypeAbsolute
-            }
-        )
-
-        YGNodeStyleSetAlignSelf(ygNode, alignSelf.toYGValue())
-
-        // position
-        applyStylePosition(position.left, YGEdgeLeft)
-        applyStylePosition(position.top, YGEdgeTop)
-        applyStylePosition(position.bottom, YGEdgeBottom)
-        applyStylePosition(position.right, YGEdgeRight)
-    }
-
-
-    private fun applyStylePosition(value: FlexValue, edge: Int) {
-        when (value) {
-            is FlexValue.Fixed -> {
-                YGNodeStyleSetPosition(ygNode, edge, value.value)
-            }
-
-            is FlexValue.Relative -> {
-                YGNodeStyleSetPositionPercent(ygNode, edge, value.pc)
-            }
-        }
+        applyStyle(ygNode)
     }
 
     internal open fun draw(canvas: Canvas) = Unit
