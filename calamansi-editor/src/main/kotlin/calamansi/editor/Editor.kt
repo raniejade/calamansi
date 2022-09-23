@@ -7,14 +7,21 @@ import calamansi.input.KeyStateEvent
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
 import calamansi.resource.loadResource
+import org.slf4j.LoggerFactory
 
 class Editor : Node() {
-    context(ExecutionContext) override fun onReady() {
-        logger.info { "onReady" }
+    private val logger = LoggerFactory.getLogger(Editor::class.java)
+
+    context(ExecutionContext) override fun onEnterTree() {
+        logger.info("Enter tree.")
+    }
+
+    context(ExecutionContext) override fun onExitTree() {
+        logger.info("Exit tree.")
     }
 
     context(ExecutionContext) override fun onEvent(event: Event) {
-        logger.info { "Received event: $event" }
+        logger.info("Received event: $event")
         if (event is KeyStateEvent && event.state == InputState.RELEASED && event.key == Key.A) {
             setScene(loadResource("assets://empty.scn.json"))
         }

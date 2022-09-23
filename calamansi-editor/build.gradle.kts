@@ -6,8 +6,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":calamansi-api"))
-    implementation(project(":calamansi-runtime"))
+    implementation(project(":calamansi-core"))
     implementation(Deps.kotlinSerializationJson)
 
     ksp(project(":calamansi-symbol-processor"))

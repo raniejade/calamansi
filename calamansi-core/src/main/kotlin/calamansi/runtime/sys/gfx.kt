@@ -1,5 +1,6 @@
 package calamansi.runtime.sys
 
+import org.jetbrains.skija.Canvas
 import org.joml.Matrix4fc
 import org.joml.Vector3fc
 import org.joml.Vector4fc
@@ -96,6 +97,7 @@ internal interface RenderSpec {
 internal interface RenderTarget {
     fun renderToTexture(): Texture2d
     fun render(pipeline: Pipeline, body: DrawSpec.() -> Unit)
+    fun draw(body: Canvas.() -> Unit)
     fun destroy()
 }
 

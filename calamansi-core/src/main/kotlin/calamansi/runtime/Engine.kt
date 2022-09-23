@@ -1,7 +1,13 @@
 package calamansi.runtime
 
+import calamansi.node.Scene
+import calamansi.resource.ResourceRef
 import calamansi.runtime.data.ProjectConfig
+import calamansi.runtime.font.FontService
 import calamansi.runtime.registry.RegistryService
+import calamansi.runtime.resource.ResourceService
+import calamansi.runtime.resource.source.JarFileSource
+import calamansi.runtime.resource.source.RelativeFileSource
 import calamansi.runtime.service.Services
 import calamansi.runtime.sys.glfw.GlfwWindowDriver
 import calamansi.runtime.sys.opengl.OpenGLGfxDriver
@@ -15,6 +21,8 @@ import java.util.concurrent.TimeUnit
 internal class Engine {
     private val logger = LoggerFactory.getLogger(Engine::class.java)
     private val registryService = Services.create(::RegistryService)
+    private val resourceService = Services.create(::ResourceService)
+    private val fontService = Services.create(::FontService)
     private var frameCount = 0L
 
     private lateinit var mainWindowContext: WindowContext
@@ -35,6 +43,9 @@ internal class Engine {
             runCatching {
                 EventLoops.Script.scheduleNow {
                     // load default scene
+                    val scene =
+                        resourceService.loadResource("assets://default.scn.json", Scene::class, 0) as ResourceRef<Scene>
+                    mainWindowContext.setScene(scene)
                 }
             }
 
@@ -62,6 +73,20 @@ internal class Engine {
         // services
         logger.info("Starting services.")
         registryService.start()
+        resourceService.start()
+        fontService.start()
+
+        logger.info("Registering file sources.")
+        resourceService.registerSource(
+            "assets",
+            RelativeFileSource("assets", JarFileSource(this::class.java.classLoader))
+        )
+
+        // TODO: make private (not accessible by app)
+        resourceService.registerSource(
+            "rt",
+            RelativeFileSource("rt", JarFileSource(this::class.java.classLoader))
+        )
 
         logger.info("Setting up main window.")
         GlfwWindowDriver.start()
@@ -83,6 +108,8 @@ internal class Engine {
         GlfwWindowDriver.stop()
 
         logger.info("Shutting down services.")
+        fontService.stop()
+        resourceService.stop()
         registryService.stop()
     }
 

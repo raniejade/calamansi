@@ -5,12 +5,17 @@ import calamansi.input.InputContext
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
 import calamansi.node.Scene
+import calamansi.resource.Resource
 import calamansi.resource.ResourceRef
+import calamansi.runtime.resource.ResourceService
+import calamansi.runtime.service.Services
 import calamansi.runtime.sys.*
 import calamansi.runtime.threading.EventLoops
 import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryStack
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CompletableFuture
+import kotlin.reflect.KClass
 
 internal class WindowContext(
     private val window: Window,
@@ -22,6 +27,7 @@ internal class WindowContext(
     private val eventHandlerRegistration: WindowHandlerRegistration = window.registerEventHandler(this::handleEvent)
     private val platformEventHandlerRegistration: WindowHandlerRegistration =
         window.registerPlatformStateChangeHandler(this::handlePlatformStateChange)
+    private val resourceService: ResourceService by Services.get()
 
     private lateinit var renderTarget: RenderTarget
     private lateinit var pipeline: Pipeline
@@ -86,6 +92,7 @@ internal class WindowContext(
     }
 
     fun destroy() {
+        maybeUnloadCurrentScene()
         eventHandlerRegistration.unregister()
         platformEventHandlerRegistration.unregister()
 
@@ -100,20 +107,12 @@ internal class WindowContext(
     }
 
     fun frame(delta: Long, frameCount: Long) {
-        if (node == null) {
-            return
-        }
-
         EventLoops.Script.scheduleNow {
             node?.invokeOnUpdate(delta)
         }
     }
 
     fun render(frameCount: Long) {
-//        if (node == null) {
-//            return
-//        }
-
         EventLoops.Main.scheduleNow {
             gfx.bind()
             val size = window.getFramebufferSize()
@@ -180,14 +179,7 @@ internal class WindowContext(
     }
 
     override fun setScene(ref: ResourceRef<Scene>) {
-        val oldRoot = node
-        // unload previous scene
-        if (oldRoot != null) {
-            oldRoot.invokeOnExitTree()
-            oldRoot.executionContext = null
-            node = null
-        }
-
+        maybeUnloadCurrentScene()
         node = ref.get().instance()
         node?.let {
             it.executionContext = this
@@ -199,4 +191,24 @@ internal class WindowContext(
         window.closeWindow()
     }
 
+    override fun <T : Resource> loadResourceAsync(
+        path: String,
+        type: KClass<T>,
+        index: Int
+    ): CompletableFuture<ResourceRef<T>> {
+        return EventLoops.Resource.schedule {
+            resourceService.loadResource(path, type, index) as ResourceRef<T>
+        }
+    }
+
+    private fun maybeUnloadCurrentScene() {
+        val oldRoot = node
+        // unload previous scene
+        if (oldRoot != null) {
+            oldRoot.invokeOnExitTree()
+            oldRoot.executionContext = null
+            node = null
+        }
+
+    }
 }

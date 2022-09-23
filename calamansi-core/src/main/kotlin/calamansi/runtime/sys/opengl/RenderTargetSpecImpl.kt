@@ -27,12 +27,14 @@ internal class RenderTargetSpecImpl : RenderTargetSpec {
     }
 
     fun build(): RenderTarget {
-        return RenderTargetImpl(createFbo())
+        val (width, height) = checkNotNull(size)
+        val fbo = createFbo(width, height)
+        val skijaContext = SkijaContext.create(width, height, fbo.handle)
+        return RenderTargetImpl(fbo, skijaContext)
     }
 
-    private fun createFbo(): Framebuffer {
+    private fun createFbo(width: Int, height: Int): Framebuffer {
         check(attachments.contains(Attachment.COLOR))
-        val (width, height) = checkNotNull(size)
         val fbo = glGenFramebuffers()
         glBindFramebuffer(GL_FRAMEBUFFER, fbo)
 
