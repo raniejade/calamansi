@@ -15,3 +15,5 @@ include("calamansi-runtime")
 include("calamansi-gradle-plugin")
 include("calamansi-editor")
 include("calamansi-symbol-processor")
+
+include("calamansi-core")

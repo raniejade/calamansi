@@ -9,7 +9,7 @@ dependencies {
     api(Deps.kotlinSerializationCore)
     api(Deps.joml)
 
-    ksp(project(":calamansi-symbol-processor"))
+    // ksp(project(":calamansi-symbol-processor"))
 
 }
 

@@ -64,7 +64,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             val dataClassName = "${definition.name}Data"
 
             val properties = definition.properties.joinToString(separator = ",\n${indent(4, 2)}") { prop ->
-                val typeRef = checkNotNull(prop.type.qualifiedName).asString()
+                val typeRef = prop.qualifiedName()
                 val propertyName = "\"${prop.name}\""
                 val propertyRef = "$dataClassName::${prop.name}"
                 val nodePropertyType = if (!prop.isEnum) {
@@ -77,7 +77,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             }
 
             val dataProperties = definition.properties.joinToString(separator = ",\n${indent(4, 1)}") { prop ->
-                val typeRef = "${checkNotNull(prop.type.qualifiedName).asString()}"
+                val typeRef = prop.qualifiedName()
                 "@Contextual var ${prop.name}: $typeRef"
             }.ifEmpty { "var __unused: Int? = null" }
 
@@ -161,10 +161,12 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         }
 
         val properties = classDecl.getAllProperties().filter { isSupportedProperty(resolver, it) }.map {
-            val propTypeDecl = it.type.resolve().declaration as KSClassDeclaration
+            val type = it.type.resolve()
+            val propTypeDecl = type.declaration as KSClassDeclaration
             PropertyDefinition(
                 checkNotNull(it.qualifiedName).getShortName(),
-                propTypeDecl
+                propTypeDecl,
+                type.isMarkedNullable
             )
         }.toList()
 
@@ -240,10 +242,9 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             "calamansi.ui.FlexJustify",
             "calamansi.ui.FlexWrap",
             "calamansi.ui.FlexBounds",
-            "calamansi.ui.FlexAxisValue",
-            "calamansi.ui.FlexAxisValue.Auto",
-            "calamansi.ui.FlexAxisValue.Fixed",
-            "calamansi.ui.FlexAxisValue.Relative",
+            "calamansi.ui.FlexValue",
+            "calamansi.ui.FlexValue.Fixed",
+            "calamansi.ui.FlexValue.Relative",
             "calamansi.ui.FontValue",
             "calamansi.ui.FontValue.Inherit",
             "calamansi.ui.FontValue.Ref",
