@@ -52,8 +52,6 @@ internal class Engine {
             }
 
             do {
-                mainWindowContext.pollEvents()
-
                 // run scene
                 deltaNano = (nanoTime() - lastTick)
                 lastTick = nanoTime()
@@ -63,6 +61,8 @@ internal class Engine {
 
                 mainWindowContext.render(frameCount)
                 frameCount++
+
+                mainWindowContext.pollEvents()
             } while (!mainWindowContext.shouldCloseWindow())
             EventLoops.Main.shutdown()
         }
