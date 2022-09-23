@@ -5,6 +5,7 @@ import org.jetbrains.skija.Canvas
 import org.jetbrains.skija.Paint
 import org.jetbrains.skija.TextBlob
 import org.jetbrains.skija.shaper.Shaper
+import org.lwjgl.util.yoga.Yoga.*
 import java.util.*
 
 open class Text(text: String = "") : CanvasElement() {
@@ -31,6 +32,8 @@ open class Text(text: String = "") : CanvasElement() {
                     shaper.shape(text, font.makeSkijaFont(size))
                 }!!
             }
+
+            YGNodeStyleSetWidth(ygNode, blob.tightBounds.width)
             stateHash = newStateHash
         }
     }
@@ -38,8 +41,11 @@ open class Text(text: String = "") : CanvasElement() {
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
 
+        val left = YGNodeLayoutGetLeft(ygNode)
+        val top = YGNodeLayoutGetTop(ygNode)
+
         Paint().setARGB(255, 128, 232, 162).use {
-            canvas.drawTextBlob(blob, 0f, 0f, it)
+            canvas.drawTextBlob(blob, left, top, it)
         }
     }
 }

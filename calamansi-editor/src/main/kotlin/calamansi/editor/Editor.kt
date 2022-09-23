@@ -7,6 +7,8 @@ import calamansi.input.KeyStateEvent
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
 import calamansi.resource.loadResource
+import calamansi.ui.FlexAlign
+import calamansi.ui.FlexValue
 import calamansi.ui.Text
 import org.slf4j.LoggerFactory
 
@@ -17,8 +19,10 @@ class Editor : Node() {
 
     context(ExecutionContext) override fun onEnterTree() {
         logger.info("Enter tree.")
-        text = Text("Hello World!")
-
+        text = Text("Hello World!").apply {
+            alignSelf = FlexAlign.CENTER
+            position.top = FlexValue.Fixed(10f)
+        }
         addChild(text)
     }
 
@@ -28,7 +32,6 @@ class Editor : Node() {
     }
 
     context(ExecutionContext) override fun onEvent(event: Event) {
-        logger.info("Received event: $event")
         if (event is KeyStateEvent && event.state == InputState.RELEASED && event.key == Key.A) {
             setScene(loadResource("assets://empty.scn.json"))
         }
@@ -39,7 +42,7 @@ class Editor : Node() {
             exit()
         }
 
-        text.text = String.format("Frame time: %.3f FPS: %.3f", getFrameTime(), getFps())
+        text.text = String.format("Frame time: %.3fms FPS: %.0f", getFrameTime(), getFps())
 
         if (isKeyPressed(Key.NUM_1)) {
             text.size = 12f

@@ -7,6 +7,12 @@ import java.util.*
 open class Node {
     private var _id = UUID.randomUUID().toString()
     private var _parent: Node? = null
+        set(value) {
+            val oldParent = field
+            field = value
+            parentChanged(oldParent, field)
+        }
+
     private val children = mutableSetOf<Node>()
 
     internal var executionContext: ExecutionContext? = null
@@ -21,9 +27,8 @@ open class Node {
     var parent: Node?
         get() = _parent
         set(value) {
-            val oldParent = _parent
             value?.addChild(this)
-            parentChanged(oldParent, _parent)
+
         }
 
     fun addChild(node: Node) {
@@ -69,6 +74,7 @@ open class Node {
             child.invokeOnEnterTree()
         }
 
+        nodeEnterTree()
         with(checkNotNull(executionContext)) {
             onEnterTree()
         }
@@ -80,6 +86,7 @@ open class Node {
             child.invokeOnExitTree()
         }
 
+        nodeExitTree()
         with(checkNotNull(executionContext)) {
             onExitTree()
         }
@@ -109,6 +116,8 @@ open class Node {
         }
     }
 
+    internal open fun nodeEnterTree() = Unit
+    internal open fun nodeExitTree() = Unit
     internal open fun childAdded(child: Node) = Unit
     internal open fun childRemoved(child: Node) = Unit
     internal open fun parentChanged(old: Node?, new: Node?) = Unit

@@ -81,12 +81,14 @@ open class CanvasElement : Node() {
         if (old is CanvasElement) {
             YGNodeRemoveChild(old.ygNode, ygNode)
         }
+    }
 
+    override fun nodeEnterTree() {
         // link to new parent
-        when (new) {
+        when (val parent = parent) {
             is CanvasElement -> {
-                val insertIndex = YGNodeGetChildCount(new.ygNode)
-                YGNodeInsertChild(new.ygNode, ygNode, insertIndex)
+                val insertIndex = YGNodeGetChildCount(parent.ygNode)
+                YGNodeInsertChild(parent.ygNode, ygNode, insertIndex)
             }
 
             null -> Unit
@@ -113,6 +115,40 @@ open class CanvasElement : Node() {
 
     internal open fun applyLayout() {
         // TODO: apply flex style values
+
+        YGNodeStyleSetFlexDirection(ygNode, direction.toYGValue())
+        YGNodeStyleSetAlignItems(ygNode, alignItems.toYGValue())
+        YGNodeStyleSetAlignContent(ygNode, alignContent.toYGValue())
+        YGNodeStyleSetJustifyContent(ygNode, justifyContent.toYGValue())
+
+        YGNodeStyleSetPositionType(
+            ygNode,
+            when (layout) {
+                FlexLayout.RELATIVE -> YGPositionTypeRelative
+                FlexLayout.ABSOLUTE -> YGPositionTypeAbsolute
+            }
+        )
+
+        YGNodeStyleSetAlignSelf(ygNode, alignSelf.toYGValue())
+
+        // position
+        applyStylePosition(position.left, YGEdgeLeft)
+        applyStylePosition(position.top, YGEdgeTop)
+        applyStylePosition(position.bottom, YGEdgeBottom)
+        applyStylePosition(position.right, YGEdgeRight)
+    }
+
+
+    private fun applyStylePosition(value: FlexValue, edge: Int) {
+        when (value) {
+            is FlexValue.Fixed -> {
+                YGNodeStyleSetPosition(ygNode, edge, value.value)
+            }
+
+            is FlexValue.Relative -> {
+                YGNodeStyleSetPositionPercent(ygNode, edge, value.pc)
+            }
+        }
     }
 
     internal open fun draw(canvas: Canvas) = Unit

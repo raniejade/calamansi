@@ -17,7 +17,8 @@ import calamansi.ui.Font
 import org.jetbrains.skija.Canvas
 import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.util.yoga.Yoga.YGNodeNew
+import org.lwjgl.util.yoga.Yoga
+import org.lwjgl.util.yoga.Yoga.*
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
@@ -141,6 +142,8 @@ internal class WindowContext(
             }
 
             val contentScale = window.getContentScale()
+            applyLayout(node)
+            YGNodeCalculateLayout(yogaRoot, YGUndefined, YGUndefined, YGDirectionLTR)
             renderTarget.draw {
                 resetMatrix()
                 scale(contentScale.x(), contentScale.y())
@@ -167,6 +170,20 @@ internal class WindowContext(
 
         for (child in node.getChildren()) {
             testDraw(canvas, child)
+        }
+    }
+
+    private fun applyLayout(node: Node?) {
+        if (node == null) {
+            return
+        }
+
+        if (node is CanvasElement) {
+            node.applyLayout()
+        }
+
+        for (child in node.getChildren()) {
+            applyLayout(child)
         }
     }
 
@@ -206,12 +223,16 @@ internal class WindowContext(
             renderTarget.destroy()
         }
 
-        val size = window.getFramebufferSize()
+        val framebufferSize = window.getFramebufferSize()
         renderTarget = gfx.createRenderTarget {
-            setSize(size.x(), size.y())
+            setSize(framebufferSize.x(), framebufferSize.y())
             setAttachments(setOf(Attachment.COLOR, Attachment.DEPTH))
         }
         gfx.unbind()
+
+        val windowSize = window.getWindowSize()
+        YGNodeStyleSetWidth(yogaRoot, windowSize.x().toFloat())
+        YGNodeStyleSetHeight(yogaRoot, windowSize.y().toFloat())
     }
 
     override fun getFrameTime(): Float {
