@@ -6,7 +6,6 @@ plugins {
 }
 
 dependencies {
-    api(project(":calamansi-api"))
     api(Deps.kotlinSerializationCore)
     implementation(Deps.kotlinSerializationJson)
 

@@ -6,8 +6,6 @@ import calamansi.node.Scene
 import calamansi.resource.LoadedResource
 import calamansi.resource.Resource
 import calamansi.resource.ResourceLoader
-import calamansi.runtime.assets.SerializedNode
-import calamansi.runtime.assets.SerializedScene
 import calamansi.runtime.registry.RegistryService
 import calamansi.runtime.resource.ResourceService
 import calamansi.runtime.service.Services

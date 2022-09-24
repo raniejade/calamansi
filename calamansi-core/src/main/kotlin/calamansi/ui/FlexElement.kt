@@ -1,5 +1,7 @@
 package calamansi.ui
 
+import calamansi.gfx.Color
+
 interface FlexElement {
     var alignContent: FlexAlign
 
@@ -39,5 +41,5 @@ interface FlexElement {
 
     var maxHeight: FlexValue?
 
-    var font: FontValue
+    var backgroundColor: Color
 }

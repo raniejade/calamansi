@@ -6,8 +6,8 @@ import calamansi.node.ExecutionContext
 import calamansi.node.Node
 import calamansi.node.Scene
 import calamansi.resource.Resource
-import calamansi.resource.ResourceRef
 import calamansi.runtime.resource.ResourceService
+import calamansi.runtime.resource.loaders.SceneLoader
 import calamansi.runtime.service.Services
 import calamansi.runtime.sys.*
 import calamansi.runtime.threading.EventLoops
@@ -40,9 +40,9 @@ internal class WindowContext(
     private lateinit var pipeline: Pipeline
     private lateinit var triangleVertices: VertexBuffer
     private lateinit var triangleIndices: IndexBuffer
-    private lateinit var _defaultFont: ResourceRef<Font>
+    private lateinit var _defaultFont: Font
 
-    inline val defaultFont: ResourceRef<Font>
+    inline val defaultFont: Font
         get() = _defaultFont
 
     val yogaRoot = YGNodeNew()
@@ -141,14 +141,17 @@ internal class WindowContext(
                 drawIndexed(PrimitiveMode.TRIANGLE, 6, 0)
             }
 
-            val contentScale = window.getContentScale()
             canvas.applyStyle(yogaRoot)
-            applyLayout(node)
+            layout(node)
             YGNodeCalculateLayout(yogaRoot, YGUndefined, YGUndefined, YGDirectionLTR)
+            val contentScale = window.getContentScale()
             renderTarget.draw {
                 resetMatrix()
+                if (canvas.backgroundPaint.alpha != 0) {
+                    drawPaint(canvas.backgroundPaint)
+                }
                 scale(contentScale.x(), contentScale.y())
-                testDraw(this, node)
+                draw(this, node)
             }
 
             gfx.present(renderTarget)
@@ -159,32 +162,32 @@ internal class WindowContext(
         }
     }
 
-    private fun testDraw(canvas: Canvas, node: Node?) {
+    private fun draw(canvas: Canvas, node: Node?) {
         if (node == null) {
             return
         }
 
         if (node is CanvasElement) {
-            node.applyLayout()
+            node.layout()
             node.draw(canvas)
         }
 
         for (child in node.getChildren()) {
-            testDraw(canvas, child)
+            draw(canvas, child)
         }
     }
 
-    private fun applyLayout(node: Node?) {
+    private fun layout(node: Node?) {
         if (node == null) {
             return
         }
 
         if (node is CanvasElement) {
-            node.applyLayout()
+            node.layout()
         }
 
         for (child in node.getChildren()) {
-            applyLayout(child)
+            layout(child)
         }
     }
 
@@ -246,9 +249,9 @@ internal class WindowContext(
         return frameStats.avgFps
     }
 
-    override fun setScene(ref: ResourceRef<Scene>) {
+    override fun setScene(scene: Scene) {
         maybeUnloadCurrentScene()
-        node = ref.get().instance()
+        node = scene.instance()
         node?.let {
             it.executionContext = this
             it.invokeOnEnterTree()
@@ -263,9 +266,9 @@ internal class WindowContext(
         path: String,
         type: KClass<T>,
         index: Int
-    ): CompletableFuture<ResourceRef<T>> {
+    ): CompletableFuture<T> {
         return EventLoops.Resource.schedule {
-            resourceService.loadResource(path, type, index) as ResourceRef<T>
+            resourceService.loadResource(path, type, index) as T
         }
     }
 

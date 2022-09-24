@@ -1,6 +1,5 @@
 package calamansi.ui
 
-import calamansi.resource.ResourceRef
 import kotlinx.serialization.Serializable
 
 enum class FlexLayout {
@@ -61,9 +60,3 @@ data class FlexBounds(
     var bottom: FlexValue = FlexValue.Fixed(0f),
     var right: FlexValue = FlexValue.Fixed(0f)
 )
-
-@Serializable
-sealed interface FontValue {
-    object Inherit : FontValue
-    class Ref(val ref: ResourceRef<Font>) : FontValue
-}

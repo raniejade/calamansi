@@ -1,6 +1,12 @@
 package calamansi.ui
 
+import calamansi.gfx.Color
+import org.jetbrains.skija.Paint
 import org.lwjgl.util.yoga.Yoga.*
+
+internal fun Color.toPaint(): Paint {
+    return Paint().setARGB(a, r, g, b)
+}
 
 internal fun FlexAlign.toYGValue(): Int {
     return when (this) {

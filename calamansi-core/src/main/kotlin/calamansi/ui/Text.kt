@@ -1,56 +1,72 @@
 package calamansi.ui
 
+import calamansi.gfx.Color
+import calamansi.meta.Property
 import calamansi.runtime.WindowContext
+import calamansi.runtime.utils.StateTracker
 import org.jetbrains.skija.Canvas
 import org.jetbrains.skija.Paint
 import org.jetbrains.skija.TextBlob
 import org.jetbrains.skija.shaper.Shaper
-import org.lwjgl.util.yoga.Yoga.*
-import java.util.*
+import org.lwjgl.util.yoga.Yoga.YGNodeStyleSetHeight
+import org.lwjgl.util.yoga.Yoga.YGNodeStyleSetWidth
 
 open class Text(text: String = "") : CanvasElement() {
     private var stateHash: Int = 0
     private lateinit var blob: TextBlob
-    var text: String = text
-    var size: Float = 12f
 
-    override fun applyLayout() {
-        super.applyLayout()
-        val font = (executionContext as WindowContext).defaultFont.get()
-        val newStateHash = Objects.hash(text, size, width, maxWidth, font)
-        if (newStateHash != stateHash) {
-            // cleanup
+    @Property
+    var text: String = text
+
+    @Property
+    var fontSize: Float = 12f
+
+    @Property
+    var fontColor: Color = Color.WHITE
+        set(value) {
+            field = value
+            textPaint.close()
+            textPaint = value.toPaint()
+        }
+
+    @Property
+    var font: Font? = null
+
+    private var textPaint: Paint = fontColor.toPaint()
+
+    @Suppress("LeakingThis")
+    private val textLayoutState = StateTracker.create(
+        this::text,
+        this::font,
+        this::fontSize,
+        this::width,
+    )
+
+    override fun layout() {
+        super.layout()
+        val font = font ?: (executionContext as WindowContext).defaultFont
+        if (textLayoutState.isDirty()) {
             if (::blob.isInitialized) {
                 blob.close()
             }
 
+            // TODO: how to support percentage based width and height?
             blob = Shaper.make().use { shaper ->
                 val width = width
                 if (width is FlexValue.Fixed) {
-                    shaper.shape(text, font.makeSkijaFont(size), width.value)
+                    shaper.shape(text, font.makeSkijaFont(fontSize), width.value)
                 } else {
-                    shaper.shape(text, font.makeSkijaFont(size))
+                    shaper.shape(text, font.makeSkijaFont(fontSize))
                 }!!
             }
 
             YGNodeStyleSetWidth(ygNode, blob.blockBounds.width)
             YGNodeStyleSetHeight(ygNode, blob.blockBounds.height)
-            stateHash = newStateHash
         }
     }
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-
-        val left = YGNodeLayoutGetLeft(ygNode)
-        val top = YGNodeLayoutGetTop(ygNode)
-        val right = YGNodeLayoutGetRight(ygNode)
-        val bottom = YGNodeLayoutGetBottom(ygNode)
-
-        println("$left $top $right $bottom")
-
-        Paint().setARGB(255, 128, 232, 162).use {
-            canvas.drawTextBlob(blob, left, top, it)
-        }
+        canvas.drawTextBlob(blob, getLayoutLeft(), getLayoutTop(), textPaint)
     }
 }

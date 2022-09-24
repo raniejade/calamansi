@@ -1,13 +1,15 @@
 package calamansi.resource
 
-import kotlin.reflect.KClass
+abstract class Resource {
+    @PublishedApi
+    internal lateinit var _path: String
 
-interface Resource
+    @PublishedApi
+    internal var _index: Int = 0
 
-interface ResourceRef<T : Resource> {
-    val path: String
-    val type: KClass<T>
-    val index: Int
+    inline val path: String
+        get() = _path
 
-    fun get(): T
+    inline val index: Int
+        get() = _index
 }

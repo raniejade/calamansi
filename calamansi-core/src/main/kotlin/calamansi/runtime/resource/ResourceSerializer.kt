@@ -1,7 +1,6 @@
 package calamansi.runtime.resource
 
 import calamansi.resource.Resource
-import calamansi.resource.ResourceRef
 import calamansi.runtime.service.Services
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -17,11 +16,11 @@ data class ResourceRefSurrogate(
     val index: Int,
 )
 
-class ResourceRefSerializer : KSerializer<ResourceRef<out Resource>> {
+class ResourceSerializer : KSerializer<Resource> {
     private val resourceService: ResourceService by Services.get()
     override val descriptor: SerialDescriptor = ResourceRefSurrogate.serializer().descriptor
 
-    override fun deserialize(decoder: Decoder): ResourceRef<out Resource> {
+    override fun deserialize(decoder: Decoder): Resource {
         val surrogate = decoder.decodeSerializableValue(ResourceRefSurrogate.serializer())
         val path = surrogate.path
         // TODO: fetch this from registry
@@ -30,8 +29,8 @@ class ResourceRefSerializer : KSerializer<ResourceRef<out Resource>> {
         return resourceService.loadResource(path, type as KClass<out Resource>, index)
     }
 
-    override fun serialize(encoder: Encoder, value: ResourceRef<out Resource>) {
-        val surrogate = ResourceRefSurrogate(value.path, value.type.qualifiedName!!, value.index)
+    override fun serialize(encoder: Encoder, value: Resource) {
+        val surrogate = ResourceRefSurrogate(value.path, value::class.qualifiedName!!, value.index)
         encoder.encodeSerializableValue(ResourceRefSurrogate.serializer(), surrogate)
     }
 }

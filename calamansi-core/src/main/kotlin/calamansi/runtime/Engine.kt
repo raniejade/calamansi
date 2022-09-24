@@ -1,7 +1,6 @@
 package calamansi.runtime
 
 import calamansi.node.Scene
-import calamansi.resource.ResourceRef
 import calamansi.runtime.data.ProjectConfig
 import calamansi.runtime.font.FontService
 import calamansi.runtime.registry.RegistryService
@@ -46,7 +45,7 @@ internal class Engine {
                 EventLoops.Script.scheduleNow {
                     // load default scene
                     val scene =
-                        resourceService.loadResource("assets://default.scn.json", Scene::class, 0) as ResourceRef<Scene>
+                        resourceService.loadResource("assets://default.scn.json", Scene::class, 0) as Scene
                     mainWindowContext.setScene(scene)
                 }
             }

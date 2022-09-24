@@ -1,5 +1,8 @@
 package calamansi.ui
 
+import calamansi.gfx.Color
+import org.jetbrains.skija.Paint
+
 class Canvas : FlexElement {
     override var alignContent: FlexAlign = FlexAlign.FLEX_START
 
@@ -39,5 +42,12 @@ class Canvas : FlexElement {
 
     override var maxHeight: FlexValue? = null
 
-    override var font: FontValue = FontValue.Inherit
+    override var backgroundColor: Color = Color.TRANSPARENT
+        set(value) {
+            field = value
+            backgroundPaint.close()
+            backgroundPaint = value.toPaint()
+        }
+
+    internal var backgroundPaint: Paint = backgroundColor.toPaint()
 }

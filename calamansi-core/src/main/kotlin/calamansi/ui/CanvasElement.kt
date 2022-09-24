@@ -1,10 +1,14 @@
 package calamansi.ui
 
+import calamansi.gfx.Color
 import calamansi.meta.Property
 import calamansi.node.Node
 import calamansi.runtime.WindowContext
 import calamansi.runtime.gc.Bin
+import calamansi.runtime.utils.StateTracker
 import org.jetbrains.skija.Canvas
+import org.jetbrains.skija.Paint
+import org.jetbrains.skija.Rect
 import org.lwjgl.util.yoga.Yoga.*
 
 open class CanvasElement : Node(), FlexElement {
@@ -67,8 +71,37 @@ open class CanvasElement : Node(), FlexElement {
     @Property
     override var maxHeight: FlexValue? = null
 
-    @Property
-    override var font: FontValue = FontValue.Inherit
+    override var backgroundColor: Color = Color.TRANSPARENT
+        set(value) {
+            field = value
+            backgroundPaint.close()
+            backgroundPaint = value.toPaint()
+        }
+
+    private var backgroundPaint: Paint = backgroundColor.toPaint()
+
+    @Suppress("LeakingThis")
+    private val layoutState = StateTracker.create(
+        this::alignContent,
+        this::alignItems,
+        this::direction,
+        this::justifyContent,
+        this::wrap,
+        this::layout,
+        this::position,
+        this::margin,
+        this::padding,
+        this::alignSelf,
+        this::grow,
+        this::shrink,
+        this::basis,
+        this::width,
+        this::height,
+        this::minWidth,
+        this::minHeight,
+        this::maxWidth,
+        this::maxHeight,
+    )
 
     init {
         Bin.register(this) {
@@ -100,22 +133,32 @@ open class CanvasElement : Node(), FlexElement {
         }
     }
 
-    protected fun computeFont(): Font {
-        var current: CanvasElement? = this
+    protected fun getLayoutLeft() = YGNodeLayoutGetLeft(ygNode)
+    protected fun getLayoutTop() = YGNodeLayoutGetTop(ygNode)
+    protected fun getLayoutRight() = YGNodeLayoutGetRight(ygNode)
+    protected fun getLayoutBottom() = YGNodeLayoutGetBottom(ygNode)
 
-        while (current != null) {
-            if (current.font is FontValue.Ref) {
-                return (font as FontValue.Ref).ref.get()
-            }
-            // inherit
-            current = parent as? CanvasElement
+    protected fun getPaddingLeft() = YGNodeLayoutGetPadding(ygNode, YGEdgeLeft)
+    protected fun getPaddingTop() = YGNodeLayoutGetPadding(ygNode, YGEdgeTop)
+    protected fun getPaddingRight() = YGNodeLayoutGetPadding(ygNode, YGEdgeRight)
+    protected fun getPaddingBottom() = YGNodeLayoutGetPadding(ygNode, YGEdgeBottom)
+
+    protected fun getLayoutWidth() = YGNodeLayoutGetWidth(ygNode)
+    protected fun getLayoutHeight() = YGNodeLayoutGetHeight(ygNode)
+
+    internal open fun layout() {
+        if (!layoutState.isDirty()) {
+            return
         }
-        return (executionContext as WindowContext).defaultFont.get()
-    }
-
-    internal open fun applyLayout() {
         applyStyle(ygNode)
     }
 
-    internal open fun draw(canvas: Canvas) = Unit
+    internal open fun draw(canvas: Canvas) {
+        if (backgroundColor.a != 0) {
+            canvas.drawRect(
+                Rect.makeXYWH(getLayoutLeft(), getLayoutTop(), getLayoutWidth(), getLayoutHeight()),
+                backgroundPaint
+            )
+        }
+    }
 }

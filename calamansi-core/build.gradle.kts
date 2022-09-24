@@ -17,7 +17,6 @@ dependencies {
     implementation(Deps.skija)
     implementation(Deps.logback)
     implementation(Deps.kotlinSerializationJson)
-    implementation(project(":calamansi-assets"))
 
     runtimeOnly(Deps.lwjgl.runtime.core)
     runtimeOnly(Deps.lwjgl.runtime.glfw)

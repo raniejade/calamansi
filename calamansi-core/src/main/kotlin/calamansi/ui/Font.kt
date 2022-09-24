@@ -6,7 +6,7 @@ import org.jetbrains.skija.Font
 import org.jetbrains.skija.Typeface
 import org.jetbrains.skija.Font as SkijaFont
 
-class Font internal constructor(private val typeface: Typeface) : Resource {
+class Font internal constructor(private val typeface: Typeface) : Resource() {
     private val cache = mutableMapOf<Float, SkijaFont>()
 
     init {

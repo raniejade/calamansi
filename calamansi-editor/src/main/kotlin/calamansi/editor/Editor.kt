@@ -1,13 +1,15 @@
 package calamansi.editor
 
 import calamansi.event.Event
+import calamansi.gfx.Color
 import calamansi.input.InputState
 import calamansi.input.Key
 import calamansi.input.KeyStateEvent
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
 import calamansi.resource.loadResource
-import calamansi.ui.*
+import calamansi.ui.FlexValue
+import calamansi.ui.Text
 import org.slf4j.LoggerFactory
 
 class Editor : Node() {
@@ -17,11 +19,12 @@ class Editor : Node() {
 
     context(ExecutionContext) override fun onEnterTree() {
         logger.info("Enter tree.")
-        canvas.justifyContent = FlexJustify.CENTER
         text = Text("Hello World!").apply {
-            margin.bottom = FlexValue.Fixed(5f)
-            alignSelf = FlexAlign.FLEX_END
+            backgroundColor = Color.BLUE
+            padding.top = FlexValue.Fixed(10f)
+            padding.left = FlexValue.Fixed(10f)
         }
+
         addChild(text)
     }
 
@@ -44,11 +47,11 @@ class Editor : Node() {
         text.text = String.format("Frame time: %.3fms FPS: %.0f", getFrameTime(), getFps())
 
         if (isKeyPressed(Key.NUM_1)) {
-            text.size = 12f
+            text.fontSize = 12f
         } else if (isKeyPressed(Key.NUM_2)) {
-            text.size = 32f
+            text.fontSize = 32f
         } else if (isKeyPressed(Key.NUM_3)) {
-            text.size = 64f
+            text.fontSize = 64f
         }
     }
 }

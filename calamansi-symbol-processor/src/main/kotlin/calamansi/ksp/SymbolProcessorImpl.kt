@@ -3,7 +3,6 @@ package calamansi.ksp
 import calamansi.ksp.model.NodeDefinition
 import calamansi.ksp.model.PropertyDefinition
 import com.google.devtools.ksp.getAllSuperTypes
-import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
@@ -166,7 +165,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             PropertyDefinition(
                 checkNotNull(it.qualifiedName).getShortName(),
                 propTypeDecl,
-                type.isMarkedNullable
+                type.isMarkedNullable,
             )
         }.toList()
 
@@ -190,8 +189,9 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             builtIns.intType, builtIns.floatType, builtIns.doubleType, builtIns.stringType, builtIns.shortType, builtIns.longType -> true
             else -> SUPPORTED_TYPES.contains(type.declaration.qualifiedName?.asString())
         }
-        val isEnum = (type.declaration as KSClassDeclaration).classKind == ClassKind.ENUM_CLASS
-        val isSupportedType = isBuiltInType || isEnum
+        val classDecl = type.declaration as KSClassDeclaration
+        val isEnum = classDecl.classKind == ClassKind.ENUM_CLASS
+        val isSupportedType = isBuiltInType || isEnum || isDirectSubTypeOf(classDecl, QualifiedNames.Resource)
         val hasPropertyAnnotation = property.hasAnnotation(QualifiedNames.Property)
         if (hasPropertyAnnotation && !isSupportedType) {
             environment.logger.error(
@@ -235,6 +235,13 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
             "org.joml.Vector2f",
             "org.joml.Vector3f",
 
+            // GFX
+            "calamansi.gfx.Color",
+
+            // Resources
+
+            "calamansi.resource.ResourceRef",
+
             // Calamansi UI
             "calamansi.ui.FlexLayout",
             "calamansi.ui.FlexAlign",
@@ -253,7 +260,7 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
         private object QualifiedNames {
             const val Node = "calamansi.node.Node"
             const val Property = "calamansi.meta.Property"
-            const val ResourceRef = "calamansi.resource.ResourceRef"
+            const val Resource = "calamansi.resource.Resource"
         }
 
         // com.example.Foo -> com_example_FooDefinition

@@ -2,7 +2,6 @@ package calamansi.runtime.resource
 
 import calamansi.resource.Resource
 import calamansi.resource.ResourceLoader
-import calamansi.resource.ResourceRef
 import calamansi.runtime.registry.RegistryService
 import calamansi.runtime.resource.source.FileSource
 import calamansi.runtime.service.Service
@@ -25,7 +24,7 @@ class ResourceService : Service {
     private val logger = LoggerFactory.getLogger(ResourceService::class.java)
     private var json: Json? = null
 
-    private val loadedResources = WeakHashMap<String, WeakReference<ResourceRef<out Resource>>>()
+    private val loadedResources = WeakHashMap<String, WeakReference<out Resource>>()
     private val cleaner = Cleaner.create(CountingThreadFactory("calamansi-resource-cleaner"))
 
     override fun start() {
@@ -43,7 +42,7 @@ class ResourceService : Service {
     }
 
     // not thread safe
-    fun loadResource(resource: String, type: KClass<out Resource>, index: Int): ResourceRef<out Resource> {
+    fun loadResource(resource: String, type: KClass<out Resource>, index: Int): Resource {
         logger.info("Loading resource: $resource.")
         val lock = getLock(resource)
         try {
@@ -58,15 +57,11 @@ class ResourceService : Service {
             val source = getSource(parsedPath.protocol)
             val loader = getLoader(parsedPath.extension)
             val loadedResource = loader.loadResource(source.getReader(parsedPath.resource), type, index)
-            val ref = ResourceRefImpl(
-                resource,
-                type,
-                index,
-                loadedResource.resource,
-            )
-            loadedResources[resource] = WeakReference(ref)
-            cleaner.register(ref, loadedResource.free)
-            return ref
+            loadedResource.resource._path = parsedPath.resource
+            loadedResource.resource._index = index
+            loadedResources[resource] = WeakReference(loadedResource.resource)
+            cleaner.register(loadedResource.resource, loadedResource.free)
+            return loadedResource.resource
         } finally {
             lock.release()
         }
@@ -115,17 +110,6 @@ class ResourceService : Service {
     private fun getLoader(extension: String): ResourceLoader {
         return checkNotNull(loaders[extension]) {
             "Unable to find loader for extension $extension."
-        }
-    }
-
-    private inner class ResourceRefImpl<T : Resource>(
-        override val path: String,
-        override val type: KClass<T>,
-        override val index: Int,
-        val resource: Resource,
-    ) : ResourceRef<T> {
-        override fun get(): T {
-            return resource as T
         }
     }
 

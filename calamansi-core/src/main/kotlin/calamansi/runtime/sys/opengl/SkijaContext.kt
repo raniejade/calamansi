@@ -1,6 +1,5 @@
 package calamansi.runtime.sys.opengl
 
-import calamansi.runtime.sys.RenderTarget
 import org.jetbrains.skija.*
 
 internal class SkijaContext private constructor(

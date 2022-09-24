@@ -4,8 +4,6 @@ import calamansi.resource.LoadedResource
 import calamansi.resource.Resource
 import calamansi.resource.ResourceLoader
 import calamansi.runtime.service.Services
-import org.jetbrains.skija.Data
-import org.jetbrains.skija.FontMgr
 import java.io.InputStream
 import kotlin.reflect.KClass
 
