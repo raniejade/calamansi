@@ -30,7 +30,7 @@ class CalamansiPlugin : Plugin<Project> {
                 "-Xcontext-receivers" // context receivers
             )
             dependencies {
-                compileOnly(calamansiDep("api"))
+                compileOnly(calamansiDep("core"))
             }
             dependencies.add("ksp", calamansiDep("symbol-processor"))
         }

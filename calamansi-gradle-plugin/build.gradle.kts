@@ -21,7 +21,6 @@ tasks {
 }
 
 dependencies {
-    implementation(project(":calamansi-assets"))
     implementation(kotlin("gradle-plugin"))
     implementation(kotlin("gradle-plugin-api"))
     implementation(kotlin("serialization"))
