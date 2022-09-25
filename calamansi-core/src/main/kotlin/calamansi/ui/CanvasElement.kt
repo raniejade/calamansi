@@ -1,7 +1,6 @@
 package calamansi.ui
 
 import calamansi.event.Event
-import calamansi.gfx.Color
 import calamansi.input.InputState
 import calamansi.input.MouseButton
 import calamansi.input.MouseButtonStateEvent
@@ -13,7 +12,6 @@ import calamansi.runtime.WindowContext
 import calamansi.runtime.gc.Bin
 import calamansi.runtime.utils.StateTracker
 import org.jetbrains.skija.Canvas
-import org.jetbrains.skija.RRect
 import org.lwjgl.util.yoga.Yoga.*
 
 open class CanvasElement : Node() {
@@ -85,7 +83,13 @@ open class CanvasElement : Node() {
     var maxHeight: FlexValue? = null
 
     @Property
-    open var backgroundColor: Color = Color.TRANSPARENT
+    var normalStyledBox: StyledBox = EmptyStyledBox()
+
+    @Property
+    var hoveredStyledBox: StyledBox = EmptyStyledBox()
+
+    @Property
+    var pressedStyledBox: StyledBox = EmptyStyledBox()
 
     private var _pressed = false
     private var _hovered = false
@@ -105,10 +109,6 @@ open class CanvasElement : Node() {
 
     context (ExecutionContext) private fun setPressed(pressed: Boolean) {
         _pressed = pressed
-    }
-
-    internal open fun getBackgroundColor(): Color {
-        return backgroundColor
     }
 
     @Suppress("LeakingThis")
@@ -140,6 +140,22 @@ open class CanvasElement : Node() {
     context (ExecutionContext) protected open fun onMouseEnter() = Unit
     context (ExecutionContext) protected open fun onMouseExit() = Unit
     context (ExecutionContext) protected open fun onMousePressed(button: MouseButton) = Unit
+
+    override fun onThemeChanged(theme: Theme) {
+        normalStyledBox = theme.getStyledBox(this::class, "normal")
+        hoveredStyledBox = theme.getStyledBox(this::class, "hovered")
+        pressedStyledBox = theme.getStyledBox(this::class, "pressed")
+    }
+
+    private fun getStyledBox(): StyledBox {
+        return if (isPressed()) {
+            pressedStyledBox
+        } else if (isHovered()) {
+            hoveredStyledBox
+        } else {
+            normalStyledBox
+        }
+    }
 
     context(ExecutionContext) override fun onEvent(event: Event) {
         when (event) {
@@ -211,20 +227,12 @@ open class CanvasElement : Node() {
     }
 
     internal open fun draw(canvas: Canvas) {
-        val paint = getBackgroundColor().toPaint()
-        // println("${this::class} ${getLayoutLeft()} ${getLayoutTop()} ${getLayoutRight()} ${getLayoutBottom()} ${getLayoutWidth()} ${getLayoutHeight()}")
-        canvas.drawRRect(
-            RRect.makeXYWH(
-                getLayoutLeft(),
-                getLayoutTop(),
-                getLayoutWidth(),
-                getLayoutHeight(),
-                5f,
-                5f,
-                5f,
-                5f
-            ),
-            paint
+        getStyledBox().draw(
+            canvas,
+            getLayoutLeft(),
+            getLayoutTop(),
+            getLayoutWidth(),
+            getLayoutHeight(),
         )
     }
 }

@@ -25,7 +25,6 @@ class Editor : Node() {
             alignContent = FlexAlign.CENTER
         }
         text = Text("Hello World!").apply {
-            backgroundColor = Color.BLUE
             margin.bottom = FlexValue.Fixed(10f)
             padding.top = FlexValue.Fixed(10f)
             padding.bottom = FlexValue.Fixed(10f)

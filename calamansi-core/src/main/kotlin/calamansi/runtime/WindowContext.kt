@@ -10,6 +10,7 @@ import calamansi.runtime.resource.ResourceService
 import calamansi.runtime.service.Services
 import calamansi.runtime.sys.*
 import calamansi.runtime.threading.EventLoops
+import calamansi.runtime.ui.DefaultThemeProvider
 import calamansi.runtime.utils.FrameStats
 import calamansi.ui.*
 import org.jetbrains.skija.Canvas
@@ -37,10 +38,7 @@ internal class WindowContext(
     private lateinit var pipeline: Pipeline
     private lateinit var triangleVertices: VertexBuffer
     private lateinit var triangleIndices: IndexBuffer
-    private lateinit var _defaultFont: Font
-
-    inline val defaultFont: Font
-        get() = _defaultFont
+    private lateinit var currentTheme: Theme
 
     fun init() {
         framebufferResized()
@@ -98,7 +96,7 @@ internal class WindowContext(
 
         gfx.unbind()
 
-        _defaultFont = loadResource("rt://OpenSans-Regular.ttf", Font::class)
+        currentTheme = DefaultThemeProvider.create()
     }
 
     fun destroy() {
@@ -247,6 +245,7 @@ internal class WindowContext(
         node = scene.instance()
         node?.let {
             it.executionContext = this
+            it.theme = currentTheme
             it.invokeOnEnterTree()
         }
     }

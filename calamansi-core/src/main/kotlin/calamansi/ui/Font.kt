@@ -10,11 +10,13 @@ class Font internal constructor(private val typeface: Typeface) : Resource() {
     private val cache = mutableMapOf<Float, SkijaFont>()
 
     init {
+        val localCache = cache
+        val localTypeface = typeface
         Bin.register(this) {
-            cache.forEach { (_, skijaFont) ->
+            localCache.forEach { (_, skijaFont) ->
                 skijaFont.close()
             }
-            typeface.close()
+            localTypeface.close()
         }
     }
 

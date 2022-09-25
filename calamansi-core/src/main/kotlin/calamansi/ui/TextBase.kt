@@ -8,11 +8,9 @@ import org.jetbrains.skija.Canvas
 import org.jetbrains.skija.Paint
 import org.jetbrains.skija.TextBlob
 import org.jetbrains.skija.shaper.Shaper
-import org.lwjgl.util.yoga.YGSize
-import org.lwjgl.util.yoga.Yoga
-import org.lwjgl.util.yoga.Yoga.*
+import org.lwjgl.util.yoga.Yoga.YGNodeMarkDirty
+import org.lwjgl.util.yoga.Yoga.YGNodeSetMeasureFunc
 
-// TODO: support padding
 abstract class TextBase(text: String) : CanvasElement() {
     private lateinit var blob: TextBlob
 
@@ -31,7 +29,7 @@ abstract class TextBase(text: String) : CanvasElement() {
         }
 
     @Property
-    var font: Font? = null
+    lateinit var font: Font
 
     private var textPaint: Paint = fontColor.toPaint()
 
@@ -44,7 +42,6 @@ abstract class TextBase(text: String) : CanvasElement() {
     )
 
     override fun layout() {
-        val font = font ?: (executionContext as WindowContext).defaultFont
         if (textLayoutState.isDirty()) {
             if (::blob.isInitialized) {
                 blob.close()
@@ -69,6 +66,14 @@ abstract class TextBase(text: String) : CanvasElement() {
         }
 
         super.layout()
+    }
+
+    override fun onThemeChanged(theme: Theme) {
+        super.onThemeChanged(theme)
+        font = theme.getFont(this::class, "font")
+        fontSize = theme.getConstant(this::class, "fontSize")
+        fontColor = theme.getColor(this::class, "fontColor")
+
     }
 
     override fun draw(canvas: Canvas) {

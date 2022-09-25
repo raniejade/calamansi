@@ -2,6 +2,8 @@ package calamansi.node
 
 import calamansi.event.Event
 import calamansi.meta.Property
+import calamansi.ui.CanvasElement
+import calamansi.ui.Theme
 import java.util.*
 
 open class Node {
@@ -21,6 +23,15 @@ open class Node {
             getChildren().forEach { it.executionContext = value }
         }
 
+    var theme: Theme? = null
+        set(value) {
+            field = value
+            if (value != null && this is CanvasElement) {
+                onThemeChanged(value)
+            }
+            getChildren().forEach { it.theme = theme }
+        }
+
     @Property
     var name: String = "${this::class.simpleName}"
 
@@ -28,7 +39,6 @@ open class Node {
         get() = _parent
         set(value) {
             value?.addChild(this)
-
         }
 
     fun addChild(node: Node) {
@@ -38,6 +48,7 @@ open class Node {
         node._parent = this
         children.add(node)
         node.executionContext = executionContext
+        node.theme = theme
         if (executionContext != null) {
             // part of the active scene
             node.invokeOnEnterTree()
@@ -52,6 +63,7 @@ open class Node {
             node.invokeOnExitTree()
         }
         node.executionContext = null
+        node.theme = null
         childRemoved(node)
     }
 
@@ -67,6 +79,8 @@ open class Node {
     context (ExecutionContext) open fun onEvent(event: Event) = Unit
     context (ExecutionContext) open fun onUpdate(delta: Float) = Unit
     context (ExecutionContext) open fun onExitTree() = Unit
+
+    protected open fun onThemeChanged(theme: Theme) = Unit
 
     internal fun invokeOnEnterTree() {
         // make sure children are ready
