@@ -50,6 +50,17 @@ internal fun FlexWrap.toYGValue(): Int {
     }
 }
 
+internal fun Canvas.applyStyle(ygNode: Long) {
+    YGNodeStyleSetFlexDirection(ygNode, direction.toYGValue())
+    YGNodeStyleSetAlignItems(ygNode, alignItems.toYGValue())
+    YGNodeStyleSetAlignContent(ygNode, alignContent.toYGValue())
+    YGNodeStyleSetJustifyContent(ygNode, justifyContent.toYGValue())
+    YGNodeStyleSetFlexWrap(ygNode, wrap.toYGValue())
+
+    applyStyleWidth(ygNode, FlexValue.Fixed(width.toFloat()))
+    applyStyleHeight(ygNode, FlexValue.Fixed(height.toFloat()))
+}
+
 internal fun FlexElement.applyStyle(ygNode: Long) {
     YGNodeStyleSetFlexDirection(ygNode, direction.toYGValue())
     YGNodeStyleSetAlignItems(ygNode, alignItems.toYGValue())

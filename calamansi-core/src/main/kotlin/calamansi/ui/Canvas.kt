@@ -1,45 +1,57 @@
 package calamansi.ui
 
-import calamansi.gfx.Color
+import calamansi.runtime.sys.RenderTarget
+import calamansi.runtime.utils.StateTracker
+import org.lwjgl.util.yoga.Yoga.*
 
-class Canvas : FlexElement {
-    override var alignContent: FlexAlign = FlexAlign.FLEX_START
+class Canvas internal constructor() {
+    internal var width: Int = 0
+    internal var height: Int = 0
+    internal lateinit var renderTarget: RenderTarget
+    internal val ygNode: Long = YGNodeNew()
 
-    override var alignItems: FlexAlign = FlexAlign.STRETCH
+    var alignContent: FlexAlign = FlexAlign.FLEX_START
 
-    override var direction: FlexDirection = FlexDirection.ROW /* COLUMN <- Yoga default */
+    var alignItems: FlexAlign = FlexAlign.STRETCH
 
-    override var justifyContent: FlexJustify = FlexJustify.FLEX_START
+    var direction: FlexDirection = FlexDirection.ROW /* COLUMN <- Yoga default */
 
-    override var wrap: FlexWrap = FlexWrap.WRAP
+    var justifyContent: FlexJustify = FlexJustify.FLEX_START
 
-    override var layout: FlexLayout = FlexLayout.RELATIVE
+    var wrap: FlexWrap = FlexWrap.WRAP
 
-    override var position: FlexBounds = FlexBounds()
+    @Suppress("LeakingThis")
+    private var layoutState = StateTracker.create(
+        this::alignContent,
+        this::alignItems,
+        this::direction,
+        this::justifyContent,
+        this::width,
+        this::height,
+    )
 
-    override var margin: FlexBounds = FlexBounds()
+    fun layout() {
+        if (layoutState.isDirty()) {
+            applyStyle(ygNode)
+        }
+    }
 
-    override var padding: FlexBounds = FlexBounds()
+    fun calculateLayout() {
+        YGNodeCalculateLayout(ygNode, YGUndefined, YGUndefined, YGDirectionLTR)
+    }
 
-    override var alignSelf: FlexAlign = FlexAlign.AUTO
+    internal fun configure(width: Int, height: Int, renderTarget: RenderTarget) {
+        if (this::renderTarget.isInitialized) {
+            this.renderTarget.destroy()
+        }
 
-    override var grow: Float = 0f
+        this.width = width
+        this.height = height
+        this.renderTarget = renderTarget
+    }
 
-    override var shrink: Float = 1f
-
-    override var basis: FlexValue? = null
-
-    override var width: FlexValue? = null
-
-    override var height: FlexValue? = null
-
-    override var minWidth: FlexValue? = null
-
-    override var minHeight: FlexValue? = null
-
-    override var maxWidth: FlexValue? = null
-
-    override var maxHeight: FlexValue? = null
-
-    override var backgroundColor: Color = Color.TRANSPARENT
+    internal fun destroy() {
+        renderTarget.destroy()
+        YGNodeFree(ygNode)
+    }
 }

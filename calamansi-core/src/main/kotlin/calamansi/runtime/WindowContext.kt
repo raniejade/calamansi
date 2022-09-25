@@ -7,14 +7,11 @@ import calamansi.node.Node
 import calamansi.node.Scene
 import calamansi.resource.Resource
 import calamansi.runtime.resource.ResourceService
-import calamansi.runtime.resource.loaders.SceneLoader
 import calamansi.runtime.service.Services
 import calamansi.runtime.sys.*
 import calamansi.runtime.threading.EventLoops
 import calamansi.runtime.utils.FrameStats
 import calamansi.ui.*
-import calamansi.ui.applyStyle
-import calamansi.ui.toPaint
 import org.jetbrains.skija.Canvas
 import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryStack
@@ -36,7 +33,7 @@ internal class WindowContext(
         window.registerPlatformStateChangeHandler(this::handlePlatformStateChange)
     private val resourceService: ResourceService by Services.get()
 
-    private lateinit var renderTarget: RenderTarget
+    private val _canvas: calamansi.ui.Canvas = Canvas()
     private lateinit var pipeline: Pipeline
     private lateinit var triangleVertices: VertexBuffer
     private lateinit var triangleIndices: IndexBuffer
@@ -44,8 +41,6 @@ internal class WindowContext(
 
     inline val defaultFont: Font
         get() = _defaultFont
-
-    val yogaRoot = YGNodeNew()
 
     fun init() {
         framebufferResized()
@@ -111,7 +106,7 @@ internal class WindowContext(
         eventHandlerRegistration.unregister()
         platformEventHandlerRegistration.unregister()
 
-        renderTarget.destroy()
+        _canvas.destroy()
         pipeline.destroy()
     }
 
@@ -131,7 +126,7 @@ internal class WindowContext(
         EventLoops.Main.scheduleNow {
             gfx.bind()
             val size = window.getFramebufferSize()
-            renderTarget.render(pipeline) {
+            _canvas.renderTarget.render(pipeline) {
                 setViewport(0, 0, size.x(), size.y())
                 clearColor(0.5f, 0.2f, 0.2f, 1f)
 
@@ -141,23 +136,25 @@ internal class WindowContext(
                 drawIndexed(PrimitiveMode.TRIANGLE, 6, 0)
             }
 
-            val windowSize = window.getWindowSize()
-            // TODO: make sure not settable
-            canvas.width = FlexValue.Fixed(windowSize.x().toFloat())
-            canvas.height = FlexValue.Fixed(windowSize.y().toFloat())
-            canvas.applyStyle(yogaRoot)
+            // perform layout
+            _canvas.layout()
             layout(node)
-            YGNodeCalculateLayout(yogaRoot, YGUndefined, YGUndefined, YGDirectionLTR)
+
+            // calculate layout
+            _canvas.calculateLayout()
+
+            // YGNodeCalculateLayout(yogaRoot, YGUndefined, YGUndefined, YGDirectionLTR)
             val contentScale = window.getContentScale()
-            renderTarget.draw {
+            _canvas.renderTarget.draw {
                 resetMatrix()
-                val paint = canvas.backgroundColor.toPaint()
-                drawPaint(paint)
+                // TODO: support "clear color" for canvas
+                // val paint = canvas.backgroundColor.toPaint()
+                // drawPaint(paint)
                 scale(contentScale.x(), contentScale.y())
                 draw(this, node)
             }
 
-            gfx.present(renderTarget)
+            gfx.present(_canvas.renderTarget)
             gfx.swap()
 
             checkOpenGLError(frameNo)
@@ -224,23 +221,18 @@ internal class WindowContext(
 
     private fun framebufferResized() {
         gfx.bind()
-        if (this::renderTarget.isInitialized) {
-            renderTarget.destroy()
-        }
-
+        val windowSize = window.getWindowSize()
         val framebufferSize = window.getFramebufferSize()
-        renderTarget = gfx.createRenderTarget {
+        val renderTarget = gfx.createRenderTarget {
             setSize(framebufferSize.x(), framebufferSize.y())
             setAttachments(setOf(Attachment.COLOR, Attachment.DEPTH))
         }
+        _canvas.configure(windowSize.x(), windowSize.y(), renderTarget)
         gfx.unbind()
-
-        val windowSize = window.getWindowSize()
-        YGNodeStyleSetWidth(yogaRoot, windowSize.x().toFloat())
-        YGNodeStyleSetHeight(yogaRoot, windowSize.y().toFloat())
     }
 
-    override val canvas = calamansi.ui.Canvas()
+    override inline val canvas: calamansi.ui.Canvas
+        get() = _canvas
 
     override fun getFrameTime(): Float {
         return frameStats.avgFrameTime

@@ -32,7 +32,7 @@ open class CanvasElement : Node(), FlexElement {
     override var alignContent: FlexAlign = FlexAlign.FLEX_START
 
     @Property
-    override var alignItems: FlexAlign = FlexAlign.FLEX_START /* STRETCH */
+    override var alignItems: FlexAlign = FlexAlign.STRETCH
 
     @Property
     override var direction: FlexDirection = FlexDirection.ROW /* COLUMN */
@@ -185,8 +185,8 @@ open class CanvasElement : Node(), FlexElement {
             null -> Unit
             else -> {
                 val context = executionContext as WindowContext
-                val insertIndex = YGNodeGetChildCount(context.yogaRoot)
-                YGNodeInsertChild(context.yogaRoot, ygNode, insertIndex)
+                val insertIndex = YGNodeGetChildCount(context.canvas.ygNode)
+                YGNodeInsertChild(context.canvas.ygNode, ygNode, insertIndex)
             }
         }
     }
