@@ -26,13 +26,14 @@ class Editor : Node() {
         }
         text = Text("Hello World!").apply {
             backgroundColor = Color.BLUE
-            margin.top = FlexValue.Fixed(10f)
+            margin.bottom = FlexValue.Fixed(10f)
             padding.top = FlexValue.Fixed(10f)
             padding.bottom = FlexValue.Fixed(10f)
             padding.left = FlexValue.Fixed(10f)
             padding.right = FlexValue.Fixed(10f)
         }
         button = Button("Press me!").apply {
+            margin.bottom = FlexValue.Fixed(10f)
             padding.top = FlexValue.Fixed(10f)
             padding.bottom = FlexValue.Fixed(10f)
             padding.left = FlexValue.Fixed(10f)
@@ -62,10 +63,13 @@ class Editor : Node() {
 
         if (isKeyPressed(Key.NUM_1)) {
             text.fontSize = 12f
+            button.fontSize = 12f
         } else if (isKeyPressed(Key.NUM_2)) {
             text.fontSize = 32f
+            button.fontSize = 32f
         } else if (isKeyPressed(Key.NUM_3)) {
             text.fontSize = 64f
+            button.fontSize = 64f
         }
     }
 }

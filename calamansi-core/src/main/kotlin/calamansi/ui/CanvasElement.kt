@@ -13,7 +13,7 @@ import calamansi.runtime.WindowContext
 import calamansi.runtime.gc.Bin
 import calamansi.runtime.utils.StateTracker
 import org.jetbrains.skija.Canvas
-import org.jetbrains.skija.Rect
+import org.jetbrains.skija.RRect
 import org.lwjgl.util.yoga.Yoga.*
 
 open class CanvasElement : Node(), FlexElement {
@@ -155,7 +155,9 @@ open class CanvasElement : Node(), FlexElement {
                 if (event.state == InputState.PRESSED && isHovered()) {
                     setPressed(true)
                 } else if (event.state == InputState.RELEASED && isPressed()) {
-                    onMousePressed(event.button)
+                    if (isHovered()) {
+                        onMousePressed(event.button)
+                    }
                     setPressed(false)
                 }
             }
@@ -210,8 +212,17 @@ open class CanvasElement : Node(), FlexElement {
     internal open fun draw(canvas: Canvas) {
         val paint = getBackgroundColor().toPaint()
         // println("${this::class} ${getLayoutLeft()} ${getLayoutTop()} ${getLayoutRight()} ${getLayoutBottom()} ${getLayoutWidth()} ${getLayoutHeight()}")
-        canvas.drawRect(
-            Rect.makeXYWH(getLayoutLeft(), getLayoutTop(), getLayoutWidth(), getLayoutHeight()),
+        canvas.drawRRect(
+            RRect.makeXYWH(
+                getLayoutLeft(),
+                getLayoutTop(),
+                getLayoutWidth(),
+                getLayoutHeight(),
+                5f,
+                5f,
+                5f,
+                5f
+            ),
             paint
         )
     }
