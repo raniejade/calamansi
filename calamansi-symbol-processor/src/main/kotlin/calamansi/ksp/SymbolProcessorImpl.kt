@@ -3,6 +3,7 @@ package calamansi.ksp
 import calamansi.ksp.model.NodeDefinition
 import calamansi.ksp.model.PropertyDefinition
 import com.google.devtools.ksp.getAllSuperTypes
+import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
@@ -156,6 +157,10 @@ class SymbolProcessorImpl(private val environment: SymbolProcessorEnvironment) :
                 QualifiedNames.Node
             ) && checkNotNull(classDecl.qualifiedName).asString() != QualifiedNames.Node
         ) {
+            return null
+        }
+
+        if (classDecl.isAbstract()) {
             return null
         }
 

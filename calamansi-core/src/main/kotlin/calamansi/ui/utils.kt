@@ -4,6 +4,7 @@ import calamansi.gfx.Color
 import org.jetbrains.skija.Paint
 import org.lwjgl.util.yoga.Yoga.*
 
+// TODO: cache me
 internal fun Color.toPaint(): Paint {
     return Paint().setARGB(a, r, g, b)
 }
@@ -41,11 +42,20 @@ internal fun FlexJustify.toYGValue(): Int {
     }
 }
 
+internal fun FlexWrap.toYGValue(): Int {
+    return when (this) {
+        FlexWrap.NO_WRAP -> YGWrapNoWrap
+        FlexWrap.WRAP -> YGWrapWrap
+        FlexWrap.WRAP_REVERSE -> YGWrapReverse
+    }
+}
+
 internal fun FlexElement.applyStyle(ygNode: Long) {
     YGNodeStyleSetFlexDirection(ygNode, direction.toYGValue())
     YGNodeStyleSetAlignItems(ygNode, alignItems.toYGValue())
     YGNodeStyleSetAlignContent(ygNode, alignContent.toYGValue())
     YGNodeStyleSetJustifyContent(ygNode, justifyContent.toYGValue())
+    YGNodeStyleSetAlignSelf(ygNode, alignSelf.toYGValue())
 
     YGNodeStyleSetPositionType(
         ygNode,
@@ -55,7 +65,7 @@ internal fun FlexElement.applyStyle(ygNode: Long) {
         }
     )
 
-    YGNodeStyleSetAlignSelf(ygNode, alignSelf.toYGValue())
+    YGNodeStyleSetFlexWrap(ygNode, wrap.toYGValue())
 
     applyStylePosition(ygNode, position.left, YGEdgeLeft)
     applyStylePosition(ygNode, position.top, YGEdgeTop)
@@ -71,6 +81,17 @@ internal fun FlexElement.applyStyle(ygNode: Long) {
     applyStylePadding(ygNode, padding.top, YGEdgeTop)
     applyStylePadding(ygNode, padding.bottom, YGEdgeBottom)
     applyStylePadding(ygNode, padding.right, YGEdgeRight)
+
+    applyStyleWidth(ygNode, width)
+    applyStyleMinWidth(ygNode, minWidth)
+    applyStyleMaxWidth(ygNode, maxWidth)
+    applyStyleHeight(ygNode, height)
+    applyStyleMinHeight(ygNode, minHeight)
+    applyStyleMaxHeight(ygNode, maxHeight)
+
+    applyStyleBasis(ygNode, basis)
+    YGNodeStyleSetFlexGrow(ygNode, grow)
+    YGNodeStyleSetFlexShrink(ygNode, shrink)
 
 }
 
@@ -107,5 +128,109 @@ private fun applyStylePadding(ygNode: Long, value: FlexValue, edge: Int) {
         is FlexValue.Relative -> {
             YGNodeStyleSetPaddingPercent(ygNode, edge, value.pc)
         }
+    }
+}
+
+private fun applyStyleBasis(ygNode: Long, value: FlexValue?) {
+    when (value) {
+        is FlexValue.Fixed -> {
+            YGNodeStyleSetFlexBasis(ygNode, value.value)
+        }
+
+        is FlexValue.Relative -> {
+            YGNodeStyleSetFlexBasisPercent(ygNode, value.pc)
+        }
+
+        null -> {
+            YGNodeStyleSetFlexBasisAuto(ygNode)
+        }
+    }
+}
+
+private fun applyStyleWidth(ygNode: Long, value: FlexValue?) {
+    when (value) {
+        is FlexValue.Fixed -> {
+            YGNodeStyleSetWidth(ygNode, value.value)
+        }
+
+        is FlexValue.Relative -> {
+            YGNodeStyleSetWidthPercent(ygNode, value.pc)
+        }
+
+        null -> {
+            YGNodeStyleSetWidthAuto(ygNode)
+        }
+    }
+}
+
+private fun applyStyleMinWidth(ygNode: Long, value: FlexValue?) {
+    when (value) {
+        is FlexValue.Fixed -> {
+            YGNodeStyleSetMinWidth(ygNode, value.value)
+        }
+
+        is FlexValue.Relative -> {
+            YGNodeStyleSetMinWidthPercent(ygNode, value.pc)
+        }
+
+        null -> {}
+    }
+}
+
+private fun applyStyleMaxWidth(ygNode: Long, value: FlexValue?) {
+    when (value) {
+        is FlexValue.Fixed -> {
+            YGNodeStyleSetMaxWidth(ygNode, value.value)
+        }
+
+        is FlexValue.Relative -> {
+            YGNodeStyleSetMaxWidthPercent(ygNode, value.pc)
+        }
+
+        null -> {}
+    }
+}
+
+private fun applyStyleHeight(ygNode: Long, value: FlexValue?) {
+    when (value) {
+        is FlexValue.Fixed -> {
+            YGNodeStyleSetHeight(ygNode, value.value)
+        }
+
+        is FlexValue.Relative -> {
+            YGNodeStyleSetHeightPercent(ygNode, value.pc)
+        }
+
+        null -> {
+            YGNodeStyleSetHeightAuto(ygNode)
+        }
+    }
+}
+
+private fun applyStyleMinHeight(ygNode: Long, value: FlexValue?) {
+    when (value) {
+        is FlexValue.Fixed -> {
+            YGNodeStyleSetMinHeight(ygNode, value.value)
+        }
+
+        is FlexValue.Relative -> {
+            YGNodeStyleSetMinHeightPercent(ygNode, value.pc)
+        }
+
+        null -> {}
+    }
+}
+
+private fun applyStyleMaxHeight(ygNode: Long, value: FlexValue?) {
+    when (value) {
+        is FlexValue.Fixed -> {
+            YGNodeStyleSetMaxHeight(ygNode, value.value)
+        }
+
+        is FlexValue.Relative -> {
+            YGNodeStyleSetMaxHeightPercent(ygNode, value.pc)
+        }
+
+        null -> {}
     }
 }

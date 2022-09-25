@@ -11,6 +11,7 @@ data class Color(val r: Int = 0, val g: Int = 0, val b: Int = 0, val a: Int = 25
     companion object {
         val TRANSPARENT = Color(a = 0)
         val WHITE = Color(255, 255, 255)
+        val GRAY = Color(125, 125, 125)
         val BLACK = Color()
         val RED = Color(r = 255)
         val GREEN = Color(g = 255)

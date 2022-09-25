@@ -12,9 +12,9 @@ import calamansi.runtime.service.Services
 import calamansi.runtime.sys.*
 import calamansi.runtime.threading.EventLoops
 import calamansi.runtime.utils.FrameStats
-import calamansi.ui.CanvasElement
-import calamansi.ui.Font
+import calamansi.ui.*
 import calamansi.ui.applyStyle
+import calamansi.ui.toPaint
 import org.jetbrains.skija.Canvas
 import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryStack
@@ -141,15 +141,18 @@ internal class WindowContext(
                 drawIndexed(PrimitiveMode.TRIANGLE, 6, 0)
             }
 
+            val windowSize = window.getWindowSize()
+            // TODO: make sure not settable
+            canvas.width = FlexValue.Fixed(windowSize.x().toFloat())
+            canvas.height = FlexValue.Fixed(windowSize.y().toFloat())
             canvas.applyStyle(yogaRoot)
             layout(node)
             YGNodeCalculateLayout(yogaRoot, YGUndefined, YGUndefined, YGDirectionLTR)
             val contentScale = window.getContentScale()
             renderTarget.draw {
                 resetMatrix()
-                if (canvas.backgroundPaint.alpha != 0) {
-                    drawPaint(canvas.backgroundPaint)
-                }
+                val paint = canvas.backgroundColor.toPaint()
+                drawPaint(paint)
                 scale(contentScale.x(), contentScale.y())
                 draw(this, node)
             }

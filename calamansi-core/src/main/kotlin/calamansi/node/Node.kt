@@ -96,7 +96,6 @@ open class Node {
         with(checkNotNull(executionContext)) {
             onEvent(event)
         }
-
         if (event.isConsumed()) {
             return
         }

@@ -8,24 +8,36 @@ import calamansi.input.KeyStateEvent
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
 import calamansi.resource.loadResource
-import calamansi.ui.FlexValue
-import calamansi.ui.Text
+import calamansi.ui.*
 import org.slf4j.LoggerFactory
 
 class Editor : Node() {
     private val logger = LoggerFactory.getLogger(Editor::class.java)
 
     private lateinit var text: Text
+    private lateinit var button: Button
 
     context(ExecutionContext) override fun onEnterTree() {
         logger.info("Enter tree.")
+        canvas.apply {
+            direction = FlexDirection.COLUMN_REVERSE
+            alignItems = FlexAlign.CENTER
+            alignContent = FlexAlign.CENTER
+        }
         text = Text("Hello World!").apply {
             backgroundColor = Color.BLUE
-            padding.top = FlexValue.Fixed(10f)
-            padding.left = FlexValue.Fixed(10f)
+            margin.top = FlexValue.Fixed(10f)
+//            width = FlexValue.Fixed(200f)
         }
-
+        button = Button("Press me!").apply {
+//            width = FlexValue.Fixed(100f)
+            padding.top = FlexValue.Fixed(10f)
+            padding.bottom = FlexValue.Fixed(10f)
+            padding.left = FlexValue.Fixed(10f)
+            padding.right = FlexValue.Fixed(10f)
+        }
         addChild(text)
+        addChild(button)
     }
 
     context(ExecutionContext) override fun onExitTree() {
