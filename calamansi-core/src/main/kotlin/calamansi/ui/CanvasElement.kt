@@ -2,6 +2,9 @@ package calamansi.ui
 
 import calamansi.event.Event
 import calamansi.gfx.Color
+import calamansi.input.InputState
+import calamansi.input.MouseButton
+import calamansi.input.MouseButtonStateEvent
 import calamansi.input.MouseMoveEvent
 import calamansi.meta.Property
 import calamansi.node.ExecutionContext
@@ -73,25 +76,26 @@ open class CanvasElement : Node(), FlexElement {
     @Property
     override var maxHeight: FlexValue? = null
 
-    private var _hovered = false
-        set(value) {
-            val oldValue = field
-            field = value
-
-            if (field) {
-                onHover()
-            }
-
-            if (oldValue && !value) {
-                // old = hovered, new = not hovered
-                onMouseExit()
-            } else if (!oldValue && value) {
-                // old = not hovered, new = hovered
-                onMouseEnter()
-            }
-        }
-
     private var _pressed = false
+    private var _hovered = false
+
+    context (ExecutionContext) private fun setHovered(hovered: Boolean) {
+        val oldValue = _hovered
+        _hovered = hovered
+
+        if (oldValue && !hovered) {
+            // old = hovered, new = not hovered
+            onMouseExit()
+        } else if (!oldValue && hovered) {
+            // old = not hovered, new = hovered
+            onMouseEnter()
+        }
+    }
+
+    context (ExecutionContext) private fun setPressed(pressed: Boolean) {
+        _pressed = pressed
+    }
+
 
     @Property
     override var backgroundColor: Color = Color.TRANSPARENT
@@ -132,9 +136,9 @@ open class CanvasElement : Node(), FlexElement {
     fun isHovered() = _hovered
     fun isPressed() = _pressed
 
-    protected open fun onHover() = Unit
-    protected open fun onMouseEnter() = Unit
-    protected open fun onMouseExit() = Unit
+    context (ExecutionContext) protected open fun onMouseEnter() = Unit
+    context (ExecutionContext) protected open fun onMouseExit() = Unit
+    context (ExecutionContext) protected open fun onMousePressed(button: MouseButton) = Unit
 
     context(ExecutionContext) override fun onEvent(event: Event) {
         when (event) {
@@ -144,7 +148,16 @@ open class CanvasElement : Node(), FlexElement {
                 val x1 = x0 + getLayoutWidth()
                 val y1 = y0 + getLayoutHeight()
 
-                _hovered = event.x in x0..x1 && event.y in y0..y1
+                setHovered(event.x in x0..x1 && event.y in y0..y1)
+            }
+
+            is MouseButtonStateEvent -> {
+                if (event.state == InputState.PRESSED && isHovered()) {
+                    setPressed(true)
+                } else if (event.state == InputState.RELEASED && isPressed()) {
+                    onMousePressed(event.button)
+                    setPressed(false)
+                }
             }
         }
     }

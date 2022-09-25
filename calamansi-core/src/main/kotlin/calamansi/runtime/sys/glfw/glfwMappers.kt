@@ -4,7 +4,21 @@ import calamansi.input.InputModifier
 import calamansi.input.InputState
 import calamansi.input.Key
 import calamansi.input.MouseButton
+import calamansi.ui.Cursor
 import org.lwjgl.glfw.GLFW.*
+
+internal object CursorMapper {
+    fun toGlfwCursor(cursor: Cursor): Int {
+        return when (cursor) {
+            Cursor.ARROW -> GLFW_ARROW_CURSOR
+            Cursor.IBEAM -> GLFW_IBEAM_CURSOR
+            Cursor.CROSSHAIR -> GLFW_CROSSHAIR_CURSOR
+            Cursor.HAND -> GLFW_HAND_CURSOR
+            Cursor.HRESIZE -> GLFW_HRESIZE_CURSOR
+            Cursor.VRESIZE -> GLFW_VRESIZE_CURSOR
+        }
+    }
+}
 
 internal object InputModifierMapper {
     fun fromGlfwModifier(mods: Int): Set<InputModifier> {

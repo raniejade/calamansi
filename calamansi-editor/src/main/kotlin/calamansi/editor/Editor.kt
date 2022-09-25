@@ -27,10 +27,12 @@ class Editor : Node() {
         text = Text("Hello World!").apply {
             backgroundColor = Color.BLUE
             margin.top = FlexValue.Fixed(10f)
-//            width = FlexValue.Fixed(200f)
+            padding.top = FlexValue.Fixed(10f)
+            padding.bottom = FlexValue.Fixed(10f)
+            padding.left = FlexValue.Fixed(10f)
+            padding.right = FlexValue.Fixed(10f)
         }
         button = Button("Press me!").apply {
-//            width = FlexValue.Fixed(100f)
             padding.top = FlexValue.Fixed(10f)
             padding.bottom = FlexValue.Fixed(10f)
             padding.left = FlexValue.Fixed(10f)

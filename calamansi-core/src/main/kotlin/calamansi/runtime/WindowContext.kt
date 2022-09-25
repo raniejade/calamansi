@@ -201,9 +201,7 @@ internal class WindowContext(
             return
         }
 
-        EventLoops.Script.scheduleNow {
-            node?.invokeOnEvent(event)
-        }
+        node?.invokeOnEvent(event)
     }
 
     private fun handlePlatformStateChange(stateChange: PlatformStateChange) {
@@ -263,6 +261,12 @@ internal class WindowContext(
 
     override fun exit() {
         window.closeWindow()
+    }
+
+    override fun setCursor(cursor: Cursor) {
+        EventLoops.Main.scheduleNow {
+            window.setCursor(cursor)
+        }
     }
 
     override fun <T : Resource> loadResourceAsync(

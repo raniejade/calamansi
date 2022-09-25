@@ -7,6 +7,7 @@ import calamansi.meta.CalamansiInternal
 import calamansi.node.Node
 import calamansi.runtime.service.Service
 import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.plus
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
@@ -113,7 +114,6 @@ class RegistryService : Service {
                 include(definition.serializersModule())
             }
         }
-
         override fun registerNode(definition: NodeDefinition) {
             val qualifiedName = definition.type.qualifiedName!!
             require(!definitions.containsKey(qualifiedName))

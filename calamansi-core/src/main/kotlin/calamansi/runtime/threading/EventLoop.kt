@@ -20,14 +20,24 @@ internal class BlockingEventLoop : EventLoop {
 
     private val tasks = LinkedBlockingDeque<Task<*>>()
     private val stop = AtomicBoolean(false)
+    private lateinit var thread: Thread
 
     override fun <T> schedule(task: Supplier<T>): CompletableFuture<T> {
+        if (Thread.currentThread() == thread) {
+            // in same thread, run immediately
+            return try {
+                CompletableFuture.completedFuture(task.get())
+            } catch (e: Throwable) {
+                CompletableFuture.failedFuture(e)
+            }
+        }
         val result = CompletableFuture<Any?>()
         tasks.put(Task(task, result))
         return result as CompletableFuture<T>
     }
 
     fun run() {
+        thread = Thread.currentThread()
         while (!stop.get()) {
             val task = tasks.poll()
             task?.result?.complete(task.supplier.get())

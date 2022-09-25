@@ -5,6 +5,7 @@ import calamansi.input.*
 import calamansi.runtime.sys.PlatformStateChange
 import calamansi.runtime.sys.Window
 import calamansi.runtime.sys.WindowHandlerRegistration
+import calamansi.ui.Cursor
 import calamansi.window.WindowCloseEvent
 import calamansi.window.WindowFocusChangedEvent
 import org.joml.Vector2f
@@ -18,6 +19,9 @@ import org.lwjgl.system.MemoryStack.stackPush
 internal class GlfwWindow(val handle: Long, private val contextCreated: Boolean) : Window {
     private val eventHandlers = mutableSetOf<(Event) -> Unit>()
     private val platformStateChangeHandlers = mutableSetOf<(PlatformStateChange) -> Unit>()
+    private val standardCursors = Cursor.values().associateWith { cursor ->
+        glfwCreateStandardCursor(CursorMapper.toGlfwCursor(cursor))
+    }
 
     init {
         // register input callbacks
@@ -91,6 +95,10 @@ internal class GlfwWindow(val handle: Long, private val contextCreated: Boolean)
         glfwPollEvents()
     }
 
+    override fun setCursor(cursor: Cursor) {
+        glfwSetCursor(handle, standardCursors.getValue(cursor))
+    }
+
     override fun closeWindow() {
         glfwSetWindowShouldClose(handle, true)
     }
@@ -100,6 +108,9 @@ internal class GlfwWindow(val handle: Long, private val contextCreated: Boolean)
     }
 
     override fun destroy() {
+        standardCursors.forEach { (_, handle) ->
+            glfwDestroyCursor(handle)
+        }
         glfwFreeCallbacks(handle)
         glfwDestroyWindow(handle)
     }

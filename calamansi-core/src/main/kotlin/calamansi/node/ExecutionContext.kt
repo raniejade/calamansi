@@ -3,6 +3,7 @@ package calamansi.node
 import calamansi.input.InputContext
 import calamansi.resource.ResourceContext
 import calamansi.ui.Canvas
+import calamansi.ui.Cursor
 
 interface ExecutionContext : InputContext, ResourceContext {
     val canvas: Canvas
@@ -10,4 +11,5 @@ interface ExecutionContext : InputContext, ResourceContext {
     fun getFps(): Float
     fun setScene(scene: Scene)
     fun exit()
+    fun setCursor(cursor: Cursor)
 }

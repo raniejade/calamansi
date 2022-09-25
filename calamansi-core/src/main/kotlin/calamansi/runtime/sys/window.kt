@@ -2,6 +2,7 @@ package calamansi.runtime.sys
 
 import calamansi.event.Event
 import calamansi.input.InputContext
+import calamansi.ui.Cursor
 import org.joml.Vector2fc
 import org.joml.Vector2ic
 
@@ -21,6 +22,8 @@ internal interface Window : InputContext {
     fun registerEventHandler(handler: (Event) -> Unit): WindowHandlerRegistration
     fun registerPlatformStateChangeHandler(handler: (PlatformStateChange) -> Unit): WindowHandlerRegistration
     fun pollEvents()
+
+    fun setCursor(cursor: Cursor)
 
     fun closeWindow()
     fun shouldCloseWindow(): Boolean
