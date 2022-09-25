@@ -93,7 +93,14 @@ open class Node {
     }
 
     internal fun invokeOnEvent(event: Event) {
-        with(checkNotNull(executionContext)) {
+        // when an event causes the current scene to be changed, execution
+        // context of the old scene is set to null
+        // this is totally valid, so we just stop propagating the event.
+        if (executionContext == null) {
+            return
+        }
+
+        with(executionContext!!) {
             onEvent(event)
         }
         if (event.isConsumed()) {

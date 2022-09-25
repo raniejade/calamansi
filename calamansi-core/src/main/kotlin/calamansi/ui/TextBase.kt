@@ -16,13 +16,6 @@ import org.lwjgl.util.yoga.Yoga.*
 abstract class TextBase(text: String) : CanvasElement() {
     private lateinit var blob: TextBlob
 
-    init {
-        YGNodeSetMeasureFunc(ygNode) { _, _, _, _, _, size ->
-            size.width(blob.blockBounds.width)
-            size.height(blob.blockBounds.height)
-        }
-    }
-
     @Property
     var text: String = text
 
@@ -53,7 +46,6 @@ abstract class TextBase(text: String) : CanvasElement() {
     override fun layout() {
         val font = font ?: (executionContext as WindowContext).defaultFont
         if (textLayoutState.isDirty()) {
-            YGNodeMarkDirty(ygNode)
             if (::blob.isInitialized) {
                 blob.close()
             }
@@ -67,6 +59,13 @@ abstract class TextBase(text: String) : CanvasElement() {
                     shaper.shape(text, font.makeSkijaFont(fontSize))
                 }!!
             }
+
+            val localBlob = blob
+            YGNodeSetMeasureFunc(ygNode) { _, _, _, _, _, size ->
+                size.width(localBlob.blockBounds.width)
+                size.height(localBlob.blockBounds.height)
+            }
+            YGNodeMarkDirty(ygNode)
         }
 
         super.layout()

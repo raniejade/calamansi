@@ -14,10 +14,19 @@ import calamansi.runtime.gc.Bin
 import calamansi.runtime.utils.StateTracker
 import org.jetbrains.skija.Canvas
 import org.jetbrains.skija.RRect
+import org.lwjgl.util.yoga.YGNode
 import org.lwjgl.util.yoga.Yoga.*
 
 open class CanvasElement : Node(), FlexElement {
-    protected val ygNode = YGNodeNew()
+    protected val ygNode: Long
+
+    init {
+        val localYgNode = YGNodeNew()
+        Bin.register(this) {
+            YGNodeFree(localYgNode)
+        }
+        ygNode = localYgNode
+    }
 
     @Property
     override var alignContent: FlexAlign = FlexAlign.FLEX_START
@@ -126,12 +135,6 @@ open class CanvasElement : Node(), FlexElement {
         this::maxWidth,
         this::maxHeight,
     )
-
-    init {
-        Bin.register(this) {
-            YGNodeFree(ygNode)
-        }
-    }
 
     fun isHovered() = _hovered
     fun isPressed() = _pressed

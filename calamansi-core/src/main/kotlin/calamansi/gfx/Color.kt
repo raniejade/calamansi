@@ -22,7 +22,7 @@ data class Color(val argb: UInt) {
         val RED = Color(r = 255)
         val GREEN = Color(g = 255)
         val BLUE = Color(b = 255)
-        val CYAN = Color("ff00ffff").apply { println(toHexString()) }
+        val CYAN = Color(g = 255, b = 255)
         val MAGENTA = Color(r = 255, b = 255)
         val YELLOW = Color(r = 255, g = 255)
 
