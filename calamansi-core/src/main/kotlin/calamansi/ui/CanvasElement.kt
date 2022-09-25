@@ -14,10 +14,9 @@ import calamansi.runtime.gc.Bin
 import calamansi.runtime.utils.StateTracker
 import org.jetbrains.skija.Canvas
 import org.jetbrains.skija.RRect
-import org.lwjgl.util.yoga.YGNode
 import org.lwjgl.util.yoga.Yoga.*
 
-open class CanvasElement : Node(), FlexElement {
+open class CanvasElement : Node() {
     protected val ygNode: Long
 
     init {
@@ -29,61 +28,64 @@ open class CanvasElement : Node(), FlexElement {
     }
 
     @Property
-    override var alignContent: FlexAlign = FlexAlign.FLEX_START
+    var alignContent: FlexAlign = FlexAlign.FLEX_START
 
     @Property
-    override var alignItems: FlexAlign = FlexAlign.STRETCH
+    var alignItems: FlexAlign = FlexAlign.STRETCH
 
     @Property
-    override var direction: FlexDirection = FlexDirection.ROW /* COLUMN */
+    var direction: FlexDirection = FlexDirection.ROW /* COLUMN */
 
     @Property
-    override var justifyContent: FlexJustify = FlexJustify.FLEX_START
+    var justifyContent: FlexJustify = FlexJustify.FLEX_START
 
     @Property
-    override var wrap: FlexWrap = FlexWrap.WRAP
+    var wrap: FlexWrap = FlexWrap.WRAP
 
     @Property
-    override var layout: FlexLayout = FlexLayout.RELATIVE
+    var layout: FlexLayout = FlexLayout.RELATIVE
 
     @Property
-    override var position: FlexBounds = FlexBounds()
+    var position: FlexBounds = FlexBounds()
 
     @Property
-    override var margin: FlexBounds = FlexBounds()
+    var margin: FlexBounds = FlexBounds()
 
     @Property
-    override var padding: FlexBounds = FlexBounds()
+    var padding: FlexBounds = FlexBounds()
 
     @Property
-    override var alignSelf: FlexAlign = FlexAlign.AUTO
+    var alignSelf: FlexAlign = FlexAlign.AUTO
 
     @Property
-    override var grow: Float = 0f
+    var grow: Float = 0f
 
     @Property
-    override var shrink: Float = 1f
+    var shrink: Float = 1f
 
     @Property
-    override var basis: FlexValue? = null
+    var basis: FlexValue? = null
 
     @Property
-    override var width: FlexValue? = null
+    var width: FlexValue? = null
 
     @Property
-    override var height: FlexValue? = null
+    var height: FlexValue? = null
 
     @Property
-    override var minWidth: FlexValue? = null
+    var minWidth: FlexValue? = null
 
     @Property
-    override var minHeight: FlexValue? = null
+    var minHeight: FlexValue? = null
 
     @Property
-    override var maxWidth: FlexValue? = null
+    var maxWidth: FlexValue? = null
 
     @Property
-    override var maxHeight: FlexValue? = null
+    var maxHeight: FlexValue? = null
+
+    @Property
+    open var backgroundColor: Color = Color.TRANSPARENT
 
     private var _pressed = false
     private var _hovered = false
@@ -104,10 +106,6 @@ open class CanvasElement : Node(), FlexElement {
     context (ExecutionContext) private fun setPressed(pressed: Boolean) {
         _pressed = pressed
     }
-
-
-    @Property
-    override var backgroundColor: Color = Color.TRANSPARENT
 
     internal open fun getBackgroundColor(): Color {
         return backgroundColor

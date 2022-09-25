@@ -61,7 +61,7 @@ internal fun Canvas.applyStyle(ygNode: Long) {
     applyStyleHeight(ygNode, FlexValue.Fixed(height.toFloat()))
 }
 
-internal fun FlexElement.applyStyle(ygNode: Long) {
+internal fun CanvasElement.applyStyle(ygNode: Long) {
     YGNodeStyleSetFlexDirection(ygNode, direction.toYGValue())
     YGNodeStyleSetAlignItems(ygNode, alignItems.toYGValue())
     YGNodeStyleSetAlignContent(ygNode, alignContent.toYGValue())
