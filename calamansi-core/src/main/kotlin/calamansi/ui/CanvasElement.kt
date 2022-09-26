@@ -132,6 +132,7 @@ open class CanvasElement : Node() {
         this::minHeight,
         this::maxWidth,
         this::maxHeight,
+        this::currentStyleBox,
     )
 
     fun isHovered() = _hovered
@@ -147,15 +148,14 @@ open class CanvasElement : Node() {
         pressedStyledBox = theme.getStyledBox(this::class, "pressed")
     }
 
-    private fun getStyledBox(): StyledBox {
-        return if (isPressed()) {
+    private val currentStyleBox: StyledBox
+        get() = if (isPressed()) {
             pressedStyledBox
         } else if (isHovered()) {
             hoveredStyledBox
         } else {
             normalStyledBox
         }
-    }
 
     context(ExecutionContext) override fun onEvent(event: Event) {
         when (event) {
@@ -215,6 +215,11 @@ open class CanvasElement : Node() {
     protected fun getPaddingRight() = YGNodeLayoutGetPadding(ygNode, YGEdgeRight)
     protected fun getPaddingBottom() = YGNodeLayoutGetPadding(ygNode, YGEdgeBottom)
 
+    protected fun getBorderLeft() = YGNodeLayoutGetBorder(ygNode, YGEdgeLeft)
+    protected fun getBorderTop() = YGNodeLayoutGetBorder(ygNode, YGEdgeTop)
+    protected fun getBorderRight() = YGNodeLayoutGetBorder(ygNode, YGEdgeRight)
+    protected fun getBorderBottom() = YGNodeLayoutGetBorder(ygNode, YGEdgeBottom)
+
     protected fun getLayoutWidth() = YGNodeLayoutGetWidth(ygNode)
     protected fun getLayoutHeight() = YGNodeLayoutGetHeight(ygNode)
 
@@ -223,11 +228,18 @@ open class CanvasElement : Node() {
             return
         }
         applyStyle(ygNode)
-        YGNodeSetHasNewLayout(ygNode, true)
+        val styleBox = currentStyleBox
+        if (styleBox is FlatStyledBox) {
+            YGNodeStyleSetBorder(ygNode, YGEdgeLeft, styleBox.borderWidth.left)
+            YGNodeStyleSetBorder(ygNode, YGEdgeTop, styleBox.borderWidth.top)
+            YGNodeStyleSetBorder(ygNode, YGEdgeRight, styleBox.borderWidth.right)
+            YGNodeStyleSetBorder(ygNode, YGEdgeBottom, styleBox.borderWidth.bottom)
+        }
+
     }
 
     internal open fun draw(canvas: Canvas) {
-        getStyledBox().draw(
+        currentStyleBox.draw(
             canvas,
             getLayoutLeft(),
             getLayoutTop(),

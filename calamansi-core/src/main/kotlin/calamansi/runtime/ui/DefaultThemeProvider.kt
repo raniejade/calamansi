@@ -5,7 +5,6 @@ import calamansi.meta.CalamansiInternal
 import calamansi.runtime.resource.ResourceService
 import calamansi.runtime.service.Services
 import calamansi.ui.*
-import org.joml.Vector4f
 
 internal object DefaultThemeProvider {
     private val resourceService by Services.get<ResourceService>()
@@ -28,9 +27,31 @@ internal object DefaultThemeProvider {
             .addColor(Text::class, "fontColor", Color.WHITE)
 
             // Button
-            .addStyledBox(Button::class, "normal", FlatStyledBox().apply { backgroundColor = Color("ffb4be56"); borderRadius = Vector4f(5f) })
-            .addStyledBox(Button::class, "pressed", FlatStyledBox().apply { backgroundColor = Color("ffa0ab41"); borderRadius = Vector4f(6f) })
-            .addStyledBox(Button::class, "hovered", FlatStyledBox().apply { backgroundColor = Color("ffc6ce80"); borderRadius = Vector4f(5f) })
+            .addStyledBox(
+                Button::class,
+                "normal",
+                FlatStyledBox().apply {
+                    backgroundColor = Color("ffb4be56")
+                    borderRadius = Corner(5f)
+                    borderWidth = Box(bottom = 1.5f)
+                    borderColor = Color("ff90993a")
+                })
+            .addStyledBox(
+                Button::class,
+                "pressed",
+                FlatStyledBox().apply {
+                    backgroundColor = Color("ffa0ab41")
+                    borderRadius = Corner(6f)
+                })
+            .addStyledBox(
+                Button::class,
+                "hovered",
+                FlatStyledBox().apply {
+                    backgroundColor = Color("ffc6ce80")
+                    borderRadius = Corner(5f)
+                    borderWidth = Box(bottom = 1.5f)
+                    borderColor = Color("ff90993a")
+                })
             .addFont(Button::class, "font", defaultFont)
             .addConstant(Button::class, "fontSize", 12f)
             .addColor(Button::class, "fontColor", Color.WHITE)

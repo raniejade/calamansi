@@ -2,7 +2,6 @@ package calamansi.ui
 
 import calamansi.gfx.Color
 import calamansi.meta.Property
-import calamansi.runtime.WindowContext
 import calamansi.runtime.utils.StateTracker
 import org.jetbrains.skija.Canvas
 import org.jetbrains.skija.Paint
@@ -11,25 +10,22 @@ import org.jetbrains.skija.shaper.Shaper
 import org.lwjgl.util.yoga.Yoga.YGNodeMarkDirty
 import org.lwjgl.util.yoga.Yoga.YGNodeSetMeasureFunc
 
-abstract class TextBase(text: String) : CanvasElement() {
+abstract class TextBase(@Property var text: String) : CanvasElement() {
     private lateinit var blob: TextBlob
-
-    @Property
-    var text: String = text
 
     @Property
     var fontSize: Float = 12f
 
     @Property
     var fontColor: Color = Color.WHITE
-        set(value) {
-            field = value
-            textPaint.close()
-            textPaint = value.toPaint()
-        }
 
     @Property
     lateinit var font: Font
+
+    @Suppress("LeakingThis")
+    private val textPaintState = StateTracker.create(
+        this::fontColor
+    )
 
     private var textPaint: Paint = fontColor.toPaint()
 
@@ -78,6 +74,15 @@ abstract class TextBase(text: String) : CanvasElement() {
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-        canvas.drawTextBlob(blob, getLayoutLeft() + getPaddingLeft(), getLayoutTop() + getPaddingTop(), textPaint)
+        if (textPaintState.isDirty()) {
+            textPaint.close()
+            textPaint = fontColor.toPaint()
+        }
+        canvas.drawTextBlob(
+            blob,
+            getLayoutLeft() + getPaddingLeft() + getBorderLeft(),
+            getLayoutTop() + getPaddingTop() + getBorderTop(),
+            textPaint
+        )
     }
 }

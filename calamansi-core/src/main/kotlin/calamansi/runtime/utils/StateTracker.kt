@@ -1,9 +1,10 @@
 package calamansi.runtime.utils
 
 import kotlin.reflect.KMutableProperty0
+import kotlin.reflect.KProperty0
 
 internal class StateTracker private constructor(
-    private val properties: List<KMutableProperty0<out Any?>>
+    private val properties: List<KProperty0<out Any?>>
 ) {
     private var previousState = mutableListOf<Any?>()
 
@@ -18,7 +19,7 @@ internal class StateTracker private constructor(
     }
 
     companion object {
-        fun create(vararg props: KMutableProperty0<out Any?>): StateTracker {
+        fun create(vararg props: KProperty0<out Any?>): StateTracker {
             return StateTracker(props.toList())
         }
     }

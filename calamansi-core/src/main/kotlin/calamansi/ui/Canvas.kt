@@ -20,8 +20,7 @@ class Canvas internal constructor() {
 
     var wrap: FlexWrap = FlexWrap.WRAP
 
-    @Suppress("LeakingThis")
-    private var layoutState = StateTracker.create(
+    private val layoutState = StateTracker.create(
         this::alignContent,
         this::alignItems,
         this::direction,
