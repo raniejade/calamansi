@@ -19,6 +19,7 @@ import org.lwjgl.system.MemoryStack.stackPush
 internal class GlfwWindow(val handle: Long, private val contextCreated: Boolean) : Window {
     private val eventHandlers = mutableSetOf<(Event) -> Unit>()
     private val platformStateChangeHandlers = mutableSetOf<(PlatformStateChange) -> Unit>()
+    private var pendingEvents = mutableListOf<Event>()
     private val standardCursors = Cursor.values().associateWith { cursor ->
         glfwCreateStandardCursor(CursorMapper.toGlfwCursor(cursor))
     }
@@ -95,6 +96,14 @@ internal class GlfwWindow(val handle: Long, private val contextCreated: Boolean)
         glfwPollEvents()
     }
 
+    override fun processEvents() {
+        for (event in pendingEvents) {
+            eventHandlers.forEach { it(event) }
+        }
+
+        pendingEvents.clear()
+    }
+
     override fun setCursor(cursor: Cursor) {
         glfwSetCursor(handle, standardCursors.getValue(cursor))
     }
@@ -132,7 +141,8 @@ internal class GlfwWindow(val handle: Long, private val contextCreated: Boolean)
     }
 
     private fun publishEvent(event: Event) {
-        eventHandlers.forEach { it(event) }
+        pendingEvents.add(event)
+        // eventHandlers.forEach { it(event) }
     }
 
     private fun publishPlatformStateChange(stateChange: PlatformStateChange) {

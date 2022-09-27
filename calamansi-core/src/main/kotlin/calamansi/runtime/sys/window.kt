@@ -22,6 +22,7 @@ internal interface Window : InputContext {
     fun registerEventHandler(handler: (Event) -> Unit): WindowHandlerRegistration
     fun registerPlatformStateChangeHandler(handler: (PlatformStateChange) -> Unit): WindowHandlerRegistration
     fun pollEvents()
+    fun processEvents()
 
     fun setCursor(cursor: Cursor)
 

@@ -112,6 +112,10 @@ internal class WindowContext(
         EventLoops.Main.scheduleNow {
             window.pollEvents()
         }
+
+        EventLoops.Script.scheduleNow {
+            window.processEvents()
+        }
     }
 
     fun frame(delta: Float, frameNo: Long) {
