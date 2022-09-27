@@ -33,7 +33,7 @@ internal object DefaultThemeProvider {
                 FlatStyledBox().apply {
                     backgroundColor = Color("ffb4be56")
                     borderRadius = Corner(5f)
-                    borderWidth = Box(bottom = 1.5f)
+                    borderWidth = Box(bottom = 2f)
                     borderColor = Color("ff90993a")
                 })
             .addStyledBox(
@@ -49,7 +49,7 @@ internal object DefaultThemeProvider {
                 FlatStyledBox().apply {
                     backgroundColor = Color("ffc6ce80")
                     borderRadius = Corner(5f)
-                    borderWidth = Box(bottom = 1.5f)
+                    borderWidth = Box(bottom = 2f)
                     borderColor = Color("ff90993a")
                 })
             .addFont(Button::class, "font", defaultFont)
