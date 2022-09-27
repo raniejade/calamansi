@@ -88,10 +88,6 @@ open class CanvasElement : Node() {
     @Property
     var hoveredStyledBox: StyledBox = EmptyStyledBox()
 
-    @Property
-    var pressedStyledBox: StyledBox = EmptyStyledBox()
-
-    private var _pressed = false
     private var _hovered = false
 
     context (ExecutionContext) private fun setHovered(hovered: Boolean) {
@@ -105,10 +101,6 @@ open class CanvasElement : Node() {
             // old = not hovered, new = hovered
             onMouseEnter()
         }
-    }
-
-    context (ExecutionContext) private fun setPressed(pressed: Boolean) {
-        _pressed = pressed
     }
 
     @Suppress("LeakingThis")
@@ -136,22 +128,17 @@ open class CanvasElement : Node() {
     )
 
     fun isHovered() = _hovered
-    fun isPressed() = _pressed
 
     context (ExecutionContext) protected open fun onMouseEnter() = Unit
     context (ExecutionContext) protected open fun onMouseExit() = Unit
-    context (ExecutionContext) protected open fun onMousePressed(button: MouseButton) = Unit
 
     override fun onThemeChanged(theme: Theme) {
         normalStyledBox = theme.getStyledBox(this::class, "normal")
         hoveredStyledBox = theme.getStyledBox(this::class, "hovered")
-        pressedStyledBox = theme.getStyledBox(this::class, "pressed")
     }
 
-    private val currentStyleBox: StyledBox
-        get() = if (isPressed()) {
-            pressedStyledBox
-        } else if (isHovered()) {
+    internal open val currentStyleBox: StyledBox
+        get() = if (isHovered()) {
             hoveredStyledBox
         } else {
             normalStyledBox
@@ -168,16 +155,7 @@ open class CanvasElement : Node() {
                 setHovered(event.x in x0..x1 && event.y in y0..y1)
             }
 
-            is MouseButtonStateEvent -> {
-                if (event.state == InputState.PRESSED && isHovered()) {
-                    setPressed(true)
-                } else if (event.state == InputState.RELEASED && isPressed()) {
-                    if (isHovered()) {
-                        onMousePressed(event.button)
-                    }
-                    setPressed(false)
-                }
-            }
+            // TODO: publish element clicked?
         }
     }
 

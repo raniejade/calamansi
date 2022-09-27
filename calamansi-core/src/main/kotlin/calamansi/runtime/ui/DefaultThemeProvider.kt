@@ -15,12 +15,10 @@ internal object DefaultThemeProvider {
         return ThemeBuilder()
             // CanvasElement
             .addStyledBox(CanvasElement::class, "normal", EmptyStyledBox())
-            .addStyledBox(CanvasElement::class, "pressed", EmptyStyledBox())
             .addStyledBox(CanvasElement::class, "hovered", EmptyStyledBox())
 
             // Text
             .addStyledBox(Text::class, "normal", EmptyStyledBox())
-            .addStyledBox(Text::class, "pressed", EmptyStyledBox())
             .addStyledBox(Text::class, "hovered", EmptyStyledBox())
             .addFont(Text::class, "font", defaultFont)
             .addConstant(Text::class, "fontSize", 12f)
