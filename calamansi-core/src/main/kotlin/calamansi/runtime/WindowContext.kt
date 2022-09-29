@@ -129,12 +129,10 @@ internal class WindowContext(
         EventLoops.Main.scheduleNow {
             gfx.bind()
             val size = window.getFramebufferSize()
-            _canvas.renderTarget.draw {
-                drawPaint(Color.GRAY.toPaint())
-            }
+            // dont use canvas.clear/paint as it is slow!
             _canvas.renderTarget.render(pipeline) {
                 setViewport(0, 0, size.x(), size.y())
-
+                clearColor(Color.GRAY)
                 setVertices(triangleVertices)
                 setIndices(triangleIndices)
 

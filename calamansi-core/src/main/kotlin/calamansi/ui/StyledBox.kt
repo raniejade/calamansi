@@ -58,24 +58,27 @@ class FlatStyledBox : StyledBox() {
             borderPaint = borderColor.toPaint()
         }
 
-        val count = canvas.saveLayer(null, null)
+        val borderRect = RRect.makeXYWH(
+            x,
+            y,
+            width,
+            height,
+            borderRadius.topLeft,
+            borderRadius.topRight,
+            borderRadius.bottomRight,
+            borderRadius.bottomLeft
+        )
 
+        val count = canvas.saveLayer(
+            borderRect, null
+        )
         if (borderWidth.left != 0f
             || borderWidth.top != 0f
             || borderWidth.right != 0f
             || borderWidth.bottom != 0f
         ) {
             canvas.drawRRect(
-                RRect.makeXYWH(
-                    x,
-                    y,
-                    width,
-                    height,
-                    borderRadius.topLeft,
-                    borderRadius.topRight,
-                    borderRadius.bottomRight,
-                    borderRadius.bottomLeft
-                ),
+                borderRect,
                 borderPaint
             )
         }

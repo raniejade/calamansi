@@ -1,5 +1,6 @@
 package calamansi.runtime.sys
 
+import calamansi.gfx.Color
 import org.jetbrains.skija.Canvas
 import org.joml.Matrix4fc
 import org.joml.Vector3fc
@@ -64,6 +65,9 @@ internal interface DrawSpec {
     fun setShaderParam(name: String, resource: Texture)
 
     fun clearColor(r: Float, g: Float, b: Float, a: Float)
+    fun clearColor(color: Color) {
+        clearColor(color.r / 255f, color.g / 255f, color.b / 255f, color.a / 255f)
+    }
     fun clearDepth(depth: Float)
 
     fun draw(mode: PrimitiveMode, count: Int)
