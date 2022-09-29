@@ -4,8 +4,7 @@ import calamansi.gfx.Color
 import calamansi.meta.Property
 import calamansi.resource.Resource
 import calamansi.runtime.utils.StateTracker
-import org.jetbrains.skija.Paint
-import org.jetbrains.skija.RRect
+import org.jetbrains.skija.*
 import java.util.Objects
 import org.jetbrains.skija.Canvas as SkijaCanvas
 
@@ -51,13 +50,15 @@ class FlatStyledBox : StyledBox() {
     override fun draw(canvas: SkijaCanvas, x: Float, y: Float, width: Float, height: Float) {
         if (backgroundPaintState.isDirty()) {
             backgroundPaint.close()
-            backgroundPaint = backgroundColor.toPaint()
+            backgroundPaint = backgroundColor.toPaint().setBlendMode(BlendMode.SRC)
         }
 
         if (borderPaintState.isDirty()) {
             borderPaint.close()
             borderPaint = borderColor.toPaint()
         }
+
+        val count = canvas.saveLayer(null, null)
 
         if (borderWidth.left != 0f
             || borderWidth.top != 0f
@@ -92,6 +93,8 @@ class FlatStyledBox : StyledBox() {
             ),
             backgroundPaint,
         )
+
+        canvas.restoreToCount(count)
     }
 
     override fun equals(other: Any?): Boolean {

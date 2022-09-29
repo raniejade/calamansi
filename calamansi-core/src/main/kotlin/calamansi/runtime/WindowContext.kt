@@ -1,6 +1,7 @@
 package calamansi.runtime
 
 import calamansi.event.Event
+import calamansi.gfx.Color
 import calamansi.input.InputContext
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
@@ -128,9 +129,11 @@ internal class WindowContext(
         EventLoops.Main.scheduleNow {
             gfx.bind()
             val size = window.getFramebufferSize()
+            _canvas.renderTarget.draw {
+                drawPaint(Color.GRAY.toPaint())
+            }
             _canvas.renderTarget.render(pipeline) {
                 setViewport(0, 0, size.x(), size.y())
-                clearColor(0.5f, 0.2f, 0.2f, 1f)
 
                 setVertices(triangleVertices)
                 setIndices(triangleIndices)
@@ -149,9 +152,6 @@ internal class WindowContext(
             val contentScale = window.getContentScale()
             _canvas.renderTarget.draw {
                 resetMatrix()
-                // TODO: support "clear color" for canvas
-                // val paint = canvas.backgroundColor.toPaint()
-                // drawPaint(paint)
                 scale(contentScale.x(), contentScale.y())
                 draw(this, node)
             }
