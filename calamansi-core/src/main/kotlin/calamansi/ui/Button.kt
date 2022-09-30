@@ -4,6 +4,7 @@ import calamansi.bus.Message
 import calamansi.input.MouseButton
 import calamansi.meta.Property
 import calamansi.node.ExecutionContext
+import calamansi.runtime.WindowContext
 
 class Button(text: String = "") : TextBase(text) {
     @Property
@@ -31,6 +32,14 @@ class Button(text: String = "") : TextBase(text) {
     override fun onThemeChanged(theme: Theme) {
         super.onThemeChanged(theme)
         pressedStyledBox = theme.getStyledBox(this::class, "pressed")
+    }
+
+    override fun nodeExitTree() {
+        // when a button press causes a scene change, reset cursor
+        if (_pressed) {
+            (executionContext as WindowContext).setCursor(Cursor.ARROW)
+            _pressed = false
+        }
     }
 
     context(ExecutionContext) private fun handleMessage(message: Message) {

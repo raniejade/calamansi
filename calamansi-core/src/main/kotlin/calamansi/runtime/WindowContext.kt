@@ -199,6 +199,12 @@ internal class WindowContext(
         }
 
         node?.invokeOnEvent(event)
+
+        if (event.isConsumed()) {
+            return
+        }
+
+        node?.invokeOnUnhandledEvent(event)
     }
 
     private fun handlePlatformStateChange(stateChange: PlatformStateChange) {

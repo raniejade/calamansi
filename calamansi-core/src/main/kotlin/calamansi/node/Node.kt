@@ -82,6 +82,7 @@ open class Node : MessageSource {
 
     context (ExecutionContext) open fun onEnterTree() = Unit
     context (ExecutionContext) open fun onEvent(event: Event) = Unit
+    context (ExecutionContext) open fun onUnhandledEvent(event: Event) = Unit
     context (ExecutionContext) open fun onUpdate(delta: Float) = Unit
     context (ExecutionContext) open fun onExitTree() = Unit
 
@@ -122,12 +123,34 @@ open class Node : MessageSource {
         with(executionContext!!) {
             onEvent(event)
         }
+
         if (event.isConsumed()) {
             return
         }
 
         for (child in children) {
             child.invokeOnEvent(event)
+        }
+    }
+
+    internal fun invokeOnUnhandledEvent(event: Event) {
+        // when an event causes the current scene to be changed, execution
+        // context of the old scene is set to null
+        // this is totally valid, so we just stop propagating the event.
+        if (executionContext == null) {
+            return
+        }
+
+        with(executionContext!!) {
+            onUnhandledEvent(event)
+        }
+
+        if (event.isConsumed()) {
+            return
+        }
+
+        for (child in children) {
+            child.invokeOnUnhandledEvent(event)
         }
     }
 

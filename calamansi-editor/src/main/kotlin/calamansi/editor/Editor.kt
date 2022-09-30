@@ -1,10 +1,6 @@
 package calamansi.editor
 
-import calamansi.event.Event
-import calamansi.gfx.Color
-import calamansi.input.InputState
 import calamansi.input.Key
-import calamansi.input.KeyStateEvent
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
 import calamansi.resource.loadResource
@@ -16,6 +12,7 @@ class Editor : Node() {
 
     private lateinit var text: Text
     private lateinit var button: Button
+    private var counter = 0
 
     context(ExecutionContext) override fun onEnterTree() {
         logger.info("Enter tree.")
@@ -31,16 +28,20 @@ class Editor : Node() {
             padding.left = FlexValue.Fixed(10f)
             padding.right = FlexValue.Fixed(10f)
         }
-        button = Button("Press me!").apply {
+        button = Button("Clicked: $counter times.").apply {
             margin.bottom = FlexValue.Fixed(10f)
             padding.top = FlexValue.Fixed(10f)
             padding.bottom = FlexValue.Fixed(10f)
             padding.left = FlexValue.Fixed(10f)
             padding.right = FlexValue.Fixed(10f)
 
-            subscribe { message ->
+            this.subscribe { message ->
                 if (message is CanvasMessage.ButtonPress) {
-                    logger.info("Button pressed!")
+                    counter++
+                    text = "Clicked: $counter times."
+                    if (counter > 10) {
+                        setScene(loadResource("assets://empty.scn.json"))
+                    }
                 }
             }
         }
@@ -51,12 +52,6 @@ class Editor : Node() {
     context(ExecutionContext) override fun onExitTree() {
         logger.info("Exit tree.")
         removeChild(text)
-    }
-
-    context(ExecutionContext) override fun onEvent(event: Event) {
-        if (event is KeyStateEvent && event.state == InputState.RELEASED && event.key == Key.A) {
-            setScene(loadResource("assets://empty.scn.json"))
-        }
     }
 
     context(ExecutionContext) override fun onUpdate(delta: Float) {
