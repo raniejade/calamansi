@@ -1,9 +1,7 @@
 package calamansi.ui
 
-import calamansi.event.Event
-import calamansi.input.InputState
+import calamansi.bus.Message
 import calamansi.input.MouseButton
-import calamansi.input.MouseButtonStateEvent
 import calamansi.meta.Property
 import calamansi.node.ExecutionContext
 
@@ -12,6 +10,12 @@ class Button(text: String = "") : TextBase(text) {
     var pressedStyledBox: StyledBox = EmptyStyledBox()
 
     private var _pressed = false
+
+    init {
+        subscribe {
+            handleMessage(it)
+        }
+    }
 
     override val currentStyleBox: StyledBox
         get() {
@@ -29,29 +33,30 @@ class Button(text: String = "") : TextBase(text) {
         pressedStyledBox = theme.getStyledBox(this::class, "pressed")
     }
 
-    context(ExecutionContext) override fun onEvent(event: Event) {
-        super.onEvent(event)
-        when (event) {
-            is MouseButtonStateEvent -> {
-                if (event.state == InputState.PRESSED && isHovered()) {
+    context(ExecutionContext) private fun handleMessage(message: Message) {
+        when (message) {
+            is CanvasMessage.ElementExit -> {
+                setCursor(Cursor.HAND)
+            }
+
+            is CanvasMessage.ElementEnter -> {
+                setCursor(Cursor.ARROW)
+            }
+
+            is CanvasMessage.ElementMousePress -> {
+                if (message.button == MouseButton.BUTTON_1) {
                     _pressed = true
-                } else if (event.state == InputState.RELEASED && isPressed()) {
+                }
+            }
+
+            is CanvasMessage.ElementMouseRelease -> {
+                if (message.button == MouseButton.BUTTON_1) {
                     if (isHovered()) {
-                        onMousePressed(event.button)
+                        publish(CanvasMessage.ButtonPress(this))
                     }
                     _pressed = false
                 }
             }
         }
-    }
-
-    context (ExecutionContext) protected open fun onMousePressed(button: MouseButton) = Unit
-
-    context(ExecutionContext) override fun onMouseEnter() {
-        setCursor(Cursor.HAND)
-    }
-
-    context(ExecutionContext) override fun onMouseExit() {
-        setCursor(Cursor.ARROW)
     }
 }

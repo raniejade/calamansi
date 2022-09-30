@@ -37,6 +37,12 @@ class Editor : Node() {
             padding.bottom = FlexValue.Fixed(10f)
             padding.left = FlexValue.Fixed(10f)
             padding.right = FlexValue.Fixed(10f)
+
+            subscribe { message ->
+                if (message is CanvasMessage.ButtonPress) {
+                    logger.info("Button pressed!")
+                }
+            }
         }
         addChild(text)
         addChild(button)

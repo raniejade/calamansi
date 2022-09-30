@@ -2,7 +2,6 @@ package calamansi.ui
 
 import calamansi.event.Event
 import calamansi.input.InputState
-import calamansi.input.MouseButton
 import calamansi.input.MouseButtonStateEvent
 import calamansi.input.MouseMoveEvent
 import calamansi.meta.Property
@@ -96,10 +95,10 @@ open class CanvasElement : Node() {
 
         if (oldValue && !hovered) {
             // old = hovered, new = not hovered
-            onMouseExit()
+            publish(CanvasMessage.ElementEnter(this))
         } else if (!oldValue && hovered) {
             // old = not hovered, new = hovered
-            onMouseEnter()
+            publish(CanvasMessage.ElementExit(this))
         }
     }
 
@@ -129,9 +128,6 @@ open class CanvasElement : Node() {
 
     fun isHovered() = _hovered
 
-    context (ExecutionContext) protected open fun onMouseEnter() = Unit
-    context (ExecutionContext) protected open fun onMouseExit() = Unit
-
     override fun onThemeChanged(theme: Theme) {
         normalStyledBox = theme.getStyledBox(this::class, "normal")
         hoveredStyledBox = theme.getStyledBox(this::class, "hovered")
@@ -155,7 +151,13 @@ open class CanvasElement : Node() {
                 setHovered(event.x in x0..x1 && event.y in y0..y1)
             }
 
-            // TODO: publish element clicked?
+            is MouseButtonStateEvent -> {
+                if (event.state == InputState.PRESSED && isHovered()) {
+                    publish(CanvasMessage.ElementMousePress(this, event.button))
+                } else if (event.state == InputState.RELEASED) {
+                    publish(CanvasMessage.ElementMouseRelease(this, event.button))
+                }
+            }
         }
     }
 

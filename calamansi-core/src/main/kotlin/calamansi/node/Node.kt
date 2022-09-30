@@ -1,14 +1,18 @@
 package calamansi.node
 
-import calamansi.event.*
+import calamansi.bus.Message
+import calamansi.bus.MessageBus
+import calamansi.bus.MessageListener
+import calamansi.bus.MessageSource
+import calamansi.event.Event
 import calamansi.meta.Property
 import calamansi.ui.CanvasElement
 import calamansi.ui.Theme
 import java.util.*
 
-open class Node {
+open class Node : MessageSource {
     private var _id = UUID.randomUUID().toString()
-    private val eventBus = EventBus()
+    private val bus = MessageBus()
     private var _parent: Node? = null
         set(value) {
             val oldParent = field
@@ -143,16 +147,16 @@ open class Node {
     internal open fun childRemoved(child: Node) = Unit
     internal open fun parentChanged(old: Node?, new: Node?) = Unit
 
-    fun subscribe(listener: context(ExecutionContext) (Event) -> Unit): EventSubscription {
-        return eventBus.subscribe(listener)
-    }
-
-    context(ExecutionContext) protected fun publish(event: Event) {
-        eventBus.publish(event)
-    }
-
     final override fun hashCode(): Int {
         return _id.hashCode()
+    }
+
+    override fun subscribe(listener: MessageListener): MessageSource.Subscription {
+        return bus.subscribe(listener)
+    }
+
+    context(ExecutionContext) protected fun publish(message: Message) {
+        bus.publish(message)
     }
 
     final override fun equals(other: Any?): Boolean {
