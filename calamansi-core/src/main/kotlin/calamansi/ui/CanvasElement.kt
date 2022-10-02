@@ -95,10 +95,10 @@ open class CanvasElement : Node() {
 
         if (oldValue && !hovered) {
             // old = hovered, new = not hovered
-            publish(CanvasMessage.ElementEnter(this))
+            publish(CanvasMessage.ElementExit(this))
         } else if (!oldValue && hovered) {
             // old = not hovered, new = hovered
-            publish(CanvasMessage.ElementExit(this))
+            publish(CanvasMessage.ElementEnter(this))
         }
     }
 
@@ -131,6 +131,9 @@ open class CanvasElement : Node() {
     override fun onThemeChanged(theme: Theme) {
         normalStyledBox = theme.getStyledBox(this::class, "normal")
         hoveredStyledBox = theme.getStyledBox(this::class, "hovered")
+
+        minWidth = FlexValue.Fixed(theme.getConstant(this::class, "minWidth"))
+        minHeight = FlexValue.Fixed(theme.getConstant(this::class, "minHeight"))
     }
 
     internal open val currentStyleBox: StyledBox

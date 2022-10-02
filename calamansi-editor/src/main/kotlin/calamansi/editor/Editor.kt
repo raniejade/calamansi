@@ -11,6 +11,7 @@ class Editor : Node() {
     private val logger = LoggerFactory.getLogger(Editor::class.java)
 
     private lateinit var text: Text
+    private lateinit var textInput: TextInput
     private lateinit var button: Button
     private var counter = 0
 
@@ -27,6 +28,10 @@ class Editor : Node() {
             padding.bottom = FlexValue.Fixed(10f)
             padding.left = FlexValue.Fixed(10f)
             padding.right = FlexValue.Fixed(10f)
+        }
+        textInput = TextInput().apply {
+            width = FlexValue.Fixed(100f)
+            height = FlexValue.Fixed(20f)
         }
         button = Button("Clicked: $counter times.").apply {
             margin.bottom = FlexValue.Fixed(10f)
@@ -46,6 +51,7 @@ class Editor : Node() {
             }
         }
         addChild(text)
+        addChild(textInput)
         addChild(button)
     }
 

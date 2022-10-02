@@ -43,22 +43,24 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
                 blob.close()
             }
 
-            // TODO: how to support percentage based width and height?
-            blob = Shaper.make().use { shaper ->
-                val width = width
-                if (width is FlexValue.Fixed) {
-                    shaper.shape(text, font.makeSkijaFont(fontSize), width.value)
-                } else {
-                    shaper.shape(text, font.makeSkijaFont(fontSize))
-                }!!
-            }
+            if (!text.isBlank()) {
+                // TODO: how to support percentage based width and height?
+                blob = Shaper.make().use { shaper ->
+                    val width = width
+                    if (width is FlexValue.Fixed) {
+                        shaper.shape(text, font.makeSkijaFont(fontSize), width.value)
+                    } else {
+                        shaper.shape(text, font.makeSkijaFont(fontSize))
+                    }!!
+                }
 
-            val localBlob = blob
-            YGNodeSetMeasureFunc(ygNode) { _, _, _, _, _, size ->
-                size.width(localBlob.blockBounds.width)
-                size.height(localBlob.blockBounds.height)
+                val localBlob = blob
+                YGNodeSetMeasureFunc(ygNode) { _, _, _, _, _, size ->
+                    size.width(localBlob.blockBounds.width)
+                    size.height(localBlob.blockBounds.height)
+                }
+                YGNodeMarkDirty(ygNode)
             }
-            YGNodeMarkDirty(ygNode)
         }
 
         super.layout()
@@ -78,11 +80,13 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
             textPaint.close()
             textPaint = fontColor.toPaint()
         }
-        canvas.drawTextBlob(
-            blob,
-            getLayoutLeft() + getPaddingLeft() + getBorderLeft(),
-            getLayoutTop() + getPaddingTop() + getBorderTop(),
-            textPaint
-        )
+        if (this::blob.isInitialized) {
+            canvas.drawTextBlob(
+                blob,
+                getLayoutLeft() + getPaddingLeft() + getBorderLeft(),
+                getLayoutTop() + getPaddingTop() + getBorderTop(),
+                textPaint
+            )
+        }
     }
 }

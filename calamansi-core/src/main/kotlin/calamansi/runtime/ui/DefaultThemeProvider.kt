@@ -16,6 +16,8 @@ internal object DefaultThemeProvider {
             // CanvasElement
             .addStyledBox(CanvasElement::class, "normal", EmptyStyledBox())
             .addStyledBox(CanvasElement::class, "hovered", EmptyStyledBox())
+            .addConstant(CanvasElement::class, "minWidth", 0f)
+            .addConstant(CanvasElement::class, "minHeight", 0f)
 
             // Text
             .addStyledBox(Text::class, "normal", EmptyStyledBox())
@@ -23,6 +25,27 @@ internal object DefaultThemeProvider {
             .addFont(Text::class, "font", defaultFont)
             .addConstant(Text::class, "fontSize", 12f)
             .addColor(Text::class, "fontColor", Color.WHITE)
+            .addConstant(Text::class, "minWidth", 0f)
+            .addConstant(Text::class, "minHeight", 20f)
+
+            // TextInput
+            .addStyledBox(TextInput::class, "normal", FlatStyledBox().apply {
+                backgroundColor = Color.WHITE
+                borderRadius = Corner(2f)
+                borderWidth = Box(2f)
+                borderColor = Color("ff90993a")
+            })
+            .addStyledBox(TextInput::class, "hovered", FlatStyledBox().apply {
+                backgroundColor = Color.WHITE
+                borderRadius = Corner(2f)
+                borderWidth = Box(2f)
+                borderColor = Color("ff90993a")
+            })
+            .addFont(TextInput::class, "font", defaultFont)
+            .addConstant(TextInput::class, "fontSize", 12f)
+            .addColor(TextInput::class, "fontColor", Color.BLUE)
+            .addConstant(TextInput::class, "minWidth", 100f)
+            .addConstant(TextInput::class, "minHeight", 25f)
 
             // Button
             .addStyledBox(
@@ -53,6 +76,8 @@ internal object DefaultThemeProvider {
             .addFont(Button::class, "font", defaultFont)
             .addConstant(Button::class, "fontSize", 12f)
             .addColor(Button::class, "fontColor", Color.WHITE)
+            .addConstant(Button::class, "minWidth", 50f)
+            .addConstant(Button::class, "minHeight", 25f)
             .build()
     }
 }

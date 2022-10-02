@@ -45,11 +45,11 @@ class Button(text: String = "") : TextBase(text) {
     context(ExecutionContext) private fun handleMessage(message: Message) {
         when (message) {
             is CanvasMessage.ElementExit -> {
-                setCursor(Cursor.HAND)
+                setCursor(Cursor.ARROW)
             }
 
             is CanvasMessage.ElementEnter -> {
-                setCursor(Cursor.ARROW)
+                setCursor(Cursor.HAND)
             }
 
             is CanvasMessage.ElementMousePress -> {
