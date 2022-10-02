@@ -51,15 +51,17 @@ internal class Engine {
             }
 
             do {
-                // run scene
-                deltaNano = (nanoTime() - lastTick)
-                lastTick = nanoTime()
-                val delta = TimeUnit.NANOSECONDS.toMillis(deltaNano).toFloat()
-                mainWindowContext.frame(delta, frameStats.frameNo)
-                mainWindowContext.render(frameStats.frameNo)
-                frameStats.frame(delta)
+                runCatching {
+                    // run scene
+                    deltaNano = (nanoTime() - lastTick)
+                    lastTick = nanoTime()
+                    val delta = TimeUnit.NANOSECONDS.toMillis(deltaNano).toFloat()
+                    mainWindowContext.frame(delta, frameStats.frameNo)
+                    mainWindowContext.render(frameStats.frameNo)
+                    frameStats.frame(delta)
 
-                mainWindowContext.pollEvents()
+                    mainWindowContext.pollEvents()
+                }
             } while (!mainWindowContext.shouldCloseWindow())
             EventLoops.Main.shutdown()
         }

@@ -11,7 +11,7 @@ import org.lwjgl.util.yoga.Yoga.YGNodeMarkDirty
 import org.lwjgl.util.yoga.Yoga.YGNodeSetMeasureFunc
 
 abstract class TextBase(@Property var text: String) : CanvasElement() {
-    private lateinit var blob: TextBlob
+    private var blob: TextBlob? = null
 
     @Property
     var fontSize: Float = 12f
@@ -39,22 +39,24 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
 
     override fun layout() {
         if (textLayoutState.isDirty()) {
-            if (::blob.isInitialized) {
-                blob.close()
+            if (blob != null) {
+                blob!!.close()
+                blob = null
             }
 
             if (!text.isBlank()) {
                 // TODO: how to support percentage based width and height?
                 blob = Shaper.make().use { shaper ->
                     val width = width
+                    val skijaFont = font.fetchSkijaFont(fontSize)
                     if (width is FlexValue.Fixed) {
-                        shaper.shape(text, font.makeSkijaFont(fontSize), width.value)
+                        shaper.shape(text, skijaFont, width.value)
                     } else {
-                        shaper.shape(text, font.makeSkijaFont(fontSize))
+                        shaper.shape(text, skijaFont)
                     }!!
                 }
 
-                val localBlob = blob
+                val localBlob = blob!!
                 YGNodeSetMeasureFunc(ygNode) { _, _, _, _, _, size ->
                     size.width(localBlob.blockBounds.width)
                     size.height(localBlob.blockBounds.height)
@@ -80,9 +82,9 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
             textPaint.close()
             textPaint = fontColor.toPaint()
         }
-        if (this::blob.isInitialized) {
+        if (blob != null) {
             canvas.drawTextBlob(
-                blob,
+                blob!!,
                 getLayoutLeft() + getPaddingLeft() + getBorderLeft(),
                 getLayoutTop() + getPaddingTop() + getBorderTop(),
                 textPaint

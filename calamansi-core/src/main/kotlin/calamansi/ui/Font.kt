@@ -20,7 +20,7 @@ class Font internal constructor(private val typeface: Typeface) : Resource() {
         }
     }
 
-    internal fun makeSkijaFont(size: Float): SkijaFont {
+    internal fun fetchSkijaFont(size: Float): SkijaFont {
         return cache.getOrPut(size) {
             Font(typeface, size)
         }

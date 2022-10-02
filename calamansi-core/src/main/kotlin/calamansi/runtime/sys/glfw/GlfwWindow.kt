@@ -15,8 +15,10 @@ import org.joml.Vector2ic
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.system.MemoryStack.stackPush
+import org.slf4j.LoggerFactory
 
 internal class GlfwWindow(val handle: Long, private val contextCreated: Boolean) : Window {
+    private val logger = LoggerFactory.getLogger(GlfwWindow::class.java)
     private val eventHandlers = mutableSetOf<(Event) -> Unit>()
     private val platformStateChangeHandlers = mutableSetOf<(PlatformStateChange) -> Unit>()
     private var pendingEvents = mutableListOf<Event>()
@@ -98,7 +100,11 @@ internal class GlfwWindow(val handle: Long, private val contextCreated: Boolean)
 
     override fun processEvents() {
         for (event in pendingEvents) {
-            eventHandlers.forEach { it(event) }
+            try {
+                eventHandlers.forEach { it(event) }
+            } catch (e: Throwable) {
+                logger.warn("An error has occurred while processing event: $event", e)
+            }
         }
 
         pendingEvents.clear()
