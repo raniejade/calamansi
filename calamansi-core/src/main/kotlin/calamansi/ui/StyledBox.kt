@@ -4,16 +4,18 @@ import calamansi.gfx.Color
 import calamansi.meta.Property
 import calamansi.resource.Resource
 import calamansi.runtime.utils.StateTracker
-import org.jetbrains.skija.*
-import java.util.Objects
-import org.jetbrains.skija.Canvas as SkijaCanvas
+import io.github.humbleui.skija.BlendMode
+import io.github.humbleui.skija.Canvas
+import io.github.humbleui.skija.Paint
+import io.github.humbleui.types.RRect
+import java.util.*
 
 sealed class StyledBox : Resource() {
-    internal abstract fun draw(canvas: SkijaCanvas, x: Float, y: Float, width: Float, height: Float)
+    internal abstract fun draw(canvas: Canvas, x: Float, y: Float, width: Float, height: Float)
 }
 
 class EmptyStyledBox : StyledBox() {
-    override fun draw(canvas: SkijaCanvas, x: Float, y: Float, width: Float, height: Float) {
+    override fun draw(canvas: Canvas, x: Float, y: Float, width: Float, height: Float) {
         // nothing
     }
 
@@ -47,7 +49,7 @@ class FlatStyledBox : StyledBox() {
 
     private var borderPaint: Paint = borderColor.toPaint()
 
-    override fun draw(canvas: SkijaCanvas, x: Float, y: Float, width: Float, height: Float) {
+    override fun draw(canvas: Canvas, x: Float, y: Float, width: Float, height: Float) {
         if (backgroundPaintState.isDirty()) {
             backgroundPaint.close()
             backgroundPaint = backgroundColor.toPaint().setBlendMode(BlendMode.SRC)

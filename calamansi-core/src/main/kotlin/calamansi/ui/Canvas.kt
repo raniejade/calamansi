@@ -4,6 +4,7 @@ import calamansi.runtime.sys.RenderTarget
 import calamansi.runtime.utils.StateTracker
 import org.lwjgl.util.yoga.Yoga.*
 
+// TODO: rename
 class Canvas internal constructor() {
     internal var width: Int = 0
     internal var height: Int = 0

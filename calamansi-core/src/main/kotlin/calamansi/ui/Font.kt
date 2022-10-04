@@ -2,9 +2,8 @@ package calamansi.ui
 
 import calamansi.resource.Resource
 import calamansi.runtime.gc.Bin
-import org.jetbrains.skija.Font
-import org.jetbrains.skija.Typeface
-import org.jetbrains.skija.Font as SkijaFont
+import io.github.humbleui.skija.Typeface
+import io.github.humbleui.skija.Font as SkijaFont
 
 class Font internal constructor(private val typeface: Typeface) : Resource() {
     private val cache = mutableMapOf<Float, SkijaFont>()
@@ -22,7 +21,7 @@ class Font internal constructor(private val typeface: Typeface) : Resource() {
 
     internal fun fetchSkijaFont(size: Float): SkijaFont {
         return cache.getOrPut(size) {
-            Font(typeface, size)
+            SkijaFont(typeface, size)
         }
     }
 }

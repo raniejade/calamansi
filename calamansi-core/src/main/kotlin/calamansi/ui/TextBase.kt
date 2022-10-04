@@ -3,10 +3,12 @@ package calamansi.ui
 import calamansi.gfx.Color
 import calamansi.meta.Property
 import calamansi.runtime.utils.StateTracker
-import org.jetbrains.skija.Canvas
-import org.jetbrains.skija.Paint
-import org.jetbrains.skija.TextBlob
-import org.jetbrains.skija.shaper.Shaper
+import io.github.humbleui.skija.Canvas
+import io.github.humbleui.skija.Paint
+import io.github.humbleui.skija.PaintMode
+import io.github.humbleui.skija.TextBlob
+import io.github.humbleui.skija.shaper.Shaper
+import io.github.humbleui.types.Rect
 import org.lwjgl.util.yoga.Yoga.YGNodeMarkDirty
 import org.lwjgl.util.yoga.Yoga.YGNodeSetMeasureFunc
 
@@ -39,12 +41,10 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
 
     override fun layout() {
         if (textLayoutState.isDirty()) {
-            if (blob != null) {
-                blob!!.close()
-                blob = null
-            }
+            blob?.close()
+            blob = null
 
-            if (!text.isBlank()) {
+            if (text.isNotBlank()) {
                 // TODO: how to support percentage based width and height?
                 blob = Shaper.make().use { shaper ->
                     val width = width
@@ -60,6 +60,11 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
                 YGNodeSetMeasureFunc(ygNode) { _, _, _, _, _, size ->
                     size.width(localBlob.blockBounds.width)
                     size.height(localBlob.blockBounds.height)
+                }
+                YGNodeMarkDirty(ygNode)
+            } else {
+                YGNodeSetMeasureFunc(ygNode) { _, _, _, _, _, size ->
+                    size.height(fontSize)
                 }
                 YGNodeMarkDirty(ygNode)
             }
@@ -82,12 +87,51 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
             textPaint.close()
             textPaint = fontColor.toPaint()
         }
+
+        val blob = blob
         if (blob != null) {
+
+            val textXPos = getLayoutLeft() + getPaddingLeft() + getBorderLeft()
+            val textYPos = getLayoutTop() + getPaddingTop() + getBorderTop()
+            // layout width/height less paddings and borders
+            val textHeight = getLayoutHeight() - getPaddingTop() - getBorderTop() - getPaddingBottom() - getBorderBottom()
+            val textWidth = getLayoutWidth() - getPaddingRight() - getBorderRight() - getPaddingLeft() - getBorderLeft()
+            canvas.save()
+            // debug clip rect
+            canvas.drawRect(
+                Rect.makeXYWH(
+                    textXPos,
+                    textYPos,
+                    textWidth,
+                    textHeight
+                ),
+                Color.BLUE.toPaint().setMode(PaintMode.STROKE)
+            )
+            canvas.clipRect(
+                Rect.makeXYWH(
+                    textXPos,
+                    textYPos,
+                    textWidth,
+                    textHeight
+                ),
+            )
+
             canvas.drawTextBlob(
-                blob!!,
-                getLayoutLeft() + getPaddingLeft() + getBorderLeft(),
-                getLayoutTop() + getPaddingTop() + getBorderTop(),
+                blob,
+                textXPos,
+                textYPos,
                 textPaint
+            )
+            canvas.restore()
+            // debug text bounds
+            canvas.drawRect(
+                Rect.makeXYWH(
+                    textXPos,
+                    textYPos,
+                    blob.blockBounds.width,
+                    blob.blockBounds.height
+                ),
+                Color.RED.toPaint().setMode(PaintMode.STROKE)
             )
         }
     }

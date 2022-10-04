@@ -1,7 +1,7 @@
 package calamansi.ui
 
 import calamansi.gfx.Color
-import org.jetbrains.skija.Paint
+import io.github.humbleui.skija.Paint
 import org.lwjgl.util.yoga.Yoga.*
 
 // TODO: cache me

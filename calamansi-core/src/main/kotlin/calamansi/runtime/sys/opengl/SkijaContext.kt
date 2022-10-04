@@ -1,6 +1,6 @@
 package calamansi.runtime.sys.opengl
 
-import org.jetbrains.skija.*
+import io.github.humbleui.skija.*
 
 internal class SkijaContext private constructor(
     private val renderTarget: BackendRenderTarget,

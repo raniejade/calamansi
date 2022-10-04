@@ -10,7 +10,7 @@ import calamansi.node.Node
 import calamansi.runtime.WindowContext
 import calamansi.runtime.gc.Bin
 import calamansi.runtime.utils.StateTracker
-import org.jetbrains.skija.Canvas
+import io.github.humbleui.skija.Canvas
 import org.lwjgl.util.yoga.Yoga.*
 
 open class CanvasElement : Node() {

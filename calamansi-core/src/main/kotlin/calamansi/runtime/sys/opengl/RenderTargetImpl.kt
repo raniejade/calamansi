@@ -4,7 +4,7 @@ import calamansi.runtime.sys.DrawSpec
 import calamansi.runtime.sys.Pipeline
 import calamansi.runtime.sys.RenderTarget
 import calamansi.runtime.sys.Texture2d
-import org.jetbrains.skija.Canvas
+import io.github.humbleui.skija.Canvas
 import org.lwjgl.opengl.ARBFramebufferObject.*
 import org.lwjgl.opengl.GL20.glDeleteTextures
 import org.lwjgl.opengl.GL20.glUseProgram

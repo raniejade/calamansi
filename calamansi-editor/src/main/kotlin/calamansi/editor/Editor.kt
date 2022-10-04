@@ -31,7 +31,11 @@ class Editor : Node() {
         }
         textInput = TextInput().apply {
             width = FlexValue.Fixed(100f)
-            height = FlexValue.Fixed(20f)
+            padding.top = FlexValue.Fixed(2f)
+            padding.bottom = FlexValue.Fixed(2f)
+            padding.left = FlexValue.Fixed(2f)
+            padding.right = FlexValue.Fixed(2f)
+
         }
         button = Button("Clicked: $counter times.").apply {
             margin.bottom = FlexValue.Fixed(10f)
@@ -69,12 +73,15 @@ class Editor : Node() {
 
         if (isKeyPressed(Key.NUM_1)) {
             text.fontSize = 12f
+            textInput.fontSize = 12f
             button.fontSize = 12f
         } else if (isKeyPressed(Key.NUM_2)) {
             text.fontSize = 32f
+            textInput.fontSize = 32f
             button.fontSize = 32f
         } else if (isKeyPressed(Key.NUM_3)) {
             text.fontSize = 64f
+            textInput.fontSize = 64f
             button.fontSize = 64f
         }
     }

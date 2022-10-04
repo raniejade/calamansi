@@ -1,7 +1,7 @@
 package calamansi.runtime.sys
 
 import calamansi.gfx.Color
-import org.jetbrains.skija.Canvas
+import io.github.humbleui.skija.Canvas
 import org.joml.Matrix4fc
 import org.joml.Vector3fc
 import org.joml.Vector4fc

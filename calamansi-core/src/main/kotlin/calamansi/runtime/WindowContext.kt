@@ -14,13 +14,13 @@ import calamansi.runtime.threading.EventLoops
 import calamansi.runtime.ui.DefaultThemeProvider
 import calamansi.runtime.utils.FrameStats
 import calamansi.ui.*
-import org.jetbrains.skija.Canvas
 import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.util.yoga.Yoga.*
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
+import io.github.humbleui.skija.Canvas as SkijaCanvas
 
 internal class WindowContext(
     private val window: Window,
@@ -162,7 +162,7 @@ internal class WindowContext(
         }
     }
 
-    private fun draw(canvas: Canvas, node: Node?) {
+    private fun draw(canvas: SkijaCanvas, node: Node?) {
         if (node == null) {
             return
         }

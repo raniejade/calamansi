@@ -2,8 +2,8 @@ package calamansi.runtime.font
 
 import calamansi.runtime.service.Service
 import calamansi.ui.Font
-import org.jetbrains.skija.Data
-import org.jetbrains.skija.FontMgr
+import io.github.humbleui.skija.Data
+import io.github.humbleui.skija.FontMgr
 import java.io.InputStream
 
 class FontService : Service {

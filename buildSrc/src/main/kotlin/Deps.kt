@@ -4,7 +4,7 @@ object Deps {
     const val kotlinSerializationVersion = "1.4.0-RC"
     const val kotlinCoroutinesVersion = "1.6.4"
     const val lwjglVersion = "3.3.1"
-    const val skijaVersion = "0.93.6"
+    const val skijaVersion = "0.106.0"
     const val sl4jVersion = "2.0.1"
     const val logbackVersion = "1.4.1"
     // TODO: check os
@@ -23,7 +23,7 @@ object Deps {
     const val kotlinSerializationCore = "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinSerializationVersion"
     const val kotlinSerializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$kotlinSerializationVersion"
     const val kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
-    val skija = "org.jetbrains.skija:$skijaArtifact:$skijaVersion"
+    val skija = "io.github.humbleui:$skijaArtifact:$skijaVersion"
     const val slf4j = "org.slf4j:slf4j-api:$sl4jVersion"
     const val logback = "ch.qos.logback:logback-classic:$logbackVersion"
 
