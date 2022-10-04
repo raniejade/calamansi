@@ -9,8 +9,7 @@ import io.github.humbleui.skija.PaintMode
 import io.github.humbleui.skija.TextBlob
 import io.github.humbleui.skija.shaper.Shaper
 import io.github.humbleui.types.Rect
-import org.lwjgl.util.yoga.Yoga.YGNodeMarkDirty
-import org.lwjgl.util.yoga.Yoga.YGNodeSetMeasureFunc
+import org.lwjgl.util.yoga.Yoga.*
 
 abstract class TextBase(@Property var text: String) : CanvasElement() {
     private var blob: TextBlob? = null
@@ -31,6 +30,35 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
 
     private var textPaint: Paint = fontColor.toPaint()
 
+    init {
+        YGNodeSetMeasureFunc(ygNode) { _, width, widthMode, _, _, size ->
+            blob?.close()
+            blob = null
+            if (text.isNotBlank()) {
+                blob = Shaper.make().use { shaper ->
+                    // TODO: cache me
+                    val skijaFont = font.fetchSkijaFont(fontSize)
+                    when (widthMode) {
+                        YGMeasureModeAtMost,
+                        YGMeasureModeExactly -> {
+                            shaper.shape(text, skijaFont, width)
+                        }
+
+                        YGMeasureModeUndefined -> {
+                            shaper.shape(text, skijaFont)
+                        }
+
+                        else -> throw AssertionError("unsupported width mode: $widthMode")
+                    }!!
+                }
+                size.width(blob!!.blockBounds.width)
+                size.height(blob!!.blockBounds.height)
+            } else {
+                size.height(fontSize)
+            }
+        }
+    }
+
     @Suppress("LeakingThis")
     private val textLayoutState = StateTracker.create(
         this::text,
@@ -41,35 +69,8 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
 
     override fun layout() {
         if (textLayoutState.isDirty()) {
-            blob?.close()
-            blob = null
-
-            if (text.isNotBlank()) {
-                // TODO: how to support percentage based width and height?
-                blob = Shaper.make().use { shaper ->
-                    val width = width
-                    val skijaFont = font.fetchSkijaFont(fontSize)
-                    if (width is FlexValue.Fixed) {
-                        shaper.shape(text, skijaFont, width.value)
-                    } else {
-                        shaper.shape(text, skijaFont)
-                    }!!
-                }
-
-                val localBlob = blob!!
-                YGNodeSetMeasureFunc(ygNode) { _, _, _, _, _, size ->
-                    size.width(localBlob.blockBounds.width)
-                    size.height(localBlob.blockBounds.height)
-                }
-                YGNodeMarkDirty(ygNode)
-            } else {
-                YGNodeSetMeasureFunc(ygNode) { _, _, _, _, _, size ->
-                    size.height(fontSize)
-                }
-                YGNodeMarkDirty(ygNode)
-            }
+            YGNodeMarkDirty(ygNode)
         }
-
         super.layout()
     }
 
@@ -94,7 +95,8 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
             val textXPos = getLayoutLeft() + getPaddingLeft() + getBorderLeft()
             val textYPos = getLayoutTop() + getPaddingTop() + getBorderTop()
             // layout width/height less paddings and borders
-            val textHeight = getLayoutHeight() - getPaddingTop() - getBorderTop() - getPaddingBottom() - getBorderBottom()
+            val textHeight =
+                getLayoutHeight() - getPaddingTop() - getBorderTop() - getPaddingBottom() - getBorderBottom()
             val textWidth = getLayoutWidth() - getPaddingRight() - getBorderRight() - getPaddingLeft() - getBorderLeft()
             canvas.save()
             // debug clip rect
