@@ -3,6 +3,7 @@ package calamansi.ui
 import calamansi.gfx.Color
 import calamansi.meta.Property
 import calamansi.runtime.utils.StateTracker
+import calamansi.runtime.utils.debugDraw
 import io.github.humbleui.skija.Canvas
 import io.github.humbleui.skija.Paint
 import io.github.humbleui.skija.PaintMode
@@ -109,16 +110,18 @@ abstract class TextBase : CanvasElement() {
                 getLayoutHeight() - getPaddingTop() - getBorderTop() - getPaddingBottom() - getBorderBottom()
             val textWidth = getLayoutWidth() - getPaddingRight() - getBorderRight() - getPaddingLeft() - getBorderLeft()
             canvas.save()
-            // debug clip rect
-            canvas.drawRect(
-                Rect.makeXYWH(
-                    textXPos,
-                    textYPos,
-                    textWidth,
-                    textHeight
-                ),
-                Color.BLUE.toPaint().setMode(PaintMode.STROKE)
-            )
+            debugDraw {
+                // debug clip rect
+                canvas.drawRect(
+                    Rect.makeXYWH(
+                        textXPos,
+                        textYPos,
+                        textWidth,
+                        textHeight
+                    ),
+                    Color.BLUE.toPaint().setMode(PaintMode.STROKE)
+                )
+            }
             canvas.clipRect(
                 Rect.makeXYWH(
                     textXPos,
@@ -135,16 +138,18 @@ abstract class TextBase : CanvasElement() {
                 textPaint
             )
             canvas.restore()
-            // debug text bounds
-            canvas.drawRect(
-                Rect.makeXYWH(
-                    textXPos,
-                    textYPos,
-                    blob.blockBounds.width,
-                    blob.blockBounds.height
-                ),
-                Color.RED.toPaint().setMode(PaintMode.STROKE)
-            )
+            debugDraw {
+                // debug text bounds
+                canvas.drawRect(
+                    Rect.makeXYWH(
+                        textXPos,
+                        textYPos,
+                        blob.blockBounds.width,
+                        blob.blockBounds.height
+                    ),
+                    Color.RED.toPaint().setMode(PaintMode.STROKE)
+                )
+            }
         }
     }
 }
