@@ -74,7 +74,7 @@ class TextInput(@Property override var text: String = "") : TextBase() {
             val positions = blob.positions
             val index = (cursorPos - 1) * 2
             cursorX = positions[index] + skijaFont.getWidths(shortArrayOf(blob.glyphs[cursorPos - 1]))[0]
-            cursorY = positions[index + 1] - fontSize
+            cursorY = positions[index + 1] - fontSize /* height of each line is approximately the size of the font */
         }
         cursorX += getPaddingLeft() + getBorderLeft()
         cursorY += getPaddingTop() + getBorderTop()

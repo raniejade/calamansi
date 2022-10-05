@@ -62,7 +62,7 @@ abstract class TextBase : CanvasElement() {
                 size.width(blob!!.blockBounds.width)
                 size.height(blob!!.blockBounds.height)
             } else {
-                size.height(fontSize)
+                size.height(skijaFont.metrics.height)
             }
         }
     }
