@@ -1,4 +1,5 @@
 package calamansi.ui
 
-open class Text(text: String = "") : TextBase(text) {
-}
+import calamansi.meta.Property
+
+class Text(@Property override var text: String = "") : TextBase()

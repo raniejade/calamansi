@@ -18,19 +18,15 @@ class Editor : Node() {
     context(ExecutionContext) override fun onEnterTree() {
         logger.info("Enter tree.")
         canvas.apply {
-            direction = FlexDirection.COLUMN_REVERSE
+            direction = FlexDirection.COLUMN
             alignItems = FlexAlign.CENTER
             alignContent = FlexAlign.CENTER
         }
         text = Text("Hello World!").apply {
-            margin.bottom = FlexValue.Fixed(10f)
-            padding.top = FlexValue.Fixed(10f)
-            padding.bottom = FlexValue.Fixed(10f)
-            padding.left = FlexValue.Fixed(10f)
-            padding.right = FlexValue.Fixed(10f)
+            // width = FlexValue.Fixed(100f)
         }
-        textInput = TextInput().apply {
-            width = FlexValue.Fixed(100f)
+        textInput = TextInput("Oh yes").apply {
+            maxWidth = FlexValue.Fixed(100f)
             padding.top = FlexValue.Fixed(2f)
             padding.bottom = FlexValue.Fixed(2f)
             padding.left = FlexValue.Fixed(2f)
@@ -38,7 +34,6 @@ class Editor : Node() {
 
         }
         button = Button("Clicked: $counter times.").apply {
-            margin.bottom = FlexValue.Fixed(10f)
             padding.top = FlexValue.Fixed(10f)
             padding.bottom = FlexValue.Fixed(10f)
             padding.left = FlexValue.Fixed(10f)
@@ -54,14 +49,14 @@ class Editor : Node() {
                 }
             }
         }
-        addChild(text)
         addChild(textInput)
+        addChild(text)
         addChild(button)
     }
 
     context(ExecutionContext) override fun onExitTree() {
         logger.info("Exit tree.")
-        removeChild(text)
+        // removeChild(text)
     }
 
     context(ExecutionContext) override fun onUpdate(delta: Float) {
@@ -72,17 +67,19 @@ class Editor : Node() {
         text.text = String.format("Frame time: %.3fms FPS: %.0f", getFrameTime(), getFps())
 
         if (isKeyPressed(Key.NUM_1)) {
-            text.fontSize = 12f
-            textInput.fontSize = 12f
-            button.fontSize = 12f
+            // text.text = " Suspendisse dolor nibh, mollis id metus eget, varius malesuada elit. Sed at justo dignissim, molestie velit vitae, fermentum mi. Curabitur magna turpis, imperdiet sed nunc ac, aliquam aliquet nibh. Nulla luctus nisi nec mauris luctus porttitor. Aenean ac malesuada tellus. Pellentesque pretium erat nec vulputate convallis. Nam dignissim dignissim massa sed laoreet. Ut sagittis tortor sit amet leo rutrum, sed mollis dolor tincidunt. Aliquam vel mi orci. Donec volutpat sit amet velit quis imperdiet. Morbi non mi sit amet odio iaculis maximus et id mauris. Morbi feugiat efficitur dui a pulvinar. Donec vel suscipit lectus. Nullam ac porttitor metus. Nunc turpis leo, ultrices faucibus justo in, eleifend consequat dolor. Donec pretium lacus tortor, tincidunt vulputate libero lacinia non. "
+            // text.fontSize = 12f
+            // textInput.fontSize = 12f
+            // button.fontSize = 12f
         } else if (isKeyPressed(Key.NUM_2)) {
-            text.fontSize = 32f
-            textInput.fontSize = 32f
-            button.fontSize = 32f
+            //text.text = "Hello World"
+            // text.fontSize = 32f
+            // textInput.fontSize = 32f
+            // button.fontSize = 32f
         } else if (isKeyPressed(Key.NUM_3)) {
-            text.fontSize = 64f
-            textInput.fontSize = 64f
-            button.fontSize = 64f
+            // text.fontSize = 64f
+            // textInput.fontSize = 64f
+            // button.fontSize = 64f
         }
     }
 }

@@ -26,7 +26,7 @@ internal object DefaultThemeProvider {
             .addConstant(Text::class, "fontSize", 12f)
             .addColor(Text::class, "fontColor", Color.WHITE)
             .addConstant(Text::class, "minWidth", 0f)
-            .addConstant(Text::class, "minHeight", 20f)
+            .addConstant(Text::class, "minHeight", 0f)
 
             // TextInput
             .addStyledBox(TextInput::class, "normal", FlatStyledBox().apply {

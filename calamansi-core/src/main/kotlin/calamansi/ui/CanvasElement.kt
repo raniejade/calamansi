@@ -218,7 +218,6 @@ open class CanvasElement : Node() {
             YGNodeStyleSetBorder(ygNode, YGEdgeRight, styleBox.borderWidth.right)
             YGNodeStyleSetBorder(ygNode, YGEdgeBottom, styleBox.borderWidth.bottom)
         }
-
     }
 
     internal open fun draw(canvas: Canvas) {

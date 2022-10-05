@@ -10,9 +10,12 @@ import io.github.humbleui.skija.TextBlob
 import io.github.humbleui.skija.shaper.Shaper
 import io.github.humbleui.types.Rect
 import org.lwjgl.util.yoga.Yoga.*
+import io.github.humbleui.skija.Font as SkijaFont
 
-abstract class TextBase(@Property var text: String) : CanvasElement() {
-    private var blob: TextBlob? = null
+abstract class TextBase : CanvasElement() {
+    internal var blob: TextBlob? = null
+
+    abstract var text: String
 
     @Property
     var fontSize: Float = 12f
@@ -24,10 +27,17 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
     lateinit var font: Font
 
     @Suppress("LeakingThis")
+    private val fontState = StateTracker.create(
+        this::font,
+        this::fontSize
+    )
+
+    @Suppress("LeakingThis")
     private val textPaintState = StateTracker.create(
         this::fontColor
     )
 
+    internal lateinit var skijaFont: SkijaFont
     private var textPaint: Paint = fontColor.toPaint()
 
     init {
@@ -35,9 +45,7 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
             blob?.close()
             blob = null
             if (text.isNotBlank()) {
-                blob = Shaper.make().use { shaper ->
-                    // TODO: cache me
-                    val skijaFont = font.fetchSkijaFont(fontSize)
+                blob = Shaper.makePrimitive().use { shaper ->
                     when (widthMode) {
                         YGMeasureModeAtMost,
                         YGMeasureModeExactly -> {
@@ -64,14 +72,17 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
         this::text,
         this::font,
         this::fontSize,
-        this::width,
     )
 
     override fun layout() {
+        super.layout()
         if (textLayoutState.isDirty()) {
             YGNodeMarkDirty(ygNode)
         }
-        super.layout()
+
+        if (fontState.isDirty()) {
+            skijaFont = font.fetchSkijaFont(fontSize)
+        }
     }
 
     override fun onThemeChanged(theme: Theme) {
@@ -79,7 +90,6 @@ abstract class TextBase(@Property var text: String) : CanvasElement() {
         font = theme.getFont(this::class, "font")
         fontSize = theme.getConstant(this::class, "fontSize")
         fontColor = theme.getColor(this::class, "fontColor")
-
     }
 
     override fun draw(canvas: Canvas) {

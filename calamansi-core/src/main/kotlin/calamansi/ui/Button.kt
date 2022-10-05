@@ -6,7 +6,7 @@ import calamansi.meta.Property
 import calamansi.node.ExecutionContext
 import calamansi.runtime.WindowContext
 
-class Button(text: String = "") : TextBase(text) {
+class Button(@Property override var text: String = "") : TextBase() {
     @Property
     var pressedStyledBox: StyledBox = EmptyStyledBox()
 
