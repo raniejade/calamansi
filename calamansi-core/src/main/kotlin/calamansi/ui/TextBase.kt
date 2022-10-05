@@ -102,8 +102,8 @@ abstract class TextBase : CanvasElement() {
         val blob = blob
         if (blob != null) {
 
-            val textXPos = getLayoutLeft() + getPaddingLeft() + getBorderLeft()
-            val textYPos = getLayoutTop() + getPaddingTop() + getBorderTop()
+            val textXPos = getPaddingLeft() + getBorderLeft()
+            val textYPos = getPaddingTop() + getBorderTop()
             // layout width/height less paddings and borders
             val textHeight =
                 getLayoutHeight() - getPaddingTop() - getBorderTop() - getPaddingBottom() - getBorderBottom()

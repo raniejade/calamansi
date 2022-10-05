@@ -76,8 +76,8 @@ class TextInput(@Property override var text: String = "") : TextBase() {
             cursorX = positions[index] + skijaFont.getWidths(shortArrayOf(blob.glyphs[cursorPos - 1]))[0]
             cursorY = positions[index + 1] - fontSize
         }
-        cursorX += getLayoutLeft() + getPaddingLeft() + getBorderLeft()
-        cursorY += getLayoutTop() + getPaddingTop() + getBorderTop()
+        cursorX += getPaddingLeft() + getBorderLeft()
+        cursorY += getPaddingTop() + getBorderTop()
         canvas.drawLine(cursorX, cursorY, cursorX, cursorY + metrics.height, Color.BLACK.toPaint().setStrokeWidth(1.5f))
     }
 }

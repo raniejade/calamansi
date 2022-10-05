@@ -11,6 +11,9 @@ import calamansi.runtime.WindowContext
 import calamansi.runtime.gc.Bin
 import calamansi.runtime.utils.StateTracker
 import io.github.humbleui.skija.Canvas
+import org.joml.Vector2f
+import org.joml.Vector2fc
+import org.joml.Vector3fc
 import org.lwjgl.util.yoga.Yoga.*
 
 open class CanvasElement : Node() {
@@ -206,6 +209,8 @@ open class CanvasElement : Node() {
     protected fun getLayoutWidth() = YGNodeLayoutGetWidth(ygNode)
     protected fun getLayoutHeight() = YGNodeLayoutGetHeight(ygNode)
 
+    internal fun getLayoutPos(): Vector2fc = Vector2f(getLayoutLeft(), getLayoutTop())
+
     internal open fun layout() {
         if (!layoutState.isDirty()) {
             return
@@ -223,8 +228,8 @@ open class CanvasElement : Node() {
     internal open fun draw(canvas: Canvas) {
         currentStyleBox.draw(
             canvas,
-            getLayoutLeft(),
-            getLayoutTop(),
+            0f,
+            0f,
             getLayoutWidth(),
             getLayoutHeight(),
         )

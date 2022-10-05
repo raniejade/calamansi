@@ -180,7 +180,11 @@ internal class WindowContext(
 
         if (node is CanvasElement) {
             node.layout()
+            canvas.save()
+            val pos = node.getLayoutPos()
+            canvas.translate(pos.x(), pos.y())
             node.draw(canvas)
+            canvas.restore()
         }
 
         for (child in node.getChildren()) {
