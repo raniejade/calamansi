@@ -148,6 +148,7 @@ internal class WindowContext(
 
             // calculate layout
             _canvas.calculateLayout()
+            fetchLayoutValues(node)
 
             // YGNodeCalculateLayout(yogaRoot, YGUndefined, YGUndefined, YGDirectionLTR)
             val contentScale = window.getContentScale()
@@ -158,8 +159,10 @@ internal class WindowContext(
 
                 // debug text
                 Shaper.makePrimitive().use { shaper ->
-                    val fps = shaper.shape("${"FPS: %d".padEnd(10)} %.2fms".format(frameStats.avgFps.toInt(), frameStats.avgFrameTime),
-                        debugFont.fetchSkijaFont(14f))!!
+                    val fps = shaper.shape(
+                        "${"FPS: %d".padEnd(10)} %.2fms".format(frameStats.avgFps.toInt(), frameStats.avgFrameTime),
+                        debugFont.fetchSkijaFont(14f)
+                    )!!
 
                     drawTextBlob(fps, 5f, 5f, Color.WHITE.toPaint().setStrokeWidth(3f))
                 }
@@ -203,6 +206,20 @@ internal class WindowContext(
 
         for (child in node.getChildren()) {
             layout(child)
+        }
+    }
+
+    private fun fetchLayoutValues(node: Node?) {
+        if (node == null) {
+            return
+        }
+
+        if (node is CanvasElement) {
+            node.fetchLayoutValues()
+        }
+
+        for (child in node.getChildren()) {
+            fetchLayoutValues(child)
         }
     }
 

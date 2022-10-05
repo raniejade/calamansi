@@ -13,7 +13,6 @@ import calamansi.runtime.utils.StateTracker
 import io.github.humbleui.skija.Canvas
 import org.joml.Vector2f
 import org.joml.Vector2fc
-import org.joml.Vector3fc
 import org.lwjgl.util.yoga.Yoga.*
 
 open class CanvasElement : Node() {
@@ -191,23 +190,23 @@ open class CanvasElement : Node() {
         }
     }
 
-    protected fun getLayoutLeft() = YGNodeLayoutGetLeft(ygNode)
-    protected fun getLayoutTop() = YGNodeLayoutGetTop(ygNode)
-    protected fun getLayoutRight() = YGNodeLayoutGetRight(ygNode)
-    protected fun getLayoutBottom() = YGNodeLayoutGetBottom(ygNode)
+    protected fun getLayoutLeft() = _layoutLeft
+    protected fun getLayoutTop() = _layoutTop
+    protected fun getLayoutRight() = _layoutRight
+    protected fun getLayoutBottom() = _layoutBottom
 
-    protected fun getPaddingLeft() = YGNodeLayoutGetPadding(ygNode, YGEdgeLeft)
-    protected fun getPaddingTop() = YGNodeLayoutGetPadding(ygNode, YGEdgeTop)
-    protected fun getPaddingRight() = YGNodeLayoutGetPadding(ygNode, YGEdgeRight)
-    protected fun getPaddingBottom() = YGNodeLayoutGetPadding(ygNode, YGEdgeBottom)
+    protected fun getPaddingLeft() = _paddingLeft
+    protected fun getPaddingTop() = _paddingTop
+    protected fun getPaddingRight() = _paddingRight
+    protected fun getPaddingBottom() = _paddingBottom
 
-    protected fun getBorderLeft() = YGNodeLayoutGetBorder(ygNode, YGEdgeLeft)
-    protected fun getBorderTop() = YGNodeLayoutGetBorder(ygNode, YGEdgeTop)
-    protected fun getBorderRight() = YGNodeLayoutGetBorder(ygNode, YGEdgeRight)
-    protected fun getBorderBottom() = YGNodeLayoutGetBorder(ygNode, YGEdgeBottom)
+    protected fun getBorderLeft() = _borderLeft
+    protected fun getBorderTop() = _borderTop
+    protected fun getBorderRight() = _borderRight
+    protected fun getBorderBottom() = _borderBottom
 
-    protected fun getLayoutWidth() = YGNodeLayoutGetWidth(ygNode)
-    protected fun getLayoutHeight() = YGNodeLayoutGetHeight(ygNode)
+    protected fun getLayoutWidth() = _layoutWidth
+    protected fun getLayoutHeight() = _layoutHeight
 
     internal fun getLayoutPos(): Vector2fc = Vector2f(getLayoutLeft(), getLayoutTop())
 
@@ -223,6 +222,45 @@ open class CanvasElement : Node() {
             YGNodeStyleSetBorder(ygNode, YGEdgeRight, styleBox.borderWidth.right)
             YGNodeStyleSetBorder(ygNode, YGEdgeBottom, styleBox.borderWidth.bottom)
         }
+    }
+
+    private var _layoutLeft: Float = 0f
+    private var _layoutTop: Float = 0f
+    private var _layoutRight: Float = 0f
+    private var _layoutBottom: Float = 0f
+
+    private var _paddingLeft: Float = 0f
+    private var _paddingTop: Float = 0f
+    private var _paddingRight: Float = 0f
+    private var _paddingBottom: Float = 0f
+
+    private var _borderLeft: Float = 0f
+    private var _borderTop: Float = 0f
+    private var _borderRight: Float = 0f
+    private var _borderBottom: Float = 0f
+
+    private var _layoutWidth: Float = 0f
+    private var _layoutHeight: Float = 0f
+
+
+    internal fun fetchLayoutValues() {
+        _layoutLeft = YGNodeLayoutGetLeft(ygNode)
+        _layoutTop = YGNodeLayoutGetTop(ygNode)
+        _layoutRight = YGNodeLayoutGetRight(ygNode)
+        _layoutBottom = YGNodeLayoutGetBottom(ygNode)
+
+        _paddingLeft = YGNodeLayoutGetPadding(ygNode, YGEdgeLeft)
+        _paddingTop = YGNodeLayoutGetPadding(ygNode, YGEdgeTop)
+        _paddingRight = YGNodeLayoutGetPadding(ygNode, YGEdgeRight)
+        _paddingBottom = YGNodeLayoutGetPadding(ygNode, YGEdgeBottom)
+
+        _borderLeft = YGNodeLayoutGetBorder(ygNode, YGEdgeLeft)
+        _borderTop = YGNodeLayoutGetBorder(ygNode, YGEdgeTop)
+        _borderRight = YGNodeLayoutGetBorder(ygNode, YGEdgeRight)
+        _borderBottom = YGNodeLayoutGetBorder(ygNode, YGEdgeBottom)
+
+        _layoutWidth = YGNodeLayoutGetWidth(ygNode)
+        _layoutHeight = YGNodeLayoutGetHeight(ygNode)
     }
 
     internal open fun draw(canvas: Canvas) {
