@@ -54,4 +54,7 @@ class Canvas internal constructor() {
         renderTarget.destroy()
         YGNodeFree(ygNode)
     }
+
+    internal fun getLayoutLeft() = YGNodeLayoutGetLeft(ygNode)
+    internal fun getLayoutTop() = YGNodeLayoutGetTop(ygNode)
 }

@@ -14,9 +14,9 @@ import calamansi.runtime.threading.EventLoops
 import calamansi.runtime.ui.DefaultThemeProvider
 import calamansi.runtime.utils.FrameStats
 import calamansi.ui.*
+import io.github.humbleui.skija.shaper.Shaper
 import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.util.yoga.Yoga.*
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
@@ -40,6 +40,7 @@ internal class WindowContext(
     private lateinit var triangleVertices: VertexBuffer
     private lateinit var triangleIndices: IndexBuffer
     private lateinit var currentTheme: Theme
+    private lateinit var debugFont: Font
 
     fun init() {
         framebufferResized()
@@ -98,6 +99,8 @@ internal class WindowContext(
         gfx.unbind()
 
         currentTheme = DefaultThemeProvider.create()
+
+        debugFont = resourceService.loadResource("rt://OpenSans-Regular.ttf", Font::class, 0) as Font
     }
 
     fun destroy() {
@@ -129,7 +132,7 @@ internal class WindowContext(
         EventLoops.Main.scheduleNow {
             gfx.bind()
             val size = window.getFramebufferSize()
-            // dont use canvas.clear/paint as it is slow!
+            // don't use canvas.clear/paint as it is slow!
             _canvas.renderTarget.render(pipeline) {
                 setViewport(0, 0, size.x(), size.y())
                 clearColor(Color.GRAY)
@@ -152,6 +155,14 @@ internal class WindowContext(
                 resetMatrix()
                 scale(contentScale.x(), contentScale.y())
                 draw(this, node)
+
+                // debug text
+                Shaper.makePrimitive().use { shaper ->
+                    val fps = shaper.shape("${"FPS: %d".padEnd(10)} %.2fms".format(frameStats.avgFps.toInt(), frameStats.avgFrameTime),
+                        debugFont.fetchSkijaFont(14f))!!
+
+                    drawTextBlob(fps, 5f, 5f, Color.WHITE.toPaint().setStrokeWidth(3f))
+                }
             }
 
             gfx.present(_canvas.renderTarget)

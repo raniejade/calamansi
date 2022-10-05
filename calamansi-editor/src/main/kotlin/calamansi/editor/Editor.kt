@@ -64,15 +64,14 @@ class Editor : Node() {
             exit()
         }
 
-        text.text = String.format("Frame time: %.3fms FPS: %.0f", getFrameTime(), getFps())
-
         if (isKeyPressed(Key.NUM_1)) {
-            // text.text = " Suspendisse dolor nibh, mollis id metus eget, varius malesuada elit. Sed at justo dignissim, molestie velit vitae, fermentum mi. Curabitur magna turpis, imperdiet sed nunc ac, aliquam aliquet nibh. Nulla luctus nisi nec mauris luctus porttitor. Aenean ac malesuada tellus. Pellentesque pretium erat nec vulputate convallis. Nam dignissim dignissim massa sed laoreet. Ut sagittis tortor sit amet leo rutrum, sed mollis dolor tincidunt. Aliquam vel mi orci. Donec volutpat sit amet velit quis imperdiet. Morbi non mi sit amet odio iaculis maximus et id mauris. Morbi feugiat efficitur dui a pulvinar. Donec vel suscipit lectus. Nullam ac porttitor metus. Nunc turpis leo, ultrices faucibus justo in, eleifend consequat dolor. Donec pretium lacus tortor, tincidunt vulputate libero lacinia non. "
+            text.text =
+                " Suspendisse dolor nibh, mollis id metus eget, varius malesuada elit. Sed at justo dignissim, molestie velit vitae, fermentum mi. Curabitur magna turpis, imperdiet sed nunc ac, aliquam aliquet nibh. Nulla luctus nisi nec mauris luctus porttitor. Aenean ac malesuada tellus. Pellentesque pretium erat nec vulputate convallis. Nam dignissim dignissim massa sed laoreet. Ut sagittis tortor sit amet leo rutrum, sed mollis dolor tincidunt. Aliquam vel mi orci. Donec volutpat sit amet velit quis imperdiet. Morbi non mi sit amet odio iaculis maximus et id mauris. Morbi feugiat efficitur dui a pulvinar. Donec vel suscipit lectus. Nullam ac porttitor metus. Nunc turpis leo, ultrices faucibus justo in, eleifend consequat dolor. Donec pretium lacus tortor, tincidunt vulputate libero lacinia non. "
             // text.fontSize = 12f
             // textInput.fontSize = 12f
             // button.fontSize = 12f
         } else if (isKeyPressed(Key.NUM_2)) {
-            //text.text = "Hello World"
+            text.text = "Hello World"
             // text.fontSize = 32f
             // textInput.fontSize = 32f
             // button.fontSize = 32f

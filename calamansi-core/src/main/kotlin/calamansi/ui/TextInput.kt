@@ -64,6 +64,7 @@ class TextInput(@Property override var text: String = "") : TextBase() {
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
+
         // draw cursor
         var cursorX = 0f
         var cursorY = 0f
