@@ -9,5 +9,5 @@ sealed class CanvasMessage<T : CanvasElement>(val source: T) : Message {
     class ElementMousePress(source: CanvasElement, val button: MouseButton) : CanvasMessage<CanvasElement>(source)
     class ElementMouseRelease(source: CanvasElement, val button: MouseButton) : CanvasMessage<CanvasElement>(source)
     class ButtonPress(source: Button) : CanvasMessage<Button>(source)
-    class TextInputChange(source: TextInput, val value: String) : CanvasMessage<TextInput>(source)
+    class TextInputChange(source: TextArea, val value: String) : CanvasMessage<TextArea>(source)
 }

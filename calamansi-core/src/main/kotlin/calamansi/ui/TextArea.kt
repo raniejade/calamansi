@@ -10,8 +10,9 @@ import calamansi.input.TextEvent
 import calamansi.meta.Property
 import calamansi.node.ExecutionContext
 import io.github.humbleui.skija.Canvas
+import kotlin.math.min
 
-class TextInput(@Property override var text: String = "") : TextBase() {
+class TextArea(@Property override var text: String = "") : TextBase() {
     private var cursorPos = text.length
     private val buffer = mutableListOf<Char>()
 
@@ -64,17 +65,21 @@ class TextInput(@Property override var text: String = "") : TextBase() {
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-
         // draw cursor
         var cursorX = 0f
         var cursorY = 0f
         val metrics = skijaFont.metrics
-        val blob = blob
-        if (blob != null) {
-            val positions = blob.positions
+        if (text.isNotEmpty()) {
+            // spaces on linebreaks can be collapsed into a single space, when
+            // this happens text.size won't match glyphs.size and glyphPositions.size
+            // since we use glyph positions to compute where the cursor is drawn
+            // TODO: when using makeShaperDrivenWrapper() this won't happen, but we should stop
+            //  drawing the cursor when it goes out of bounds.
+            val cursorPos = min(cursorPos, glyphs.size)
             val index = (cursorPos - 1) * 2
-            cursorX = positions[index] + skijaFont.getWidths(shortArrayOf(blob.glyphs[cursorPos - 1]))[0]
-            cursorY = positions[index + 1] - fontSize /* height of each line is approximately the size of the font */
+            cursorX = glyphPositions[index] + glyphWidths[cursorPos - 1]
+            cursorY =
+                glyphPositions[index + 1] - fontSize /* height of each line is approximately the size of the font */
         }
         cursorX += getPaddingLeft() + getBorderLeft()
         cursorY += getPaddingTop() + getBorderTop()

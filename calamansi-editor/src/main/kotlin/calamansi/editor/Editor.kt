@@ -11,7 +11,7 @@ class Editor : Node() {
     private val logger = LoggerFactory.getLogger(Editor::class.java)
 
     private lateinit var text: Text
-    private lateinit var textInput: TextInput
+    private lateinit var textArea: TextArea
     private lateinit var button: Button
     private var counter = 0
 
@@ -25,7 +25,7 @@ class Editor : Node() {
         text = Text("Hello World!").apply {
             // width = FlexValue.Fixed(100f)
         }
-        textInput = TextInput("Oh yes").apply {
+        textArea = TextArea("Oh yes").apply {
             maxWidth = FlexValue.Fixed(100f)
             padding.top = FlexValue.Fixed(2f)
             padding.bottom = FlexValue.Fixed(2f)
@@ -49,7 +49,7 @@ class Editor : Node() {
                 }
             }
         }
-        addChild(textInput)
+        addChild(textArea)
         addChild(text)
         addChild(button)
     }
@@ -66,7 +66,7 @@ class Editor : Node() {
 
         if (isKeyPressed(Key.NUM_1)) {
             text.text =
-                " Suspendisse dolor nibh, mollis id metus eget, varius malesuada elit. Sed at justo dignissim, molestie velit vitae, fermentum mi. Curabitur magna turpis, imperdiet sed nunc ac, aliquam aliquet nibh. Nulla luctus nisi nec mauris luctus porttitor. Aenean ac malesuada tellus. Pellentesque pretium erat nec vulputate convallis. Nam dignissim dignissim massa sed laoreet. Ut sagittis tortor sit amet leo rutrum, sed mollis dolor tincidunt. Aliquam vel mi orci. Donec volutpat sit amet velit quis imperdiet. Morbi non mi sit amet odio iaculis maximus et id mauris. Morbi feugiat efficitur dui a pulvinar. Donec vel suscipit lectus. Nullam ac porttitor metus. Nunc turpis leo, ultrices faucibus justo in, eleifend consequat dolor. Donec pretium lacus tortor, tincidunt vulputate libero lacinia non. "
+                "Suspendisse dolor nibh, mollis id metus eget, varius malesuada elit. Sed at justo dignissim, molestie velit vitae, fermentum mi. Curabitur magna turpis, imperdiet sed nunc ac, aliquam aliquet nibh. Nulla luctus nisi nec mauris luctus porttitor. Aenean ac malesuada tellus. Pellentesque pretium erat nec vulputate convallis. Nam dignissim dignissim massa sed laoreet. Ut sagittis tortor sit amet leo rutrum, sed mollis dolor tincidunt. Aliquam vel mi orci. Donec volutpat sit amet velit quis imperdiet. Morbi non mi sit amet odio iaculis maximus et id mauris. Morbi feugiat efficitur dui a pulvinar. Donec vel suscipit lectus. Nullam ac porttitor metus. Nunc turpis leo, ultrices faucibus justo in, eleifend consequat dolor. Donec pretium lacus tortor, tincidunt vulputate libero lacinia non. "
             // text.fontSize = 12f
             // textInput.fontSize = 12f
             // button.fontSize = 12f

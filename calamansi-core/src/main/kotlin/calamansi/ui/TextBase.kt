@@ -9,12 +9,17 @@ import io.github.humbleui.skija.Paint
 import io.github.humbleui.skija.PaintMode
 import io.github.humbleui.skija.TextBlob
 import io.github.humbleui.skija.shaper.Shaper
+import io.github.humbleui.skija.shaper.ShapingOptions
+import io.github.humbleui.types.Point
 import io.github.humbleui.types.Rect
 import org.lwjgl.util.yoga.Yoga.*
 import io.github.humbleui.skija.Font as SkijaFont
 
 abstract class TextBase : CanvasElement() {
-    internal var blob: TextBlob? = null
+    internal lateinit var blob: TextBlob
+    internal lateinit var glyphs: ShortArray
+    internal lateinit var glyphPositions: FloatArray
+    internal lateinit var glyphWidths: FloatArray
 
     abstract var text: String
 
@@ -43,28 +48,52 @@ abstract class TextBase : CanvasElement() {
 
     init {
         YGNodeSetMeasureFunc(ygNode) { _, width, widthMode, _, _, size ->
-            blob?.close()
-            blob = null
-            if (text.isNotBlank()) {
-                blob = Shaper.makePrimitive().use { shaper ->
-                    when (widthMode) {
-                        YGMeasureModeAtMost,
-                        YGMeasureModeExactly -> {
-                            shaper.shape(text, skijaFont, width)
-                        }
-
-                        YGMeasureModeUndefined -> {
-                            shaper.shape(text, skijaFont)
-                        }
-
-                        else -> throw AssertionError("unsupported width mode: $widthMode")
-                    }!!
-                }
-                size.width(blob!!.blockBounds.width)
-                size.height(blob!!.blockBounds.height)
-            } else {
-                size.height(skijaFont.metrics.height)
+            if (::blob.isInitialized) {
+                blob.close()
             }
+            // use space to get bounds event if string is empty
+            val text = text.ifEmpty { " " }
+            blob = Shaper.makePrimitive().use { shaper ->
+                when (widthMode) {
+                    YGMeasureModeAtMost,
+                    YGMeasureModeExactly -> {
+                        shaper.shape(text, skijaFont, width)
+                    }
+
+                    YGMeasureModeUndefined -> {
+                        shaper.shape(text, skijaFont)
+                    }
+
+                    else -> throw AssertionError("unsupported width mode: $widthMode")
+                }!!
+            }
+            glyphs = blob.glyphs
+            glyphWidths = skijaFont.getWidths(glyphs)
+            glyphPositions = blob.positions
+            size.width(blob.blockBounds.width)
+            size.height(blob.blockBounds.height)
+//            blob?.close()
+//            blob = null
+//            if (text.isNotBlank()) {
+//                blob = Shaper.makePrimitive().use { shaper ->
+//                    when (widthMode) {
+//                        YGMeasureModeAtMost,
+//                        YGMeasureModeExactly -> {
+//                            shaper.shape(text, skijaFont, width)
+//                        }
+//
+//                        YGMeasureModeUndefined -> {
+//                            shaper.shape(text, skijaFont)
+//                        }
+//
+//                        else -> throw AssertionError("unsupported width mode: $widthMode")
+//                    }!!
+//                }
+//                size.width(blob!!.blockBounds.width)
+//                size.height(blob!!.blockBounds.height)
+//            } else {
+//                size.height(skijaFont.metrics.height)
+//            }
         }
     }
 
@@ -121,6 +150,7 @@ abstract class TextBase : CanvasElement() {
                     Color.BLUE.toPaint().setMode(PaintMode.STROKE)
                 )
             }
+            blob.clusters
             canvas.clipRect(
                 Rect.makeXYWH(
                     textXPos,

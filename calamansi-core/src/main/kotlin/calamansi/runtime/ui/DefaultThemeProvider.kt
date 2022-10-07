@@ -29,23 +29,23 @@ internal object DefaultThemeProvider {
             .addConstant(Text::class, "minHeight", 0f)
 
             // TextInput
-            .addStyledBox(TextInput::class, "normal", FlatStyledBox().apply {
+            .addStyledBox(TextArea::class, "normal", FlatStyledBox().apply {
                 backgroundColor = Color.WHITE
                 borderRadius = Corner(2f)
                 borderWidth = Box(2f)
                 borderColor = Color("ff90993a")
             })
-            .addStyledBox(TextInput::class, "hovered", FlatStyledBox().apply {
+            .addStyledBox(TextArea::class, "hovered", FlatStyledBox().apply {
                 backgroundColor = Color.WHITE
                 borderRadius = Corner(2f)
                 borderWidth = Box(2f)
                 borderColor = Color("ff90993a")
             })
-            .addFont(TextInput::class, "font", defaultFont)
-            .addConstant(TextInput::class, "fontSize", 16f)
-            .addColor(TextInput::class, "fontColor", Color.BLUE)
-            .addConstant(TextInput::class, "minWidth", 100f)
-            .addConstant(TextInput::class, "minHeight", 25f)
+            .addFont(TextArea::class, "font", defaultFont)
+            .addConstant(TextArea::class, "fontSize", 16f)
+            .addColor(TextArea::class, "fontColor", Color.BLUE)
+            .addConstant(TextArea::class, "minWidth", 100f)
+            .addConstant(TextArea::class, "minHeight", 25f)
 
             // Button
             .addStyledBox(
