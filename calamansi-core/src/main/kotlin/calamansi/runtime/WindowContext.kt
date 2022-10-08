@@ -4,6 +4,8 @@ import calamansi.event.Event
 import calamansi.gfx.Color
 import calamansi.input.InputContext
 import calamansi.input.InputEvent
+import calamansi.input.InputState
+import calamansi.input.MouseButtonStateEvent
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
 import calamansi.node.Scene
@@ -259,6 +261,14 @@ internal class WindowContext(
         }
 
         node?.invokeOnUnhandledEvent(event)
+
+        if (event.isConsumed()) {
+            return
+        }
+
+        if (event is MouseButtonStateEvent && event.state == InputState.PRESSED) {
+            requestFocus(null)
+        }
     }
 
     private fun handlePlatformStateChange(stateChange: PlatformStateChange) {

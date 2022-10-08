@@ -54,7 +54,7 @@ class TextArea(@Property override var text: String = "") : TextBase() {
     context(ExecutionContext) private fun handleMessage(message: Message) {
         when (message) {
             is CanvasMessage.ElementExit -> {
-                setCursor(Cursor.HAND)
+                setCursor(Cursor.ARROW)
             }
 
             is CanvasMessage.ElementEnter -> {

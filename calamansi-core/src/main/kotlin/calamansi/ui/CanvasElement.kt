@@ -169,8 +169,15 @@ open class CanvasElement : Node() {
                 val y0 = getLayoutTop()
                 val x1 = x0 + getLayoutWidth()
                 val y1 = y0 + getLayoutHeight()
-                val withinBounds = event.x in x0..x1 && event.y in y0..y1
-                setHovered(withinBounds)
+                setHovered(event.x in x0..x1 && event.y in y0..y1)
+//                val withinBounds =
+//                if (withinBounds && !isHovered()) {
+//                    setHovered(true)
+//                    println("hovered")
+//                } else if (isHovered() && !withinBounds) {
+//                    setHovered(false)
+//                    println("not hovered")
+//                }
             }
 
             is MouseButtonStateEvent -> {
