@@ -23,8 +23,7 @@ internal class Engine {
     private val registryService = Services.create(::RegistryService)
     private val resourceService = Services.create(::ResourceService)
     private val fontService = Services.create(::FontService)
-    private var frameCount = 0L
-    private val frameStats = FrameStats(1000)
+    private val frameStats = FrameStats(500)
 
     private lateinit var mainWindowContext: WindowContext
 
