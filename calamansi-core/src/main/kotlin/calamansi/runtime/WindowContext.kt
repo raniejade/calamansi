@@ -3,6 +3,7 @@ package calamansi.runtime
 import calamansi.event.Event
 import calamansi.gfx.Color
 import calamansi.input.InputContext
+import calamansi.input.InputEvent
 import calamansi.node.ExecutionContext
 import calamansi.node.Node
 import calamansi.node.Scene
@@ -41,6 +42,7 @@ internal class WindowContext(
     private lateinit var triangleIndices: IndexBuffer
     private lateinit var currentTheme: Theme
     private lateinit var debugFont: Font
+    private var focusedElement: CanvasElement? = null
 
     fun init() {
         framebufferResized()
@@ -176,6 +178,14 @@ internal class WindowContext(
         }
     }
 
+    fun requestFocus(element: CanvasElement?) {
+        focusedElement = element
+    }
+
+    fun isFocused(element: CanvasElement): Boolean {
+        return focusedElement === element
+    }
+
     private fun draw(canvas: SkijaCanvas, node: Node?) {
         if (node == null) {
             return
@@ -234,6 +244,13 @@ internal class WindowContext(
 
         if (event.isConsumed()) {
             return
+        }
+
+        if (event is InputEvent) {
+            node?.invokeOnGuiEvent(event)
+            if (event.isConsumed()) {
+                return
+            }
         }
 
         node?.invokeOnUnhandledEvent(event)

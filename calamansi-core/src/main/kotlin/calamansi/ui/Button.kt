@@ -46,6 +46,10 @@ class Button(@Property override var text: String = "") : TextBase() {
         when (message) {
             is CanvasMessage.ElementExit -> {
                 setCursor(Cursor.ARROW)
+
+                if (_pressed) {
+                    _pressed = false
+                }
             }
 
             is CanvasMessage.ElementEnter -> {

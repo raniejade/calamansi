@@ -1,6 +1,7 @@
 package calamansi.ui
 
 import calamansi.event.Event
+import calamansi.input.InputEvent
 import calamansi.input.InputState
 import calamansi.input.MouseButtonStateEvent
 import calamansi.input.MouseMoveEvent
@@ -145,26 +146,35 @@ open class CanvasElement : Node() {
             normalStyledBox
         }
 
-    context(ExecutionContext) override fun onEvent(event: Event) {
+    context(ExecutionContext) override fun onGuiEvent(event: InputEvent) {
         when (event) {
             is MouseMoveEvent -> {
                 val x0 = getLayoutLeft()
                 val y0 = getLayoutTop()
                 val x1 = x0 + getLayoutWidth()
                 val y1 = y0 + getLayoutHeight()
-
-                setHovered(event.x in x0..x1 && event.y in y0..y1)
+                val withinBounds = event.x in x0..x1 && event.y in y0..y1
+                setHovered(withinBounds)
             }
 
             is MouseButtonStateEvent -> {
-                if (event.state == InputState.PRESSED && isHovered()) {
-                    publish(CanvasMessage.ElementMousePress(this, event.button))
-                } else if (event.state == InputState.RELEASED) {
-                    publish(CanvasMessage.ElementMouseRelease(this, event.button))
+                if (isHovered()) {
+                    if (event.state == InputState.PRESSED) {
+                        publish(CanvasMessage.ElementMousePress(this, event.button))
+                    } else if (event.state == InputState.RELEASED) {
+                        publish(CanvasMessage.ElementMouseRelease(this, event.button))
+                    }
+                    event.consume()
                 }
+            }
+
+            else -> {
+                // do nothing
             }
         }
     }
+
+    protected open fun isFocusable(): Boolean = false
 
     override fun parentChanged(old: Node?, new: Node?) {
         // unlink from old parent

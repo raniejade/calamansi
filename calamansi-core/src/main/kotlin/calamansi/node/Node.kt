@@ -5,6 +5,7 @@ import calamansi.bus.MessageBus
 import calamansi.bus.MessageListener
 import calamansi.bus.MessageSource
 import calamansi.event.Event
+import calamansi.input.InputEvent
 import calamansi.meta.Property
 import calamansi.ui.CanvasElement
 import calamansi.ui.Theme
@@ -22,6 +23,7 @@ open class Node : MessageSource {
 
     private val children = mutableSetOf<Node>()
 
+    // TODO: use WindowContext directly? (and lateinit)
     internal var executionContext: ExecutionContext? = null
         set(value) {
             field = value
@@ -82,6 +84,7 @@ open class Node : MessageSource {
 
     context (ExecutionContext) open fun onEnterTree() = Unit
     context (ExecutionContext) open fun onEvent(event: Event) = Unit
+    context (ExecutionContext) open fun onGuiEvent(event: InputEvent) = Unit
     context (ExecutionContext) open fun onUnhandledEvent(event: Event) = Unit
     context (ExecutionContext) open fun onUpdate(delta: Float) = Unit
     context (ExecutionContext) open fun onExitTree() = Unit
@@ -120,16 +123,37 @@ open class Node : MessageSource {
             return
         }
 
+        for (child in children) {
+            child.invokeOnEvent(event)
+
+            if (event.isConsumed()) {
+                return
+            }
+        }
+
         with(executionContext!!) {
             onEvent(event)
         }
+    }
 
-        if (event.isConsumed()) {
+    internal fun invokeOnGuiEvent(event: InputEvent) {
+        // when an event causes the current scene to be changed, execution
+        // context of the old scene is set to null
+        // this is totally valid, so we just stop propagating the event.
+        if (executionContext == null) {
             return
         }
 
         for (child in children) {
-            child.invokeOnEvent(event)
+            child.invokeOnGuiEvent(event)
+
+            if (event.isConsumed()) {
+                return
+            }
+        }
+
+        with(executionContext!!) {
+            onGuiEvent(event)
         }
     }
 
@@ -141,16 +165,15 @@ open class Node : MessageSource {
             return
         }
 
-        with(executionContext!!) {
-            onUnhandledEvent(event)
-        }
-
-        if (event.isConsumed()) {
-            return
-        }
-
         for (child in children) {
             child.invokeOnUnhandledEvent(event)
+            if (event.isConsumed()) {
+                return
+            }
+        }
+
+        with(executionContext!!) {
+            onUnhandledEvent(event)
         }
     }
 
