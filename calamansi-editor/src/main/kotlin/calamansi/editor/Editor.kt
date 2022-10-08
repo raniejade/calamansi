@@ -32,6 +32,7 @@ class Editor : Node() {
             padding.bottom = FlexValue.Fixed(10f)
             padding.left = FlexValue.Fixed(10f)
             padding.right = FlexValue.Fixed(10f)
+            fontSize = 32f
 
         }
         button = Button("Clicked: $counter times.").apply {
@@ -53,8 +54,6 @@ class Editor : Node() {
         addChild(textArea)
         addChild(text)
         addChild(button)
-
-        textArea.fontSize = 32f
     }
 
     context(ExecutionContext) override fun onExitTree() {

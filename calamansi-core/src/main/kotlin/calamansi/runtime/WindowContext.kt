@@ -303,6 +303,10 @@ internal class WindowContext(
         gfx.unbind()
     }
 
+    override fun setTheme(theme: Theme) {
+        Theme.setCurrent(theme)
+    }
+
     override inline val canvas: calamansi.ui.Canvas
         get() = _canvas
 
@@ -319,7 +323,6 @@ internal class WindowContext(
         node = scene.instance()
         node?.let {
             it.executionContext = this
-            it.theme = currentTheme
             it.invokeOnEnterTree()
         }
     }

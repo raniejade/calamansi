@@ -84,10 +84,10 @@ open class CanvasElement : Node() {
     var maxHeight: FlexValue? = null
 
     @Property
-    var normalStyledBox: StyledBox = EmptyStyledBox()
+    var defaultStyledBox: StyledBox by Theme.styledBox()
 
     @Property
-    var hoveredStyledBox: StyledBox = EmptyStyledBox()
+    var hoveredStyledBox: StyledBox by Theme.styledBox()
 
     private var _hovered = false
 
@@ -130,10 +130,7 @@ open class CanvasElement : Node() {
 
     fun isHovered() = _hovered
 
-    override fun onThemeChanged(theme: Theme) {
-        normalStyledBox = theme.getStyledBox(this::class, "default")
-        hoveredStyledBox = theme.getStyledBox(this::class, "hovered")
-    }
+    protected fun getTheme() = Theme.getCurrent()
 
     fun requestFocus(focus: Boolean) {
         if (!isFocusable()) {
@@ -155,7 +152,7 @@ open class CanvasElement : Node() {
         get() = if (isHovered()) {
             hoveredStyledBox
         } else {
-            normalStyledBox
+            defaultStyledBox
         }
 
     context(ExecutionContext) override fun onGuiEvent(event: InputEvent) {

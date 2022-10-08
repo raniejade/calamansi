@@ -12,8 +12,8 @@ internal object DefaultThemeProvider {
         val defaultFont = resourceService.loadResource("rt://OpenSans-Regular.ttf", Font::class, 0) as Font
         return ThemeBuilder()
             .element<CanvasElement> {
-                styledBox("default", EmptyStyledBox())
-                styledBox("hovered", EmptyStyledBox())
+                styledBox("defaultStyledBox", EmptyStyledBox())
+                styledBox("hoveredStyledBox", EmptyStyledBox())
             }
 
             .element<TextBase>(CanvasElement::class) {
@@ -27,14 +27,14 @@ internal object DefaultThemeProvider {
             }
 
             .element<TextArea>(TextBase::class) {
-                styledBox("default", FlatStyledBox().apply {
+                styledBox("defaultStyledBox", FlatStyledBox().apply {
                     backgroundColor = Color.WHITE
                     borderRadius = Corner(2f)
                     borderWidth = Box(2f)
                     borderColor = Color("ff90993a")
                 })
 
-                styledBox("hovered", FlatStyledBox().apply {
+                styledBox("hoveredStyledBox", FlatStyledBox().apply {
                     backgroundColor = Color.WHITE
                     borderRadius = Corner(2f)
                     borderWidth = Box(2f)
@@ -45,21 +45,21 @@ internal object DefaultThemeProvider {
             }
 
             .element<Button>(TextBase::class) {
-                styledBox("default", FlatStyledBox().apply {
+                styledBox("defaultStyledBox", FlatStyledBox().apply {
                     backgroundColor = Color("ffb4be56")
                     borderRadius = Corner(5f)
                     borderWidth = Box(bottom = 2f)
                     borderColor = Color("ff90993a")
                 })
 
-                styledBox("hovered", FlatStyledBox().apply {
+                styledBox("hoveredStyledBox", FlatStyledBox().apply {
                     backgroundColor = Color("ffc6ce80")
                     borderRadius = Corner(5f)
                     borderWidth = Box(bottom = 2f)
                     borderColor = Color("ff90993a")
                 })
 
-                styledBox("pressed", FlatStyledBox().apply {
+                styledBox("pressedStyledBox", FlatStyledBox().apply {
                     backgroundColor = Color("ffa0ab41")
                     borderRadius = Corner(6f)
                 })

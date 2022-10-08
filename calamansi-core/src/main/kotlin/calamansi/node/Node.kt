@@ -7,8 +7,6 @@ import calamansi.bus.MessageSource
 import calamansi.event.Event
 import calamansi.input.InputEvent
 import calamansi.meta.Property
-import calamansi.ui.CanvasElement
-import calamansi.ui.Theme
 import java.util.*
 
 open class Node : MessageSource {
@@ -30,15 +28,6 @@ open class Node : MessageSource {
             getChildren().forEach { it.executionContext = value }
         }
 
-    var theme: Theme? = null
-        set(value) {
-            field = value
-            if (value != null && this is CanvasElement) {
-                onThemeChanged(value)
-            }
-            getChildren().forEach { it.theme = theme }
-        }
-
     @Property
     var name: String = "${this::class.simpleName}"
 
@@ -55,7 +44,6 @@ open class Node : MessageSource {
         node._parent = this
         children.add(node)
         node.executionContext = executionContext
-        node.theme = theme
         if (executionContext != null) {
             // part of the active scene
             node.invokeOnEnterTree()
@@ -70,7 +58,6 @@ open class Node : MessageSource {
             node.invokeOnExitTree()
         }
         node.executionContext = null
-        node.theme = null
         childRemoved(node)
     }
 
@@ -88,8 +75,6 @@ open class Node : MessageSource {
     context (ExecutionContext) open fun onUnhandledEvent(event: Event) = Unit
     context (ExecutionContext) open fun onUpdate(delta: Float) = Unit
     context (ExecutionContext) open fun onExitTree() = Unit
-
-    protected open fun onThemeChanged(theme: Theme) = Unit
 
     internal fun invokeOnEnterTree() {
         // make sure children are ready

@@ -8,7 +8,7 @@ import calamansi.runtime.WindowContext
 
 class Button(@Property override var text: String = "") : TextBase() {
     @Property
-    var pressedStyledBox: StyledBox = EmptyStyledBox()
+    var pressedStyledBox: StyledBox by Theme.styledBox()
 
     private var _pressed = false
 
@@ -28,11 +28,6 @@ class Button(@Property override var text: String = "") : TextBase() {
         }
 
     fun isPressed() = _pressed
-
-    override fun onThemeChanged(theme: Theme) {
-        super.onThemeChanged(theme)
-        pressedStyledBox = theme.getStyledBox(this::class, "pressed")
-    }
 
     override fun nodeExitTree() {
         // when a button press causes a scene change, reset cursor

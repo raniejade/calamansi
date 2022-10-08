@@ -1,7 +1,9 @@
 package calamansi.ui
 
 import calamansi.gfx.Color
+import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 
 @PublishedApi
 internal sealed class ThemeItem(val name: String)
@@ -45,6 +47,75 @@ class Theme internal constructor(private val elements: Map<KClass<out CanvasElem
             item = getItem(themeElement.parent, name)
         }
         return item
+    }
+
+    companion object {
+        private lateinit var current: Theme
+
+        internal fun setCurrent(theme: Theme) {
+            current = theme
+        }
+
+        fun getCurrent() = current
+
+        fun styledBox(): ReadWriteProperty<CanvasElement, StyledBox> {
+            return ThemedProperty(StyledBoxThemeItem::class)
+        }
+
+        fun font(): ReadWriteProperty<CanvasElement, Font> {
+            return ThemedProperty(FontThemeItem::class)
+        }
+
+        fun float(): ReadWriteProperty<CanvasElement, Float> {
+            return ThemedProperty(FloatThemeItem::class)
+        }
+
+        fun color(): ReadWriteProperty<CanvasElement, Color> {
+            return ThemedProperty(ColorThemeItem::class)
+        }
+
+        internal class ThemedProperty<T : Any>(val type: KClass<out ThemeItem>) :
+            ReadWriteProperty<CanvasElement, T> {
+            private sealed class Value {
+                class Override<T : Any>(val value: T) : Value()
+                class FromTheme<T : Any>(val value: T) : Value()
+                object None : Value()
+            }
+
+            private lateinit var memoizedTheme: Theme
+            private var value: Value = Value.None
+
+            override fun getValue(thisRef: CanvasElement, property: KProperty<*>): T {
+                if (value is Value.None || (themeChanged() && value !is Value.Override<*>)) {
+                    memoizedTheme = getCurrent()
+                    value = when (type) {
+                        FloatThemeItem::class -> Value.FromTheme(memoizedTheme.getFloat(thisRef::class, property.name))
+                        ColorThemeItem::class -> Value.FromTheme(memoizedTheme.getColor(thisRef::class, property.name))
+                        FontThemeItem::class -> Value.FromTheme(memoizedTheme.getFont(thisRef::class, property.name))
+                        StyledBoxThemeItem::class -> Value.FromTheme(
+                            getCurrent().getStyledBox(
+                                thisRef::class,
+                                property.name
+                            )
+                        )
+
+                        else -> throw AssertionError("Unsupported theme item type: $type")
+                    }
+                }
+                if (value is Value.FromTheme<*>) {
+                    return (value as Value.FromTheme<*>).value as T
+                }
+                return (value as Value.Override<*>).value as T
+            }
+
+            override fun setValue(thisRef: CanvasElement, property: KProperty<*>, value: T) {
+                this.value = Value.Override(value)
+            }
+
+            private fun themeChanged(): Boolean {
+                return !::memoizedTheme.isInitialized || memoizedTheme !== getCurrent()
+            }
+        }
     }
 }
 

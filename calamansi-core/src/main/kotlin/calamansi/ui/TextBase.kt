@@ -18,13 +18,13 @@ abstract class TextBase : CanvasElement() {
     abstract var text: String
 
     @Property
-    var fontSize: Float = 12f
+    var fontSize: Float by Theme.float()
 
     @Property
-    var fontColor: Color = Color.WHITE
+    var fontColor: Color by Theme.color()
 
     @Property
-    lateinit var font: Font
+    var font: Font by Theme.font()
 
     @Suppress("LeakingThis")
     private val fontState = StateTracker.create(
@@ -96,13 +96,6 @@ abstract class TextBase : CanvasElement() {
             textPaint.close()
             textPaint = fontColor.toPaint()
         }
-    }
-
-    override fun onThemeChanged(theme: Theme) {
-        super.onThemeChanged(theme)
-        font = theme.getFont(this::class, "font")
-        fontSize = theme.getFloat(this::class, "fontSize")
-        fontColor = theme.getColor(this::class, "fontColor")
     }
 
     override fun draw(canvas: Canvas) {
