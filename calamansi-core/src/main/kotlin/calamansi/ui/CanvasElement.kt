@@ -208,6 +208,9 @@ open class CanvasElement : Node() {
     protected fun getLayoutWidth() = _layoutWidth
     protected fun getLayoutHeight() = _layoutHeight
 
+    protected fun getAvailableWidth() = _layoutWidth - _borderLeft - _borderRight - _paddingLeft - _paddingRight
+    protected fun getAvailableHeight() = _layoutHeight - _borderTop - _borderBottom - _paddingTop - _paddingBottom
+
     internal fun getLayoutPos(): Vector2fc = Vector2f(getLayoutLeft(), getLayoutTop())
 
     internal open fun layout() {

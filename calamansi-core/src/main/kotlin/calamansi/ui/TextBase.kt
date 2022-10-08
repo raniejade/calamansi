@@ -2,24 +2,18 @@ package calamansi.ui
 
 import calamansi.gfx.Color
 import calamansi.meta.Property
+import calamansi.runtime.WindowContext
 import calamansi.runtime.utils.StateTracker
 import calamansi.runtime.utils.debugDraw
+import io.github.humbleui.skija.*
 import io.github.humbleui.skija.Canvas
-import io.github.humbleui.skija.Paint
-import io.github.humbleui.skija.PaintMode
-import io.github.humbleui.skija.TextBlob
-import io.github.humbleui.skija.shaper.Shaper
-import io.github.humbleui.skija.shaper.ShapingOptions
-import io.github.humbleui.types.Point
+import io.github.humbleui.skija.paragraph.*
 import io.github.humbleui.types.Rect
 import org.lwjgl.util.yoga.Yoga.*
 import io.github.humbleui.skija.Font as SkijaFont
 
 abstract class TextBase : CanvasElement() {
-    internal lateinit var blob: TextBlob
-    internal lateinit var glyphs: ShortArray
-    internal lateinit var glyphPositions: FloatArray
-    internal lateinit var glyphWidths: FloatArray
+    internal lateinit var pg: Paragraph
 
     abstract var text: String
 
@@ -48,52 +42,36 @@ abstract class TextBase : CanvasElement() {
 
     init {
         YGNodeSetMeasureFunc(ygNode) { _, width, widthMode, _, _, size ->
-            if (::blob.isInitialized) {
-                blob.close()
+            if (::pg.isInitialized) {
+                pg.close()
             }
             // use space to get bounds event if string is empty
             val text = text.ifEmpty { " " }
-            blob = Shaper.makePrimitive().use { shaper ->
-                when (widthMode) {
-                    YGMeasureModeAtMost,
-                    YGMeasureModeExactly -> {
-                        shaper.shape(text, skijaFont, width)
-                    }
+            val fc = FontCollection().setDefaultFontManager(FontMgr.getDefault())
+            val ts = TextStyle().setForeground(textPaint)
+                .setFontSize(fontSize)
+                .setTypeface(skijaFont.typeface)
+            pg = ParagraphBuilder(ParagraphStyle(), fc)
+                .pushStyle(ts)
+                .addText(text)
+                .popStyle()
+                .build()
 
-                    YGMeasureModeUndefined -> {
-                        shaper.shape(text, skijaFont)
-                    }
+            when (widthMode) {
+                YGMeasureModeAtMost,
+                YGMeasureModeExactly -> {
+                    pg.layout(width)
+                }
 
-                    else -> throw AssertionError("unsupported width mode: $widthMode")
-                }!!
+                YGMeasureModeUndefined -> {
+                    pg.layout((executionContext as WindowContext).canvas.width.toFloat())
+                }
+
+                else -> throw AssertionError("unsupported width mode: $widthMode")
             }
-            glyphs = blob.glyphs
-            glyphWidths = skijaFont.getWidths(glyphs)
-            glyphPositions = blob.positions
-            size.width(blob.blockBounds.width)
-            size.height(blob.blockBounds.height)
-//            blob?.close()
-//            blob = null
-//            if (text.isNotBlank()) {
-//                blob = Shaper.makePrimitive().use { shaper ->
-//                    when (widthMode) {
-//                        YGMeasureModeAtMost,
-//                        YGMeasureModeExactly -> {
-//                            shaper.shape(text, skijaFont, width)
-//                        }
-//
-//                        YGMeasureModeUndefined -> {
-//                            shaper.shape(text, skijaFont)
-//                        }
-//
-//                        else -> throw AssertionError("unsupported width mode: $widthMode")
-//                    }!!
-//                }
-//                size.width(blob!!.blockBounds.width)
-//                size.height(blob!!.blockBounds.height)
-//            } else {
-//                size.height(skijaFont.metrics.height)
-//            }
+
+            size.width(pg.longestLine)
+            size.height(pg.height)
         }
     }
 
@@ -113,6 +91,11 @@ abstract class TextBase : CanvasElement() {
         if (fontState.isDirty()) {
             skijaFont = font.fetchSkijaFont(fontSize)
         }
+
+        if (textPaintState.isDirty()) {
+            textPaint.close()
+            textPaint = fontColor.toPaint()
+        }
     }
 
     override fun onThemeChanged(theme: Theme) {
@@ -124,61 +107,46 @@ abstract class TextBase : CanvasElement() {
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-        if (textPaintState.isDirty()) {
-            textPaint.close()
-            textPaint = fontColor.toPaint()
-        }
 
-        val blob = blob
-        if (blob != null) {
-            val textXPos = getPaddingLeft() + getBorderLeft()
-            val textYPos = getPaddingTop() + getBorderTop()
-            // layout width/height less paddings and borders
-            val textHeight =
-                getLayoutHeight() - getPaddingTop() - getBorderTop() - getPaddingBottom() - getBorderBottom()
-            val textWidth = getLayoutWidth() - getPaddingRight() - getBorderRight() - getPaddingLeft() - getBorderLeft()
-            canvas.save()
-            debugDraw {
-                // debug clip rect
-                canvas.drawRect(
-                    Rect.makeXYWH(
-                        textXPos,
-                        textYPos,
-                        textWidth,
-                        textHeight
-                    ),
-                    Color.BLUE.toPaint().setMode(PaintMode.STROKE)
-                )
-            }
-            blob.clusters
-            canvas.clipRect(
+        val textXPos = getPaddingLeft() + getBorderLeft()
+        val textYPos = getPaddingTop() + getBorderTop()
+        // layout width/height less paddings and borders
+        val textHeight = getAvailableHeight()
+        val textWidth = getAvailableWidth()
+        canvas.save()
+        debugDraw {
+            // debug clip rect
+            canvas.drawRect(
                 Rect.makeXYWH(
                     textXPos,
                     textYPos,
                     textWidth,
                     textHeight
                 ),
+                Color.BLUE.toPaint().setMode(PaintMode.STROKE)
             )
-
-            canvas.drawTextBlob(
-                blob,
+        }
+        canvas.clipRect(
+            Rect.makeXYWH(
                 textXPos,
                 textYPos,
-                textPaint
+                textWidth,
+                textHeight
+            ),
+        )
+        pg.paint(canvas, textXPos, textYPos)
+        canvas.restore()
+        debugDraw {
+            // debug text bounds
+            canvas.drawRect(
+                Rect.makeXYWH(
+                    textXPos,
+                    textYPos,
+                    pg.longestLine,
+                    pg.height
+                ),
+                Color.RED.toPaint().setMode(PaintMode.STROKE)
             )
-            canvas.restore()
-            debugDraw {
-                // debug text bounds
-                canvas.drawRect(
-                    Rect.makeXYWH(
-                        textXPos,
-                        textYPos,
-                        blob.blockBounds.width,
-                        blob.blockBounds.height
-                    ),
-                    Color.RED.toPaint().setMode(PaintMode.STROKE)
-                )
-            }
         }
     }
 }

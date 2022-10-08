@@ -10,7 +10,8 @@ import calamansi.input.TextEvent
 import calamansi.meta.Property
 import calamansi.node.ExecutionContext
 import io.github.humbleui.skija.Canvas
-import kotlin.math.min
+import io.github.humbleui.skija.paragraph.RectHeightMode
+import io.github.humbleui.skija.paragraph.RectWidthMode
 
 class TextArea(@Property override var text: String = "") : TextBase() {
     private var cursorPos = text.length
@@ -68,21 +69,17 @@ class TextArea(@Property override var text: String = "") : TextBase() {
         // draw cursor
         var cursorX = 0f
         var cursorY = 0f
-        val metrics = skijaFont.metrics
         if (text.isNotEmpty()) {
-            // spaces on linebreaks can be collapsed into a single space, when
-            // this happens text.size won't match glyphs.size and glyphPositions.size
-            // since we use glyph positions to compute where the cursor is drawn
-            // TODO: when using makeShaperDrivenWrapper() this won't happen, but we should stop
-            //  drawing the cursor when it goes out of bounds.
-            val cursorPos = min(cursorPos, glyphs.size)
-            val index = (cursorPos - 1) * 2
-            cursorX = glyphPositions[index] + glyphWidths[cursorPos - 1]
-            cursorY =
-                glyphPositions[index + 1] - fontSize /* height of each line is approximately the size of the font */
+            val rect = pg.getRectsForRange(cursorPos - 1, cursorPos, RectHeightMode.TIGHT, RectWidthMode.TIGHT)[0]
+            cursorX += rect.rect.right
+            cursorY += rect.rect.top
+
+            if (cursorX > getAvailableWidth()) {
+                cursorX = getAvailableWidth()
+            }
         }
         cursorX += getPaddingLeft() + getBorderLeft()
         cursorY += getPaddingTop() + getBorderTop()
-        canvas.drawLine(cursorX, cursorY, cursorX, cursorY + metrics.height, Color.BLACK.toPaint().setStrokeWidth(1.5f))
+        canvas.drawLine(cursorX, cursorY, cursorX, cursorY + fontSize, Color.BLACK.toPaint().setStrokeWidth(1.5f))
     }
 }

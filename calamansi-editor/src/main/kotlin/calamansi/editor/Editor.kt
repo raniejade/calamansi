@@ -27,6 +27,7 @@ class Editor : Node() {
         }
         textArea = TextArea("Oh yes").apply {
             maxWidth = FlexValue.Fixed(100f)
+            maxHeight = FlexValue.Fixed(200f)
             padding.top = FlexValue.Fixed(2f)
             padding.bottom = FlexValue.Fixed(2f)
             padding.left = FlexValue.Fixed(2f)
