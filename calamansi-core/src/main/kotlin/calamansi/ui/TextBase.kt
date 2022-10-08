@@ -101,7 +101,7 @@ abstract class TextBase : CanvasElement() {
     override fun onThemeChanged(theme: Theme) {
         super.onThemeChanged(theme)
         font = theme.getFont(this::class, "font")
-        fontSize = theme.getConstant(this::class, "fontSize")
+        fontSize = theme.getFloat(this::class, "fontSize")
         fontColor = theme.getColor(this::class, "fontColor")
     }
 

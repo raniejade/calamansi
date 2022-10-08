@@ -1,6 +1,5 @@
 package calamansi.ui
 
-import calamansi.event.Event
 import calamansi.input.InputEvent
 import calamansi.input.InputState
 import calamansi.input.MouseButtonStateEvent
@@ -132,11 +131,8 @@ open class CanvasElement : Node() {
     fun isHovered() = _hovered
 
     override fun onThemeChanged(theme: Theme) {
-        normalStyledBox = theme.getStyledBox(this::class, "normal")
+        normalStyledBox = theme.getStyledBox(this::class, "default")
         hoveredStyledBox = theme.getStyledBox(this::class, "hovered")
-
-        minWidth = FlexValue.Fixed(theme.getConstant(this::class, "minWidth"))
-        minHeight = FlexValue.Fixed(theme.getConstant(this::class, "minHeight"))
     }
 
     fun requestFocus(focus: Boolean) {
@@ -170,14 +166,6 @@ open class CanvasElement : Node() {
                 val x1 = x0 + getLayoutWidth()
                 val y1 = y0 + getLayoutHeight()
                 setHovered(event.x in x0..x1 && event.y in y0..y1)
-//                val withinBounds =
-//                if (withinBounds && !isHovered()) {
-//                    setHovered(true)
-//                    println("hovered")
-//                } else if (isHovered() && !withinBounds) {
-//                    setHovered(false)
-//                    println("not hovered")
-//                }
             }
 
             is MouseButtonStateEvent -> {
