@@ -139,6 +139,22 @@ open class CanvasElement : Node() {
         minHeight = FlexValue.Fixed(theme.getConstant(this::class, "minHeight"))
     }
 
+    fun requestFocus(focus: Boolean) {
+        if (!isFocusable()) {
+            return
+        }
+
+        if (focus && !isFocused()) {
+            (executionContext as WindowContext).requestFocus(this)
+        } else if (!focus && isFocused()) {
+            (executionContext as WindowContext).requestFocus(null)
+        }
+    }
+
+    fun isFocused(): Boolean {
+        return (executionContext as WindowContext).isFocused(this)
+    }
+
     internal open val currentStyleBox: StyledBox
         get() = if (isHovered()) {
             hoveredStyledBox
@@ -161,8 +177,16 @@ open class CanvasElement : Node() {
                 if (isHovered()) {
                     if (event.state == InputState.PRESSED) {
                         publish(CanvasMessage.ElementMousePress(this, event.button))
+                        val wc = (executionContext as WindowContext)
+                        if (wc.shouldLoseFocus(this)) {
+                            wc.requestFocus(null)
+                        }
                     } else if (event.state == InputState.RELEASED) {
                         publish(CanvasMessage.ElementMouseRelease(this, event.button))
+
+                        if (isFocusable()) {
+                            requestFocus(true)
+                        }
                     }
                     event.consume()
                 }

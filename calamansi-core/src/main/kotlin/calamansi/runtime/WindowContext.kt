@@ -182,6 +182,11 @@ internal class WindowContext(
         focusedElement = element
     }
 
+    // returns true if pressed element is not the currently focused element
+    fun shouldLoseFocus(pressedElement: CanvasElement): Boolean {
+        return !isFocused(pressedElement)
+    }
+
     fun isFocused(element: CanvasElement): Boolean {
         return focusedElement === element
     }
