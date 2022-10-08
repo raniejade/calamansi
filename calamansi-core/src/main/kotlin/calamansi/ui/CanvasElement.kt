@@ -316,4 +316,12 @@ open class CanvasElement : Node() {
             getLayoutHeight(),
         )
     }
+
+    context(ExecutionContext) internal fun publishFocusMessage() {
+        publish(CanvasMessage.ElementFocus(this))
+    }
+
+    context(ExecutionContext) internal fun publishUnFocusMessage() {
+        publish(CanvasMessage.ElementUnFocus(this))
+    }
 }

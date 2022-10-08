@@ -181,7 +181,9 @@ internal class WindowContext(
     }
 
     fun requestFocus(element: CanvasElement?) {
+        focusedElement?.publishUnFocusMessage()
         focusedElement = element
+        focusedElement?.publishFocusMessage()
     }
 
     // returns true if pressed element is not the currently focused element

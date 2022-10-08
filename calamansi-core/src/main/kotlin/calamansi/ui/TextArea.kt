@@ -13,6 +13,9 @@ import io.github.humbleui.skija.paragraph.RectWidthMode
 class TextArea(@Property override var text: String = "") : TextBase() {
     private var cursorPos = text.length
     private val buffer = mutableListOf<Char>()
+    private val tickInterval = 1000f / 10
+    private var elapsedTime = 0f
+    private var drawCursor = true
 
     init {
         text.toCollection(buffer)
@@ -60,22 +63,34 @@ class TextArea(@Property override var text: String = "") : TextBase() {
             is CanvasMessage.ElementEnter -> {
                 setCursor(Cursor.IBEAM)
             }
+
+            is CanvasMessage.ElementFocus -> {
+                resetCursorTick()
+            }
         }
     }
 
     context(ExecutionContext) private fun recomputeText() {
         text = buffer.joinToString(separator = "")
         publish(CanvasMessage.TextInputChange(this, text))
+        resetCursorTick()
     }
 
     override fun isFocusable(): Boolean {
         return true
     }
 
+    context(ExecutionContext) override fun onUpdate(delta: Float) {
+        super.onUpdate(delta)
+        if (isFocused()) {
+            cursorTick(delta)
+        }
+    }
+
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
 
-        if (isFocused()) {
+        if (isFocused() && drawCursor) {
             // draw cursor
             var cursorX = 0f
             var cursorY = 0f
@@ -92,5 +107,18 @@ class TextArea(@Property override var text: String = "") : TextBase() {
             cursorY += getPaddingTop() + getBorderTop()
             canvas.drawLine(cursorX, cursorY, cursorX, cursorY + fontSize, Color.BLACK.toPaint().setStrokeWidth(1.5f))
         }
+    }
+
+    private fun cursorTick(delta: Float) {
+        elapsedTime += delta
+        if (elapsedTime > tickInterval) {
+            elapsedTime = 0f
+            drawCursor = !drawCursor
+        }
+    }
+
+    private fun resetCursorTick() {
+        drawCursor = true
+        elapsedTime = 0f
     }
 }

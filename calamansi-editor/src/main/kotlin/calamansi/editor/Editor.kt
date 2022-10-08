@@ -26,12 +26,12 @@ class Editor : Node() {
             // width = FlexValue.Fixed(100f)
         }
         textArea = TextArea("Oh yes").apply {
-            maxWidth = FlexValue.Fixed(100f)
-            maxHeight = FlexValue.Fixed(200f)
-            padding.top = FlexValue.Fixed(2f)
-            padding.bottom = FlexValue.Fixed(2f)
-            padding.left = FlexValue.Fixed(2f)
-            padding.right = FlexValue.Fixed(2f)
+            width = FlexValue.Relative(50f)
+            maxHeight = FlexValue.Fixed(300f)
+            padding.top = FlexValue.Fixed(10f)
+            padding.bottom = FlexValue.Fixed(10f)
+            padding.left = FlexValue.Fixed(10f)
+            padding.right = FlexValue.Fixed(10f)
 
         }
         button = Button("Clicked: $counter times.").apply {
@@ -53,6 +53,8 @@ class Editor : Node() {
         addChild(textArea)
         addChild(text)
         addChild(button)
+
+        textArea.fontSize = 32f
     }
 
     context(ExecutionContext) override fun onExitTree() {
