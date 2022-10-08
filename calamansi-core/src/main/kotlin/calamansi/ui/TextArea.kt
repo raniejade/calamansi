@@ -1,7 +1,6 @@
 package calamansi.ui
 
 import calamansi.bus.Message
-import calamansi.event.Event
 import calamansi.gfx.Color
 import calamansi.input.*
 import calamansi.meta.Property

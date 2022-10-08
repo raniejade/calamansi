@@ -97,7 +97,7 @@ internal object InputStateMapper {
         return when (state) {
             GLFW_PRESS -> InputState.PRESSED
             GLFW_RELEASE -> InputState.RELEASED
-            GLFW_REPEAT -> InputState.PRESSED
+            GLFW_REPEAT -> InputState.RELEASED
             else -> throw AssertionError("Unsupported state: $state")
         }
     }
