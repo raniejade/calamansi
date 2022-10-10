@@ -1,10 +1,11 @@
-package calamansi.ui
+package calamansi.ui2.control
 
 import calamansi.gfx.Color
 import calamansi.gfx.Font
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
+import kotlin.reflect.KType
 
 @PublishedApi
 internal sealed class ThemeItem(val name: String)
@@ -15,39 +16,50 @@ internal class StyledBoxThemeItem(name: String, val styledBox: StyledBox) : Them
 
 @PublishedApi
 internal class ThemeElement(
-    val type: KClass<out CanvasElement>,
+    val type: KClass<out Control>,
     private val items: Map<String, ThemeItem>,
-    val parent: KClass<out CanvasElement>?
+    val parent: KClass<out Control>?
 ) {
     fun getItem(name: String): ThemeItem? {
         return items[name]
     }
 }
 
-class Theme internal constructor(private val elements: Map<KClass<out CanvasElement>, ThemeElement>) {
-    fun getFloat(element: KClass<out CanvasElement>, name: String): Float {
+class Theme internal constructor(private val elements: Map<KClass<out Control>, ThemeElement>) {
+    fun getFloat(element: KClass<out Control>, name: String): Float {
         return (checkNotNull(getItem(element, name)) as FloatThemeItem).value
     }
 
-    fun getColor(element: KClass<out CanvasElement>, name: String): Color {
+    fun getColor(element: KClass<out Control>, name: String): Color {
         return (checkNotNull(getItem(element, name)) as ColorThemeItem).color
     }
 
-    fun getFont(element: KClass<out CanvasElement>, name: String): Font {
+    fun getFont(element: KClass<out Control>, name: String): Font {
         return (checkNotNull(getItem(element, name)) as FontThemeItem).font
     }
 
-    fun getStyledBox(element: KClass<out CanvasElement>, name: String): StyledBox {
+    fun getStyledBox(element: KClass<out Control>, name: String): StyledBox {
         return (checkNotNull(getItem(element, name)) as StyledBoxThemeItem).styledBox
     }
 
-    private fun getItem(element: KClass<out CanvasElement>, name: String): ThemeItem? {
-        val themeElement = elements.getValue(element)
+    private fun getItem(element: KClass<out Control>, name: String): ThemeItem? {
+        val themeElement = checkNotNull(findThemeElement(element))
         var item = themeElement.getItem(name)
         if (item == null && themeElement.parent != null) {
             item = getItem(themeElement.parent, name)
         }
         return item
+    }
+
+    private fun findThemeElement(element: KClass<out Control>): ThemeElement? {
+        var themeElement = elements[element]
+        while (themeElement == null) {
+            val parent =
+                element.supertypes.map(KType::classifier).filterIsInstance<KClass<out Control>>().firstOrNull() ?: break
+            themeElement = elements[parent]
+        }
+
+        return themeElement
     }
 
     companion object {
@@ -59,24 +71,24 @@ class Theme internal constructor(private val elements: Map<KClass<out CanvasElem
 
         fun getCurrent() = current
 
-        fun styledBox(): ReadWriteProperty<CanvasElement, StyledBox> {
+        fun styledBox(): ReadWriteProperty<Control, StyledBox> {
             return ThemedProperty(StyledBoxThemeItem::class)
         }
 
-        fun font(): ReadWriteProperty<CanvasElement, Font> {
+        fun font(): ReadWriteProperty<Control, Font> {
             return ThemedProperty(FontThemeItem::class)
         }
 
-        fun float(): ReadWriteProperty<CanvasElement, Float> {
+        fun float(): ReadWriteProperty<Control, Float> {
             return ThemedProperty(FloatThemeItem::class)
         }
 
-        fun color(): ReadWriteProperty<CanvasElement, Color> {
+        fun color(): ReadWriteProperty<Control, Color> {
             return ThemedProperty(ColorThemeItem::class)
         }
 
         internal class ThemedProperty<T : Any>(val type: KClass<out ThemeItem>) :
-            ReadWriteProperty<CanvasElement, T> {
+            ReadWriteProperty<Control, T> {
             private sealed class Value {
                 class Override<T : Any>(val value: T) : Value()
                 class FromTheme<T : Any>(val value: T) : Value()
@@ -86,7 +98,7 @@ class Theme internal constructor(private val elements: Map<KClass<out CanvasElem
             private lateinit var memoizedTheme: Theme
             private var value: Value = Value.None
 
-            override fun getValue(thisRef: CanvasElement, property: KProperty<*>): T {
+            override fun getValue(thisRef: Control, property: KProperty<*>): T {
                 if (value is Value.None || (themeChanged() && value !is Value.Override<*>)) {
                     memoizedTheme = getCurrent()
                     value = when (type) {
@@ -109,7 +121,7 @@ class Theme internal constructor(private val elements: Map<KClass<out CanvasElem
                 return (value as Value.Override<*>).value as T
             }
 
-            override fun setValue(thisRef: CanvasElement, property: KProperty<*>, value: T) {
+            override fun setValue(thisRef: Control, property: KProperty<*>, value: T) {
                 this.value = Value.Override(value)
             }
 
@@ -152,10 +164,10 @@ class ElementBuilder {
 
 class ThemeBuilder {
     @PublishedApi
-    internal val elements = mutableMapOf<KClass<out CanvasElement>, ThemeElement>()
+    internal val elements = mutableMapOf<KClass<out Control>, ThemeElement>()
 
-    inline fun <reified T : CanvasElement> element(
-        parent: KClass<out CanvasElement>? = null,
+    inline fun <reified T : Control> element(
+        parent: KClass<out Control>? = null,
         body: ElementBuilder.() -> Unit
     ): ThemeBuilder {
         val type = T::class

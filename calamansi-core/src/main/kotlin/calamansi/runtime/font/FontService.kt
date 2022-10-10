@@ -1,7 +1,7 @@
 package calamansi.runtime.font
 
 import calamansi.runtime.service.Service
-import calamansi.ui.Font
+import calamansi.gfx.Font
 import io.github.humbleui.skija.Data
 import io.github.humbleui.skija.FontMgr
 import java.io.InputStream

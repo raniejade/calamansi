@@ -1,6 +1,7 @@
 package calamansi.ui
 
 import calamansi.gfx.Color
+import calamansi.gfx.Font
 import calamansi.meta.Property
 import calamansi.runtime.WindowContext
 import calamansi.runtime.utils.StateTracker

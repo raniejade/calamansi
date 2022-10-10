@@ -2,6 +2,9 @@ package calamansi.runtime
 
 import calamansi.event.Event
 import calamansi.gfx.Color
+import calamansi.gfx.DefaultRenderSurface
+import calamansi.gfx.Font
+import calamansi.gfx.RenderSurface
 import calamansi.input.InputContext
 import calamansi.input.InputEvent
 import calamansi.input.InputState
@@ -14,7 +17,6 @@ import calamansi.runtime.resource.ResourceService
 import calamansi.runtime.service.Services
 import calamansi.runtime.sys.*
 import calamansi.runtime.threading.EventLoops
-import calamansi.runtime.ui.DefaultThemeProvider
 import calamansi.runtime.utils.FrameStats
 import calamansi.ui.*
 import io.github.humbleui.skija.shaper.Shaper
@@ -42,9 +44,14 @@ internal class WindowContext(
     private lateinit var pipeline: Pipeline
     private lateinit var triangleVertices: VertexBuffer
     private lateinit var triangleIndices: IndexBuffer
-    private lateinit var currentTheme: Theme
     private lateinit var debugFont: Font
     private var focusedElement: CanvasElement? = null
+    private var forceLayout: Boolean = false
+
+    // default render target for this context
+    private lateinit var defaultRenderTarget: RenderTarget
+    private var surfaceWidth: Float = Float.NaN
+    private var surfaceHeight: Float = Float.NaN
 
     fun init() {
         framebufferResized()
@@ -102,7 +109,7 @@ internal class WindowContext(
 
         gfx.unbind()
 
-        currentTheme = DefaultThemeProvider.create()
+        // currentTheme = DefaultThemeProvider.create()
 
         debugFont = resourceService.loadResource("rt://OpenSans-Regular.ttf", Font::class, 0) as Font
     }
@@ -112,7 +119,7 @@ internal class WindowContext(
         eventHandlerRegistration.unregister()
         platformEventHandlerRegistration.unregister()
 
-        _canvas.destroy()
+        //_canvas.destroy()
         pipeline.destroy()
     }
 
@@ -137,7 +144,7 @@ internal class WindowContext(
             gfx.bind()
             val size = window.getFramebufferSize()
             // don't use canvas.clear/paint as it is slow!
-            _canvas.renderTarget.render(pipeline) {
+            defaultRenderTarget.render(pipeline) {
                 setViewport(0, 0, size.x(), size.y())
                 clearColor(Color.GRAY)
                 setVertices(triangleVertices)
@@ -147,32 +154,65 @@ internal class WindowContext(
             }
 
             // perform layout
-            _canvas.layout()
-            layout(node)
+            //_canvas.layout()
+            //layout(node)
 
             // calculate layout
-            _canvas.calculateLayout()
-            fetchLayoutValues(node)
+            //_canvas.calculateLayout()
+            //fetchLayoutValues(node)
 
             // YGNodeCalculateLayout(yogaRoot, YGUndefined, YGUndefined, YGDirectionLTR)
+//            _canvas.renderTarget.draw {
+//                resetMatrix()
+//                scale(contentScale.x(), contentScale.y())
+//                draw(this, node)
+//
+//                // debug text
+//                Shaper.makePrimitive().use { shaper ->
+//                    val fps = shaper.shape(
+//                        "${"FPS: %d".padEnd(10)} %.2fms".format(frameStats.avgFps.toInt(), frameStats.avgFrameTime),
+//                        debugFont.fetchSkijaFont(14f)
+//                    )!!
+//
+//                    drawTextBlob(fps, 5f, 5f, Color.WHITE.toPaint().setStrokeWidth(3f))
+//                }
+//            }
+
+
+            // layout pass
+            layout2(node, forceLayout)
+            forceLayout = false
+
+            // draw canvas in batch
             val contentScale = window.getContentScale()
-            _canvas.renderTarget.draw {
-                resetMatrix()
-                scale(contentScale.x(), contentScale.y())
-                draw(this, node)
+            val drawBatch = findSurfaces(node)
+            for (batch in drawBatch) {
+                val renderTarget = getRenderTarget(batch.key)
+                renderTarget.draw {
+                    resetMatrix()
+                    scale(contentScale.x(), contentScale.y())
+                    for (c in batch.value) {
+                        draw2(this, node)
+                    }
 
-                // debug text
-                Shaper.makePrimitive().use { shaper ->
-                    val fps = shaper.shape(
-                        "${"FPS: %d".padEnd(10)} %.2fms".format(frameStats.avgFps.toInt(), frameStats.avgFrameTime),
-                        debugFont.fetchSkijaFont(14f)
-                    )!!
+                    if (batch.key is DefaultRenderSurface) {
+                        // debug
+                        Shaper.makePrimitive().use { shaper ->
+                            val fps = shaper.shape(
+                                "${"FPS: %d".padEnd(10)} %.2fms".format(
+                                    frameStats.avgFps.toInt(),
+                                    frameStats.avgFrameTime
+                                ),
+                                debugFont.fetchSkijaFont(14f)
+                            )!!
 
-                    drawTextBlob(fps, 5f, 5f, Color.WHITE.toPaint().setStrokeWidth(3f))
+                            drawTextBlob(fps, 5f, 5f, Color.WHITE.toPaint().setStrokeWidth(3f))
+                        }
+                    }
                 }
             }
 
-            gfx.present(_canvas.renderTarget)
+            gfx.present(defaultRenderTarget)
             gfx.swap()
 
             checkOpenGLError(frameNo)
@@ -193,6 +233,37 @@ internal class WindowContext(
 
     fun isFocused(element: CanvasElement): Boolean {
         return focusedElement === element
+    }
+
+    private fun getRenderTarget(surface: RenderSurface): RenderTarget {
+        return when (surface) {
+            is DefaultRenderSurface -> defaultRenderTarget
+            else -> throw AssertionError("Unsupported surface: $surface ")
+        }
+    }
+
+    private fun findSurfaces(node: Node?): Map<RenderSurface, List<calamansi.ui2.control.Canvas>> {
+        val builder = mutableMapOf<RenderSurface, MutableList<calamansi.ui2.control.Canvas>>()
+        findSurfaces(node, builder)
+        return builder.mapValues { it.value.toList() }
+    }
+
+    private fun findSurfaces(
+        node: Node?,
+        builder: MutableMap<RenderSurface, MutableList<calamansi.ui2.control.Canvas>>
+    ) {
+        if (node == null) {
+            return
+        }
+
+        if (node is calamansi.ui2.control.Canvas) {
+            val list = builder.getOrPut(node.surface) { mutableListOf() }
+            list.add(node)
+        }
+
+        for (child in node.getChildren()) {
+            findSurfaces(child, builder)
+        }
     }
 
     private fun draw(canvas: SkijaCanvas, node: Node?) {
@@ -239,6 +310,39 @@ internal class WindowContext(
 
         for (child in node.getChildren()) {
             fetchLayoutValues(child)
+        }
+    }
+
+    private fun layout2(node: Node?, forceLayout: Boolean) {
+        if (node == null) {
+            return
+        }
+
+        if (node is calamansi.ui2.control.Canvas) {
+            if (node.surface is DefaultRenderSurface) {
+                node.layout(forceLayout, surfaceWidth, surfaceHeight)
+            } else {
+                logger.error("Unsupported surface: ${node.surface}, ignoring.")
+            }
+        }
+
+        for (child in node.getChildren()) {
+            layout2(child, forceLayout)
+        }
+    }
+
+    private fun draw2(skijaCanvas: SkijaCanvas, node: Node?) {
+        if (node == null) {
+            return
+        }
+
+        if (node is calamansi.ui2.control.Canvas) {
+            node.draw(skijaCanvas)
+
+        }
+
+        for (child in node.getChildren()) {
+            draw2(skijaCanvas, child)
         }
     }
 
@@ -299,12 +403,18 @@ internal class WindowContext(
             setSize(framebufferSize.x(), framebufferSize.y())
             setAttachments(setOf(Attachment.COLOR, Attachment.DEPTH))
         }
-        _canvas.configure(windowSize.x(), windowSize.y(), renderTarget)
+        if (this::defaultRenderTarget.isInitialized) {
+            this.defaultRenderTarget.destroy()
+        }
+        this.defaultRenderTarget = renderTarget
+        surfaceWidth = windowSize.x().toFloat()
+        surfaceHeight = windowSize.y().toFloat()
+        forceLayout = true
         gfx.unbind()
     }
 
-    override fun setTheme(theme: Theme) {
-        Theme.setCurrent(theme)
+    override fun setTheme(theme: calamansi.ui2.control.Theme) {
+        calamansi.ui2.control.Theme.setCurrent(theme)
     }
 
     override inline val canvas: calamansi.ui.Canvas

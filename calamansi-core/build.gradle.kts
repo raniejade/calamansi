@@ -22,6 +22,7 @@ dependencies {
     runtimeOnly(Deps.lwjgl.runtime.glfw)
     runtimeOnly(Deps.lwjgl.runtime.opengl)
     runtimeOnly(Deps.lwjgl.runtime.yoga)
+    runtimeOnly(kotlin("reflect"))
 
     ksp(project(":calamansi-symbol-processor"))
 

@@ -1,4 +1,4 @@
-package calamansi.ui
+package calamansi.gfx
 
 import calamansi.resource.Resource
 import calamansi.runtime.gc.Bin
