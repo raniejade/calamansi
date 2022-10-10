@@ -8,24 +8,23 @@ import calamansi.ui2.control.FlatStyledBox
 import org.lwjgl.util.yoga.Yoga.*
 
 internal class YgControl(private val control: Control) {
-    val ygNode = YGNodeNew()
+    val ygNode = if (control is FlexContainer) {
+        control.getYGNode()
+    } else {
+        YGNodeNew()
+    }
 
     init {
-        val localYgNode = ygNode
-        Bin.register(this) {
-            YGNodeFree(localYgNode)
+        // FlexContainer handles cleanup by itself
+        if (control !is FlexContainer) {
+            val localYgNode = ygNode
+            Bin.register(this) {
+                YGNodeFree(localYgNode)
+            }
         }
     }
 
-    var alignContent: FlexAlign = FlexAlign.FLEX_START
-
-    var alignItems: FlexAlign = FlexAlign.STRETCH
-
-    var direction: FlexDirection = FlexDirection.ROW /* COLUMN */
-
-    var justifyContent: FlexJustify = FlexJustify.FLEX_START
-
-    var wrap: FlexWrap = FlexWrap.WRAP
+    var alignSelf: FlexAlign = FlexAlign.AUTO
 
     var layout: FlexLayout = FlexLayout.RELATIVE
     private val layoutState = StateTracker.create(
@@ -43,11 +42,7 @@ internal class YgControl(private val control: Control) {
         control::marginTop,
         control::marginRight,
         control::marginBottom,
-        this::alignContent,
-        this::alignItems,
-        this::direction,
-        this::justifyContent,
-        this::wrap,
+        this::alignSelf,
         this::layout,
     )
 
@@ -56,11 +51,12 @@ internal class YgControl(private val control: Control) {
             return
         }
 
-        YGNodeStyleSetFlexDirection(ygNode, direction.toYGValue())
-        YGNodeStyleSetAlignItems(ygNode, alignItems.toYGValue())
-        YGNodeStyleSetAlignContent(ygNode, alignContent.toYGValue())
-        YGNodeStyleSetJustifyContent(ygNode, justifyContent.toYGValue())
-        YGNodeStyleSetAlignSelf(ygNode, FlexAlign.AUTO.toYGValue())
+        // FlexContainer handles its own state
+        if (control is FlexContainer) {
+            return
+        }
+
+        YGNodeStyleSetAlignSelf(ygNode, alignSelf.toYGValue())
 
         YGNodeStyleSetPositionType(
             ygNode,
@@ -70,16 +66,14 @@ internal class YgControl(private val control: Control) {
             }
         )
 
-        YGNodeStyleSetFlexWrap(ygNode, wrap.toYGValue())
-
         applyStyleWidth(ygNode, DimValue.Fixed(control.layoutWidth))
         applyStyleHeight(ygNode, DimValue.Fixed(control.layoutHeight))
 
-        //applyStyleMinWidth(ygNode, control.minWidth)
-        //applyStyleMinHeight(ygNode, control.minHeight)
+        applyStyleMinWidth(ygNode, control.minWidth)
+        applyStyleMinHeight(ygNode, control.minHeight)
 
-        //applyStyleMaxWidth(ygNode, control.maxWidth)
-        //applyStyleMaxHeight(ygNode, control.maxHeight)
+        applyStyleMaxWidth(ygNode, control.maxWidth)
+        applyStyleMaxHeight(ygNode, control.maxHeight)
 
         applyStyleMargin(ygNode, DimValue.Fixed(control.marginLeft), YGEdgeLeft)
         applyStyleMargin(ygNode, DimValue.Fixed(control.marginTop), YGEdgeTop)

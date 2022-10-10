@@ -2,14 +2,13 @@ package calamansi.editor.ui2
 
 import calamansi.ui2.control.Canvas
 import calamansi.ui2.control.Text
-import calamansi.ui2.flex.FlexAlign
+import calamansi.ui2.control.px
 import calamansi.ui2.flex.FlexContainer
 import calamansi.ui2.flex.FlexJustify
 
 class MyCanvas : Canvas() {
     init {
         root = FlexContainer().apply {
-            alignItems = FlexAlign.CENTER
             justifyContent = FlexJustify.CENTER
             children.addAll(listOf(
                 text("Hello World!"),
@@ -32,5 +31,7 @@ class MyCanvas : Canvas() {
         paddingTop = 10f
         paddingRight = 10f
         paddingBottom = 10f
+
+        width = 300.px
     }
 }

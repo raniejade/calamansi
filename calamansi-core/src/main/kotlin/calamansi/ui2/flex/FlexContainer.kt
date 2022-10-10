@@ -1,5 +1,6 @@
 package calamansi.ui2.flex
 
+import calamansi.runtime.gc.Bin
 import calamansi.runtime.utils.StateTracker
 import calamansi.ui2.control.Container
 import calamansi.ui2.control.Control
@@ -8,15 +9,24 @@ import calamansi.ui2.control.FlatStyledBox
 import org.lwjgl.util.yoga.Yoga.*
 import java.util.*
 
+// TODO: test nested flex containers
 class FlexContainer : Container() {
+    private var ygNode = YGNodeNew()
     var alignContent: FlexAlign = FlexAlign.STRETCH
     var alignItems: FlexAlign = FlexAlign.STRETCH
+    var alignSelf: FlexAlign = FlexAlign.AUTO
     var direction: FlexDirection = FlexDirection.ROW /* COLUMN */
     var justifyContent: FlexJustify = FlexJustify.FLEX_START
     var wrap: FlexWrap = FlexWrap.WRAP
     var layout: FlexLayout = FlexLayout.RELATIVE
 
-    private var ygNode = YGNodeNew()
+    init {
+        val localYgNode = ygNode
+        Bin.register(this) {
+            YGNodeFree(localYgNode)
+        }
+    }
+
     private val layoutState = StateTracker.create(
         this::minWidth,
         this::width,
@@ -43,6 +53,10 @@ class FlexContainer : Container() {
     private val childrenState = StateTracker.create(this::children)
     private val childrenNodes = WeakHashMap<Control, YgControl>()
 
+    fun setAlignSelf(child: Control, alignSelf: FlexAlign) {
+        childrenNodes.getValue(child).alignSelf = alignSelf
+    }
+
     override fun layout(width: Float, height: Float, forceLayout: Boolean) {
         super.layout(width, height, forceLayout)
 
@@ -62,7 +76,7 @@ class FlexContainer : Container() {
             YGNodeStyleSetAlignItems(ygNode, alignItems.toYGValue())
             YGNodeStyleSetAlignContent(ygNode, alignContent.toYGValue())
             YGNodeStyleSetJustifyContent(ygNode, justifyContent.toYGValue())
-            YGNodeStyleSetAlignSelf(ygNode, FlexAlign.AUTO.toYGValue())
+            YGNodeStyleSetAlignSelf(ygNode, alignSelf.toYGValue())
 
             YGNodeStyleSetPositionType(
                 ygNode,
@@ -125,4 +139,6 @@ class FlexContainer : Container() {
             }
         }
     }
+
+    internal fun getYGNode() = ygNode
 }
