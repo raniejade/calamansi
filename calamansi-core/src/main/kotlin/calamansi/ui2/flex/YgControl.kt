@@ -37,10 +37,6 @@ internal class YgControl(private val control: Control) {
         control::paddingTop,
         control::paddingRight,
         control::paddingBottom,
-        control::marginLeft,
-        control::marginTop,
-        control::marginRight,
-        control::marginBottom,
         this::alignSelf,
         this::layout,
     )
@@ -73,11 +69,6 @@ internal class YgControl(private val control: Control) {
 
         applyStyleMaxWidth(ygNode, control.maxWidth)
         applyStyleMaxHeight(ygNode, control.maxHeight)
-
-        applyStyleMargin(ygNode, DimValue.Fixed(control.marginLeft), YGEdgeLeft)
-        applyStyleMargin(ygNode, DimValue.Fixed(control.marginTop), YGEdgeTop)
-        applyStyleMargin(ygNode, DimValue.Fixed(control.marginRight), YGEdgeRight)
-        applyStyleMargin(ygNode, DimValue.Fixed(control.marginBottom), YGEdgeBottom)
 
         applyStylePadding(ygNode, DimValue.Fixed(control.paddingLeft), YGEdgeLeft)
         applyStylePadding(ygNode, DimValue.Fixed(control.paddingTop), YGEdgeTop)

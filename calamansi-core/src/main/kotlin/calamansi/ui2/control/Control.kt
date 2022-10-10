@@ -17,11 +17,6 @@ abstract class Control {
     var paddingRight: Float = 0f
     var paddingBottom: Float = 0f
 
-    var marginLeft: Float = 0f
-    var marginTop: Float = 0f
-    var marginRight: Float = 0f
-    var marginBottom: Float = 0f
-
     // computed after layout
     var layoutX: Float = 0f
     var layoutY: Float = 0f

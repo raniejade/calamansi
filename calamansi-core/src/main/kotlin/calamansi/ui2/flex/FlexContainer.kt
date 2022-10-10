@@ -38,10 +38,6 @@ class FlexContainer : Container() {
         this::paddingTop,
         this::paddingRight,
         this::paddingBottom,
-        this::marginLeft,
-        this::marginTop,
-        this::marginRight,
-        this::marginBottom,
         this::alignContent,
         this::alignItems,
         this::direction,
@@ -109,11 +105,6 @@ class FlexContainer : Container() {
 
             applyStyleMaxWidth(ygNode, this.maxWidth)
             applyStyleMaxHeight(ygNode, this.maxHeight)
-
-            applyStyleMargin(ygNode, DimValue.Fixed(marginLeft), YGEdgeLeft)
-            applyStyleMargin(ygNode, DimValue.Fixed(marginTop), YGEdgeTop)
-            applyStyleMargin(ygNode, DimValue.Fixed(marginRight), YGEdgeRight)
-            applyStyleMargin(ygNode, DimValue.Fixed(marginBottom), YGEdgeBottom)
 
             applyStylePadding(ygNode, DimValue.Fixed(paddingLeft), YGEdgeLeft)
             applyStylePadding(ygNode, DimValue.Fixed(paddingTop), YGEdgeTop)
