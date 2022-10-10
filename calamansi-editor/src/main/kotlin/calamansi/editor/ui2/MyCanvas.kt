@@ -10,17 +10,24 @@ class MyCanvas : Canvas() {
     init {
         root = FlexContainer().apply {
             justifyContent = FlexJustify.CENTER
-            children.addAll(listOf(
-                text("Hello World!"),
-                text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales ut felis nec commodo. Duis ullamcorper orci a rhoncus semper. Proin vitae consectetur nibh. Pellentesque blandit leo eu semper commodo. Proin lacinia nibh est, id commodo urna viverra quis. Aliquam nulla velit, suscipit nec erat nec, lobortis varius arcu. Curabitur at scelerisque elit."),
-                text("""
+            val helloWorld = text("Hello World!")
+            val lipsum =
+                text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales ut felis nec commodo. Duis ullamcorper orci a rhoncus semper. Proin vitae consectetur nibh. Pellentesque blandit leo eu semper commodo. Proin lacinia nibh est, id commodo urna viverra quis. Aliquam nulla velit, suscipit nec erat nec, lobortis varius arcu. Curabitur at scelerisque elit.")
+            val code = text(
+                """
                     #include <iostream>
                     
                     int main() {
                         std::cout << "Hello World" << std::endl;
                         return 0;
                     }
-                """.trimIndent())
+                """.trimIndent()
+            )
+
+            children.addAll(listOf(
+                helloWorld,
+                lipsum,
+                code
             ))
         }
     }

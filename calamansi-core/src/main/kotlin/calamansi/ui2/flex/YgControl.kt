@@ -25,7 +25,6 @@ internal class YgControl(private val control: Control) {
     }
 
     var alignSelf: FlexAlign = FlexAlign.AUTO
-
     var layout: FlexLayout = FlexLayout.RELATIVE
     private val layoutState = StateTracker.create(
         control::minWidth,

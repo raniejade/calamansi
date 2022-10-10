@@ -54,7 +54,15 @@ class FlexContainer : Container() {
     private val childrenNodes = WeakHashMap<Control, YgControl>()
 
     fun setAlignSelf(child: Control, alignSelf: FlexAlign) {
-        childrenNodes.getValue(child).alignSelf = alignSelf
+        getOrCreateChildNode(child).alignSelf = alignSelf
+    }
+
+    fun setLayout(child: Control, layout: FlexLayout) {
+        getOrCreateChildNode(child).layout = layout
+    }
+
+    private fun getOrCreateChildNode(child: Control): YgControl {
+        return childrenNodes.getOrPut(child) { YgControl(child) }
     }
 
     override fun layout(width: Float, height: Float, forceLayout: Boolean) {
@@ -65,7 +73,7 @@ class FlexContainer : Container() {
             isDirty = true
             YGNodeRemoveAllChildren(ygNode)
             for ((idx, child) in children.withIndex()) {
-                val node = childrenNodes.getOrPut(child) { YgControl(child) }
+                val node = getOrCreateChildNode(child)
                 YGNodeInsertChild(ygNode, node.ygNode, idx)
             }
         }
