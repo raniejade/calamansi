@@ -5,7 +5,7 @@ import calamansi.runtime.gc.Bin
 import io.github.humbleui.skija.Typeface
 import io.github.humbleui.skija.Font as SkijaFont
 
-class Font internal constructor(private val typeface: Typeface) : Resource() {
+class Font internal constructor(internal val typeface: Typeface) : Resource() {
     private val cache = mutableMapOf<Float, SkijaFont>()
 
     init {
@@ -23,5 +23,9 @@ class Font internal constructor(private val typeface: Typeface) : Resource() {
         return cache.getOrPut(size) {
             SkijaFont(typeface, size)
         }
+    }
+
+    companion object {
+        val defaultFont = Font(Typeface.makeDefault())
     }
 }

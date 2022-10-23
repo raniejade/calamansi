@@ -1,4 +1,4 @@
-package calamansi.ui2.flex
+package calamansi.ui2.control
 
 enum class FlexLayout {
     RELATIVE,

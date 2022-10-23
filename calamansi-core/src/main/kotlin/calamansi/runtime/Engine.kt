@@ -11,7 +11,6 @@ import calamansi.runtime.service.Services
 import calamansi.runtime.sys.glfw.GlfwWindowDriver
 import calamansi.runtime.sys.opengl.OpenGLGfxDriver
 import calamansi.runtime.threading.EventLoops
-import calamansi.runtime.ui.DefaultThemeProvider
 import calamansi.runtime.utils.FrameStats
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -103,8 +102,6 @@ internal class Engine {
             )
 
         mainWindowContext.init()
-
-        mainWindowContext.setTheme(DefaultThemeProvider.create())
     }
 
     private fun cleanup() {

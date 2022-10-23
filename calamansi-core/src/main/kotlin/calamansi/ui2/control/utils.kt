@@ -1,14 +1,48 @@
 package calamansi.ui2.control
 
-import calamansi.gfx.Color
-import io.github.humbleui.skija.Paint
+import calamansi.ui2.control.FlexAlign
+import calamansi.ui2.control.FlexDirection
+import calamansi.ui2.control.FlexJustify
+import calamansi.ui2.control.FlexWrap
+import org.lwjgl.util.yoga.Yoga.*
 
-fun Color.toPaint(): Paint {
-    return Paint().setARGB(a, r, g, b)
+internal fun FlexAlign.toYGValue(): Int {
+    return when (this) {
+        FlexAlign.AUTO -> YGAlignAuto
+        FlexAlign.FLEX_START -> YGAlignFlexStart
+        FlexAlign.FLEX_END -> YGAlignFlexEnd
+        FlexAlign.STRETCH -> YGAlignStretch
+        FlexAlign.CENTER -> YGAlignCenter
+        FlexAlign.SPACE_BETWEEN -> YGAlignSpaceBetween
+        FlexAlign.SPACE_AROUND -> YGAlignSpaceAround
+        FlexAlign.BASELINE -> YGAlignBaseline
+    }
 }
 
-val Number.px: DimValue.Fixed
-    get() = DimValue.Fixed(this.toFloat())
+internal fun FlexDirection.toYGValue(): Int {
+    return when (this) {
+        FlexDirection.ROW -> YGFlexDirectionRow
+        FlexDirection.COLUMN -> YGFlexDirectionColumn
+        FlexDirection.ROW_REVERSE -> YGFlexDirectionRowReverse
+        FlexDirection.COLUMN_REVERSE -> YGFlexDirectionColumnReverse
+    }
+}
 
-val Number.pc: DimValue.Percentage
-    get() = DimValue.Percentage(this.toFloat())
+internal fun FlexJustify.toYGValue(): Int {
+    return when (this) {
+        FlexJustify.FLEX_START -> YGJustifyFlexStart
+        FlexJustify.FLEX_END -> YGJustifyFlexEnd
+        FlexJustify.CENTER -> YGJustifyCenter
+        FlexJustify.SPACE_BETWEEN -> YGJustifySpaceBetween
+        FlexJustify.SPACE_AROUND -> YGJustifySpaceAround
+        FlexJustify.SPACE_EVENLY -> YGJustifySpaceEvenly
+    }
+}
+
+internal fun FlexWrap.toYGValue(): Int {
+    return when (this) {
+        FlexWrap.NO_WRAP -> YGWrapNoWrap
+        FlexWrap.WRAP -> YGWrapWrap
+        FlexWrap.WRAP_REVERSE -> YGWrapReverse
+    }
+}

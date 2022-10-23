@@ -178,11 +178,6 @@ internal class WindowContext(
 //                }
 //            }
 
-
-            // layout pass
-            layout2(node, forceLayout)
-            forceLayout = false
-
             // draw canvas in batch
             val contentScale = window.getContentScale()
             val drawBatch = findSurfaces(node)
@@ -192,7 +187,14 @@ internal class WindowContext(
                     resetMatrix()
                     scale(contentScale.x(), contentScale.y())
                     for (c in batch.value) {
-                        draw2(this, node)
+                        // layout pass
+                        if (batch.key is DefaultRenderSurface) {
+                            c.layout(surfaceWidth, surfaceHeight, forceLayout)
+                            forceLayout = false
+                        } else {
+                            logger.error("Unsupported surface: ${batch.key}, ignoring.")
+                        }
+                        c.draw(this)
                     }
 
                     if (batch.key is DefaultRenderSurface) {
@@ -320,7 +322,7 @@ internal class WindowContext(
 
         if (node is calamansi.ui2.control.Canvas) {
             if (node.surface is DefaultRenderSurface) {
-                node.layout(forceLayout, surfaceWidth, surfaceHeight)
+                //node.layout(forceLayout, surfaceWidth, surfaceHeight)
             } else {
                 logger.error("Unsupported surface: ${node.surface}, ignoring.")
             }
@@ -411,10 +413,6 @@ internal class WindowContext(
         surfaceHeight = windowSize.y().toFloat()
         forceLayout = true
         gfx.unbind()
-    }
-
-    override fun setTheme(theme: calamansi.ui2.control.Theme) {
-        calamansi.ui2.control.Theme.setCurrent(theme)
     }
 
     override inline val canvas: calamansi.ui.Canvas

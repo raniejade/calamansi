@@ -4,10 +4,9 @@ import calamansi.input.InputContext
 import calamansi.resource.ResourceContext
 import calamansi.ui.Canvas
 import calamansi.ui.Cursor
-import calamansi.ui2.control.Theme
 
 interface ExecutionContext : InputContext, ResourceContext {
-    fun setTheme(theme: Theme)
+    // fun setTheme(theme: Theme)
     val canvas: Canvas
     fun getFrameTime(): Float
     fun getFps(): Float
